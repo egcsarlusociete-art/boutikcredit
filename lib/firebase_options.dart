@@ -16,8 +16,8 @@ class DefaultFirebaseOptions {
   // Package name : com.boutikcredit.app
   // Télécharger google-services.json → copier dans android/app/
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey:            'AIzaSyAEH02fzyMn9khdFvPVSIieINHJptfbwoU',
-    appId:             '1:695609211507:android:REMPLACER_APP_ID_ANDROID',
+    apiKey:            'AIzaSyAjKGNOv-cbv7PPN8vYPDf2eAOSuGLNVQQ',
+    appId:             '1:695609211507:android:1:695609211507:android:461499ea4c20493e2c8806',
     messagingSenderId: '695609211507',
     projectId:         'egcsarlu-app-b2ba4',
     storageBucket:     'egcsarlu-app-b2ba4.firebasestorage.app',
@@ -26,7 +26,7 @@ class DefaultFirebaseOptions {
   // ── iOS : récupérer dans GoogleService-Info.plist ──
   // Bundle ID : com.boutikcredit.app
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey:            'AIzaSyAEH02fzyMn9khdFvPVSIieINHJptfbwoU',
+    apiKey:            'AIzaSyAjKGNOv-cbv7PPN8vYPDf2eAOSuGLNVQQ',
     appId:             '1:695609211507:ios:REMPLACER_APP_ID_IOS',
     messagingSenderId: '695609211507',
     projectId:         'egcsarlu-app-b2ba4',
@@ -36,7 +36,7 @@ class DefaultFirebaseOptions {
   );
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey:            'AIzaSyAEH02fzyMn9khdFvPVSIieINHJptfbwoU',
+    apiKey:            'AIzaSyAjKGNOv-cbv7PPN8vYPDf2eAOSuGLNVQQ',
     appId:             '1:695609211507:web:752cf32e9ee0b9882c8806',
     messagingSenderId: '695609211507',
     projectId:         'egcsarlu-app-b2ba4',

@@ -7,12 +7,13 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:695609211507:android:000000000000000000000000",
+        "mobilesdk_app_id": "1:695609211507:android:461499ea4c20493e2c8806",
         "android_client_info": {
           "package_name": "com.boutikcredit.app"
         }
       },
-      "api_key": [{"current_key": "AIzaSyAEH02fzyMn9khdFvPVSIieINHJptfbwoU"}],
+      "oauth_client": [],
+      "api_key": [{"current_key": "AIzaSyAjKGNOv-cbv7PPN8vYPDf2eAOSuGLNVQQ"}],
       "services": {"appinvite_service": {"other_platform_oauth_client": []}}
     }
   ],
