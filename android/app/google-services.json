@@ -1,0 +1,20 @@
+{
+  "project_info": {
+    "project_number": "695609211507",
+    "project_id": "egcsarlu-app-b2ba4",
+    "storage_bucket": "egcsarlu-app-b2ba4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:695609211507:android:000000000000000000000000",
+        "android_client_info": {
+          "package_name": "com.boutikcredit.app"
+        }
+      },
+      "api_key": [{"current_key": "AIzaSyAEH02fzyMn9khdFvPVSIieINHJptfbwoU"}],
+      "services": {"appinvite_service": {"other_platform_oauth_client": []}}
+    }
+  ],
+  "configuration_version": "1"
+}
