@@ -19,17 +19,13 @@ jobs:
       - name: google-services
         run: echo '{"project_info":{"project_number":"695609211507","project_id":"egcsarlu-app-b2ba4","storage_bucket":"egcsarlu-app-b2ba4.firebasestorage.app"},"client":[{"client_info":{"mobilesdk_app_id":"1:695609211507:android:000000000000000000000000","android_client_info":{"package_name":"com.boutikcredit.app"}},"api_key":[{"current_key":"AIzaSyAEH02fzyMn9khdFvPVSIieINHJptfbwoU"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}' > android/app/google-services.json
       - run: flutter pub get
-      - name: Build APK
-        run: flutter build apk --release --no-tree-shake-icons --split-per-abi
+      - name: Build APK via Gradle direct
+        run: |
+          cd android
+          ./gradlew assembleRelease --no-daemon
       - name: Find APK
-        run: find build -name "*.apk" | xargs ls -lh
+        run: find . -name "*.apk" 2>/dev/null | xargs ls -lh
       - uses: actions/upload-artifact@v4
         with:
           name: BoutikCredit-APK
-          path: build/app/outputs/flutter-apk/*.apk
-      - name: Build AAB
-        run: flutter build appbundle --release --no-tree-shake-icons
-      - uses: actions/upload-artifact@v4
-        with:
-          name: BoutikCredit-AAB
-          path: build/app/outputs/bundle/release/app-release.aab
+          path: "**/*.apk"
