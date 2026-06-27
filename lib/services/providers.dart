@@ -13,19 +13,7 @@ final authStateProvider = StreamProvider<User?>((ref) {
   return ref.watch(authServiceProvider).authStream;
 });
 
-final currentUserProvider = StreamProvider<UserModel?>((ref) {
-  final auth = ref.watch(authStateProvider);
-  return auth.when(
-    data: (user) {
-      if (user == null) return const Stream.empty();
-      return ref.watch(authServiceProvider).userStream(user.uid);
-    },
-    loading: () => const Stream.empty(),
-    error: (_, __) => const Stream.empty(),
-  );
-});
-
-
+// Données utilisateur
 final userDataProvider = StreamProvider<UserModel?>((ref) {
   final auth = ref.watch(authStateProvider);
   return auth.when(
@@ -37,13 +25,17 @@ final userDataProvider = StreamProvider<UserModel?>((ref) {
     error: (_, __) => const Stream.empty(),
   );
 });
-final publishedArticlesProvider = StreamProvider<List<ArticleModel>>((ref) {
-  return ref.watch(firestoreServiceProvider).publishedArticles();
+
+final currentUserProvider = StreamProvider<UserModel?>((ref) {
+  return ref.watch(userDataProvider.stream);
 });
 
+// Articles publics — accessible sans connexion
+final publishedArticlesProvider = StreamProvider<List<ArticleModel>>((ref) {
+  return FirestoreService().publishedArticles();
+});
 
-
-
+// Commandes utilisateur
 final userOrdersProvider = StreamProvider<List<OrderModel>>((ref) {
   final auth = ref.watch(authStateProvider);
   return auth.when(
@@ -56,19 +48,59 @@ final userOrdersProvider = StreamProvider<List<OrderModel>>((ref) {
   );
 });
 
-
-final userWithdrawalsProvider = StreamProvider<List<WithdrawalModel>>((ref) {
-  final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-  return ref.watch(firestoreServiceProvider).userWithdrawals(uid);
+// Retraits utilisateur
+final withdrawalsProvider = StreamProvider<List<WithdrawalModel>>((ref) {
+  final auth = ref.watch(authStateProvider);
+  return auth.when(
+    data: (user) {
+      if (user == null) return const Stream.empty();
+      return FirestoreService().userWithdrawals(user.uid);
+    },
+    loading: () => const Stream.empty(),
+    error: (_, __) => const Stream.empty(),
+  );
 });
 
-
-
-final userReferralsProvider = StreamProvider<List<ReferralModel>>((ref) {
-  final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-  return ref.watch(firestoreServiceProvider).userReferrals(uid);
+// Historique bonus
+final bonusHistoryProvider = StreamProvider<List<BonusEntry>>((ref) {
+  final auth = ref.watch(authStateProvider);
+  return auth.when(
+    data: (user) {
+      if (user == null) return const Stream.empty();
+      return FirestoreService().bonusHistory(user.uid);
+    },
+    loading: () => const Stream.empty(),
+    error: (_, __) => const Stream.empty(),
+  );
 });
 
+// Parrainages
+final referralsProvider = StreamProvider<List<ReferralModel>>((ref) {
+  final auth = ref.watch(authStateProvider);
+  return auth.when(
+    data: (user) {
+      if (user == null) return const Stream.empty();
+      return FirestoreService().userReferrals(user.uid);
+    },
+    loading: () => const Stream.empty(),
+    error: (_, __) => const Stream.empty(),
+  );
+});
+
+// Articles vendeur
+final vendorArticlesProvider = StreamProvider<List<ArticleModel>>((ref) {
+  final auth = ref.watch(authStateProvider);
+  return auth.when(
+    data: (user) {
+      if (user == null) return const Stream.empty();
+      return FirestoreService().vendeurArticles(user.uid);
+    },
+    loading: () => const Stream.empty(),
+    error: (_, __) => const Stream.empty(),
+  );
+});
+
+// Admin
 final allArticlesProvider = StreamProvider<List<ArticleModel>>((ref) {
   return ref.watch(firestoreServiceProvider).allArticles();
 });
@@ -87,52 +119,4 @@ final allOrdersProvider = StreamProvider<List<OrderModel>>((ref) {
 
 final allWithdrawalsProvider = StreamProvider<List<WithdrawalModel>>((ref) {
   return ref.watch(firestoreServiceProvider).allWithdrawals();
-});
-
-final withdrawalsProvider = StreamProvider<List<WithdrawalModel>>((ref) {
-  final auth = ref.watch(authStateProvider);
-  return auth.when(
-    data: (user) {
-      if (user == null) return const Stream.empty();
-      return FirestoreService().userWithdrawals(user.uid);
-    },
-    loading: () => const Stream.empty(),
-    error: (_, __) => const Stream.empty(),
-  );
-});
-
-final bonusHistoryProvider = StreamProvider<List<BonusEntry>>((ref) {
-  final auth = ref.watch(authStateProvider);
-  return auth.when(
-    data: (user) {
-      if (user == null) return const Stream.empty();
-      return FirestoreService().bonusHistory(user.uid);
-    },
-    loading: () => const Stream.empty(),
-    error: (_, __) => const Stream.empty(),
-  );
-});
-
-final vendorArticlesProvider = StreamProvider<List<ArticleModel>>((ref) {
-  final auth = ref.watch(authStateProvider);
-  return auth.when(
-    data: (user) {
-      if (user == null) return const Stream.empty();
-      return FirestoreService().vendeurArticles(user.uid);
-    },
-    loading: () => const Stream.empty(),
-    error: (_, __) => const Stream.empty(),
-  );
-});
-
-final referralsProvider = StreamProvider<List<ReferralModel>>((ref) {
-  final auth = ref.watch(authStateProvider);
-  return auth.when(
-    data: (user) {
-      if (user == null) return const Stream.empty();
-      return FirestoreService().userReferrals(user.uid);
-    },
-    loading: () => const Stream.empty(),
-    error: (_, __) => const Stream.empty(),
-  );
 });
