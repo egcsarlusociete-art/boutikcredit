@@ -10,10 +10,6 @@ import '../../utils/helpers.dart';
 import '../../widgets/status_pill.dart';
 import '../bonus/bonus_screen.dart';
 
-final vendorArticlesProvider = StreamProvider((ref) {
-  final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-  return FirestoreService().vendeurArticles(uid);
-});
 
 class VendorHomeScreen extends ConsumerWidget {
   const VendorHomeScreen({super.key});

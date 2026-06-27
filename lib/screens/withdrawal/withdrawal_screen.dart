@@ -13,10 +13,6 @@ import '../../widgets/egc_text_field.dart';
 import '../../widgets/status_pill.dart';
 import '../bonus/bonus_screen.dart';
 
-final withdrawalsProvider = StreamProvider((ref) {
-  final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-  return FirestoreService().userWithdrawals(uid);
-});
 
 class WithdrawalScreen extends ConsumerStatefulWidget {
   const WithdrawalScreen({super.key});

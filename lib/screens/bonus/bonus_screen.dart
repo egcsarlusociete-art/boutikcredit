@@ -12,10 +12,6 @@ import '../../utils/theme.dart';
 import '../../utils/helpers.dart';
 
 
-final bonusHistoryProvider = StreamProvider<List<BonusEntry>>((ref) {
-  final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-  return FirestoreService().bonusHistory(uid);
-});
 
 class BonusScreen extends ConsumerWidget {
   const BonusScreen({super.key});

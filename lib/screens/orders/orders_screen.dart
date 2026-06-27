@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import '../../services/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -9,10 +10,6 @@ import '../../utils/theme.dart';
 import '../../utils/helpers.dart';
 import '../../widgets/status_pill.dart';
 
-final userOrdersProvider = StreamProvider<List<OrderModel>>((ref) {
-  final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-  return FirestoreService().userOrders(uid);
-});
 
 class OrdersScreen extends ConsumerWidget {
   const OrdersScreen({super.key});

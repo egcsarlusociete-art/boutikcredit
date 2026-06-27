@@ -11,10 +11,6 @@ import '../../utils/theme.dart';
 import '../../utils/helpers.dart';
 import '../bonus/bonus_screen.dart';
 
-final referralsProvider = StreamProvider((ref) {
-  final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-  return FirestoreService().userReferrals(uid);
-});
 
 class ReferralScreen extends ConsumerWidget {
   const ReferralScreen({super.key});
