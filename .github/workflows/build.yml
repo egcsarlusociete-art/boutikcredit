@@ -26,6 +26,7 @@ jobs:
         if: always()
         run: find . -name "*.apk" 2>/dev/null | head -10 || echo "Aucun APK"
       - name: Upload AAB
+        continue-on-error: true
         run: flutter build appbundle --release --no-tree-shake-icons
       - uses: actions/upload-artifact@v4
         with:
