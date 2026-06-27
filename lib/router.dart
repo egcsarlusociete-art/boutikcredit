@@ -20,6 +20,7 @@ import 'screens/vendor/vendor_home_screen.dart';
 import 'screens/vendor/vendor_add_article_screen.dart';
 import 'screens/vendor/vendor_articles_screen.dart';
 import 'screens/admin/admin_screen.dart';
+import 'screens/cgv/cgv_screen.dart';
 
 const String kAdminUid = 'REMPLACER_PAR_UID_ADMIN';
 
@@ -67,6 +68,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/vendor/articles',   builder: (c, s) => const VendorArticlesScreen()),
       GoRoute(path: '/vendor/add-article',builder: (c, s) => const VendorAddArticleScreen()),
       GoRoute(path: '/admin', builder: (c, s) => const AdminScreen()),
+      GoRoute(path: '/cgv', builder: (c, s) => const CgvScreen()),
     ],
   );
 });
