@@ -21,11 +21,30 @@ class _CgvScreenState extends ConsumerState<CgvScreen> {
   bool _accepted = false;
   bool _signing = false;
   double _scrollProgress = 0;
+  bool _alreadySigned = false;
+  DateTime? _signedAt;
 
   @override
   void initState() {
     super.initState();
     _scroll.addListener(_onScroll);
+    _checkIfAlreadySigned();
+  }
+
+  Future<void> _checkIfAlreadySigned() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) return;
+    try {
+      var snap = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (!snap.exists) snap = await FirebaseFirestore.instance.collection('vendeurs').doc(uid).get();
+      if (snap.exists && snap.data()?['cgvAccepted'] == true) {
+        final ts = snap.data()?['cgvSignedAt'];
+        setState(() {
+          _alreadySigned = true;
+          if (ts != null) _signedAt = (ts as dynamic).toDate();
+        });
+      }
+    } catch (_) {}
   }
 
   void _onScroll() {
@@ -296,7 +315,35 @@ class _CgvScreenState extends ConsumerState<CgvScreen> {
     child: Text(t, style: TextStyle(fontSize: 10, fontWeight: bold ? FontWeight.w700 : FontWeight.w500,
       color: color ?? EgcColors.ink2, height: 1.3), textAlign: TextAlign.right));
 
-  Widget _signatureZone() => Container(
+  Widget _signatureZone() {
+    if (_alreadySigned) {
+      return Container(
+        margin: const EdgeInsets.only(top: 8),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: EgcColors.okBg,
+          borderRadius: EgcRadius.mdBorder,
+          border: Border.all(color: EgcColors.okLine, width: 1.5),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          const Row(children: [
+            Icon(Icons.verified, color: EgcColors.ok, size: 22),
+            SizedBox(width: 8),
+            Text('CGV déjà acceptées', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: EgcColors.ok)),
+          ]),
+          const SizedBox(height: 8),
+          Text(
+            _signedAt != null
+              ? 'Vous avez signé les CGV le ${fmtDate(_signedAt)} à ${_signedAt!.hour.toString().padLeft(2,'0')}h${_signedAt!.minute.toString().padLeft(2,'0')}.'
+              : 'Vous avez déjà accepté les Conditions Générales.',
+            style: const TextStyle(fontSize: 13, color: EgcColors.ok, height: 1.5),
+          ),
+          const SizedBox(height: 8),
+          const Text('Vous pouvez consulter les conditions à tout moment depuis cette page.', style: TextStyle(fontSize: 12, color: EgcColors.ink3, height: 1.5)),
+        ]),
+      );
+    }
+    return Container(
     decoration: const BoxDecoration(
       color: EgcColors.bg2,
       border: Border(top: BorderSide(color: EgcColors.line, width: 1.5))),
@@ -365,4 +412,5 @@ class _CgvScreenState extends ConsumerState<CgvScreen> {
       const SizedBox(height: 8),
     ])),
   );
+}
 }
