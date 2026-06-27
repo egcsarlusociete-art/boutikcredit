@@ -155,7 +155,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         // Grille produits
         articlesAsync.when(
           loading: () => const SliverToBoxAdapter(child: Center(child: Padding(padding: EdgeInsets.all(40), child: CircularProgressIndicator(color: EgcColors.primary)))),
-          error: (e, _) => SliverToBoxAdapter(child: Center(child: Text('Erreur : $e'))),
+          error: (e, _) => SliverToBoxAdapter(child: Center(child: Padding(padding: const EdgeInsets.all(40), child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [const Text('📦', style: TextStyle(fontSize: 48)), const SizedBox(height: 12), const Text('Chargement en cours...', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: EgcColors.ink)), const SizedBox(height: 8), const Text('Vérifiez votre connexion internet', style: TextInStyle(fontSize: 13, color: EgcColors.ink3))])))),
           data: (articles) {
             final filtered = _filter(articles);
             if (filtered.isEmpty) return SliverToBoxAdapter(child: Padding(
