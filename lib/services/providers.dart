@@ -25,6 +25,18 @@ final currentUserProvider = StreamProvider<UserModel?>((ref) {
   );
 });
 
+
+final userDataProvider = StreamProvider<UserModel?>((ref) {
+  final auth = ref.watch(authStateProvider);
+  return auth.when(
+    data: (user) {
+      if (user == null) return const Stream.empty();
+      return AuthService().userStream(user.uid);
+    },
+    loading: () => const Stream.empty(),
+    error: (_, __) => const Stream.empty(),
+  );
+});
 final publishedArticlesProvider = StreamProvider<List<ArticleModel>>((ref) {
   return ref.watch(firestoreServiceProvider).publishedArticles();
 });
