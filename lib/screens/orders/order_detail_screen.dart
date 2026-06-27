@@ -25,7 +25,7 @@ class OrderDetailScreen extends ConsumerWidget {
         final stepLabels = ['Confirmée', 'Préparation', 'En livraison', 'Livrée'];
         return Scaffold(
           backgroundColor: EgcColors.bg,
-          appBar: AppBar(title: Text('#\${order.orderId.substring(0, 14)}')),
+          appBar: AppBar(title: Text('#${order.orderId.substring(0, 14)}')),
           body: ListView(padding: const EdgeInsets.all(16), children: [
             // Status + tracker
             Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line, width: 1.5)),
@@ -52,7 +52,7 @@ class OrderDetailScreen extends ConsumerWidget {
                 child: Row(children: [
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(i.name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-                    Text('\${i.shop} — Qté \${i.qty}', style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                    Text('${i.shop} — Qté ${i.qty}', style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
                   ])),
                   Text(fmtPrice(i.total), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                 ]))),
@@ -63,18 +63,18 @@ class OrderDetailScreen extends ConsumerWidget {
               ]),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 const Text('Cashback reçu', style: TextStyle(fontSize: 12, color: EgcColors.ok)),
-                Text('+\${fmtPrice(order.cashbackEarned)}', style: const TextStyle(fontSize: 12, color: EgcColors.ok, fontWeight: FontWeight.w700)),
+                Text('+${fmtPrice(order.cashbackEarned)}', style: const TextStyle(fontSize: 12, color: EgcColors.ok, fontWeight: FontWeight.w700)),
               ]),
             ])),
             const SizedBox(height: 12),
-            _section('Livraison', Text('\${order.delivery.name}\n\${order.delivery.phone}\n\${order.delivery.city} — \${order.delivery.addr}',
+            _section('Livraison', Text('${order.delivery.name}\n${order.delivery.phone}\n${order.delivery.city} — ${order.delivery.addr}',
               style: const TextStyle(fontSize: 13, color: EgcColors.ink2, height: 1.6))),
             const SizedBox(height: 12),
-            _section('Paiement', Text('\${order.paymentPlan == "daily" ? "Quotidien" : "Hebdomadaire"}\n\${order.paymentMethod.toUpperCase()} — \${order.paymentPhone}',
+            _section('Paiement', Text('${order.paymentPlan == "daily" ? "Quotidien" : "Hebdomadaire"}\n${order.paymentMethod.toUpperCase()} — ${order.paymentPhone}',
               style: const TextStyle(fontSize: 13, color: EgcColors.ink2, height: 1.6))),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () => launchUrl(Uri.parse('https://wa.me/2250152372300?text=Support+commande+%23\${order.orderId}')),
+              onPressed: () => launchUrl(Uri.parse('https://wa.me/2250152372300?text=Support+commande+%23${order.orderId}')),
               icon: const Icon(Icons.support_agent_outlined, size: 18),
               label: const Text('Contacter le support'),
               style: ElevatedButton.styleFrom(backgroundColor: EgcColors.ok, minimumSize: const Size(double.infinity, 50)),

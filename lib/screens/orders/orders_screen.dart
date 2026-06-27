@@ -25,7 +25,7 @@ class OrdersScreen extends ConsumerWidget {
       appBar: AppBar(title: const Text('Mes commandes')),
       body: ordersAsync.when(
         loading: () => const Center(child: CircularProgressIndicator(color: EgcColors.primary)),
-        error: (e, _) => Center(child: Text('Erreur : \$e')),
+        error: (e, _) => Center(child: Text('Erreur de chargement')),
         data: (orders) {
           if (orders.isEmpty) return Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             const Text('📦', style: TextStyle(fontSize: 64)),
