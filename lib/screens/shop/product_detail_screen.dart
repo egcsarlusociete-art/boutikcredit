@@ -75,7 +75,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 const SizedBox(width: 10),
                 _feature('📅', 'Paiement', 'Étalé · Dès réception'),
                 const SizedBox(width: 10),
-                _feature('✅', 'En stock', 'Qté : \${a.qty}'),
+                _feature('✅', 'En stock', 'Qté : ${a.qty}'),
               ]),
               const SizedBox(height: 100),
             ]))),
@@ -109,8 +109,8 @@ class ProductDetailScreen extends ConsumerWidget {
     child: Column(children: [
       Text(icon, style: const TextStyle(fontSize: 20)),
       const SizedBox(height: 4),
-      Text(title, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: EgcColors.ink), textAlign: TextAlign.center),
-      Text(sub, style: const TextStyle(fontSize: 10, color: EgcColors.ink3), textAlign: TextAlign.center),
+      Text(title, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: EgcColors.ink), textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis),
+      Text(sub, style: const TextStyle(fontSize: 10, color: EgcColors.ink3), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
     ]),
   ));
 }
