@@ -59,12 +59,12 @@ class ProfileScreen extends ConsumerWidget {
             _menuItem(Icons.headset_mic_outlined, 'Support client 24h/24', 'WhatsApp & Email',
               () => launchUrl(Uri.parse('https://wa.me/2250152372300?text=Bonjour+EGC-SARLU'))),
             _menuItem(Icons.delete_forever_outlined, 'Supprimer mon compte', 'Action irréversible', () async {
-              final ok = await showDialog<bool>(context: context, builder: (_) => AlertDialog(
+              final ok = await showDialog<bool>(context: context, builder: (dialogContext) => AlertDialog(
                 title: const Text('Supprimer le compte'),
                 content: const Text('Cette action est irréversible. Toutes vos données seront supprimées. Voulez-vous continuer ?'),
                 actions: [
-                  TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
-                  TextButton(onPressed: () => Navigator.pop(context, true),
+                  TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Annuler')),
+                  TextButton(onPressed: () => Navigator.of(dialogContext).pop(true),
                     child: const Text('Supprimer', style: TextStyle(color: EgcColors.err))),
                 ],
               ));
@@ -82,12 +82,14 @@ class ProfileScreen extends ConsumerWidget {
               }
             }, textColor: EgcColors.err),
             _menuItem(Icons.logout, 'Déconnexion', 'Fermer la session', () async {
-              final ok = await showDialog<bool>(context: context, builder: (_) => AlertDialog(
+              final ok = await showDialog<bool>(context: context, builder: (dialogContext) => AlertDialog(
                 title: const Text('Déconnexion'), content: const Text('Voulez-vous vous déconnecter ?'),
-                actions: [TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
-                  TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Déconnexion'))],
+                actions: [TextButton(onPressed: () => Navigator.of(dialogContext).pop(false), child: const Text('Annuler')),
+                  TextButton(onPressed: () => Navigator.of(dialogContext).pop(true), child: const Text('Déconnexion'))],
               ));
-              if (ok == true) await AuthService().signOut();
+              if (ok == true) {
+                await AuthService().signOut();
+              }
             }, textColor: EgcColors.err),
           ])),
           const SizedBox(height: 32),
