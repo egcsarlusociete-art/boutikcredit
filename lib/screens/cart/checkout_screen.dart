@@ -140,7 +140,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final cart = ref.read(cartProvider);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
       _section('Articles', cart.map((i) => '${i.name} ×${i.qty}  →  ${fmtPrice(i.total)}').toList()),
-      _section('Livraison', ['${_nameC.text}', '${_phoneC.text}', '\${_city ?? ''} — \${_addrC.text}']),
+      _section('Livraison', ['${_nameC.text}', '${_phoneC.text}', '${_city ?? ""} — ${_addrC.text}']),
       _section('Paiement', ['${_plan == "daily" ? "Quotidien" : "Hebdomadaire"}', '${(_operator ?? '').toUpperCase()} — ${_payNumC.text}']),
       Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: EgcColors.okBg, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.okLine)),
         child: const Text('✅  Livraison garantie sous 48h. Vous payez à réception.', style: TextStyle(fontSize: 13, color: EgcColors.ok, height: 1.5))),
