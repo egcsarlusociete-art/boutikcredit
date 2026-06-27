@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import '../../services/auth_service.dart';
 import '../../utils/theme.dart';
 import '../../utils/helpers.dart';
+import '../../models/credit_category.dart' as cc;
 import '../../widgets/egc_button.dart';
 import '../../widgets/egc_text_field.dart';
 
@@ -19,6 +20,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _emailC = TextEditingController();
   final _passC  = TextEditingController();
   String _plan = 'client';
+  String _creditCat = 'A';
   String? _city;
   bool _loading = false;
   final _auth = AuthService();
@@ -32,7 +34,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _loading = true);
     try {
       await _auth.register(email: _emailC.text, password: _passC.text,
-        name: _nameC.text, phone: _phoneC.text, city: _city!, plan: _plan);
+        name: _nameC.text, phone: _phoneC.text, city: _city!, plan: _plan, creditCat: _creditCat);
     } catch (e) {
       if (mounted) showSnack(context, e.toString().contains('email-already-in-use') ? 'Email déjà utilisé' : 'Erreur : vérifiez vos informations', isError: true);
     } finally {
@@ -57,7 +59,57 @@ class _RegisterScreenState extends State<RegisterScreen> {
           const SizedBox(height: 6),
           Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: EgcColors.primaryBg, borderRadius: EgcRadius.smBorder, border: Border.all(color: EgcColors.primaryMid)),
             child: const Text('⚠️ Votre compte sera activé après réception du paiement. Un code vous sera envoyé sous 24h.', style: TextStyle(fontSize: 12, color: Color(0xFF92400E), height: 1.5))),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
+          // Catégorie de crédit (clients uniquement)
+          if (_plan == 'client') ...[
+            const Text('Choisissez votre catégorie de crédit', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: EgcColors.ink)),
+            const SizedBox(height: 6),
+            const Text('Détermine votre plafond maximum de commande', style: TextStyle(fontSize: 12, color: EgcColors.ink3)),
+            const SizedBox(height: 10),
+            SizedBox(
+              height: 48,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                children: cc.kCategories.map((cat) {
+                  final sel = _creditCat == cat.id;
+                  return GestureDetector(
+                    onTap: () => setState(() => _creditCat = cat.id),
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: sel ? EgcColors.primary : EgcColors.bg2,
+                        border: Border.all(color: sel ? EgcColors.primary : EgcColors.line, width: 1.5),
+                        borderRadius: EgcRadius.pill,
+                      ),
+                      child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+                        Text('Cat. ${cat.id}', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: sel ? Colors.white : EgcColors.ink)),
+                        Text(fmtPrice(cat.plafond), style: TextStyle(fontSize: 9, color: sel ? Colors.white70 : EgcColors.ink3)),
+                      ]),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 8),
+            // Résumé catégorie choisie
+            Builder(builder: (_) {
+              final cat = cc.kCategories.firstWhere((c) => c.id == _creditCat);
+              return Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: EgcColors.okBg, borderRadius: EgcRadius.smBorder, border: Border.all(color: EgcColors.okLine)),
+                child: Row(children: [
+                  const Text('✅ ', style: TextStyle(fontSize: 16)),
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('Plafond : ${fmtPrice(cat.plafond)}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: EgcColors.ok)),
+                    Text('Total avec intérêts : ${fmtPrice(cat.total)} · Durée : ${cat.dureeLabel}', style: const TextStyle(fontSize: 11, color: EgcColors.ok)),
+                  ])),
+                ]),
+              );
+            }),
+            const SizedBox(height: 16),
+          ],
+          const SizedBox(height: 4),
           EgcTextField(label: 'Nom complet', hint: 'Prénom NOM', controller: _nameC, validator: (v) => validateRequired(v, 'Le nom'), textInputAction: TextInputAction.next),
           const SizedBox(height: 14),
           EgcTextField(label: 'Téléphone', hint: '07XXXXXXXX', controller: _phoneC, keyboardType: TextInputType.phone, validator: validatePhone, textInputAction: TextInputAction.next),

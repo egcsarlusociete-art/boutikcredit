@@ -22,6 +22,7 @@ class AuthService {
     required String phone,
     required String city,
     required String plan,
+    String creditCat = 'A',
   }) async {
     final cred = await _auth.createUserWithEmailAndPassword(
       email: email.trim(), password: password);
@@ -35,6 +36,7 @@ class AuthService {
       'bonus': 500.0, 'totalEarnings': 500.0, 'cashbacks': 0.0,
       'totalOrders': 0, 'totalReferrals': 0,
       'referralCode': generateReferralCode(),
+      'creditCat': creditCat,
       'cgvAccepted': false,
       'createdAt': FieldValue.serverTimestamp(),
     };
