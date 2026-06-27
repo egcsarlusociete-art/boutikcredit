@@ -82,7 +82,7 @@ class BonusScreen extends ConsumerWidget {
                         Text(h.label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: EgcColors.ink), overflow: TextOverflow.ellipsis),
                         Text(fmtDate(h.createdAt), style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
                       ])),
-                      Text('\${h.isPositive ? '+' : ''}\${fmtPrice(h.amount)}',
+                      Text('${h.isPositive ? '+' : ''}${fmtPrice(h.amount)}',
                         style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: h.isPositive ? EgcColors.ok : EgcColors.err)),
                     ]))).toList()),
               ),
