@@ -51,7 +51,7 @@ class CartScreen extends ConsumerWidget {
                     Text(item.shopName, style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
                     const SizedBox(height: 4),
                     Text(fmtPrice(item.price), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: EgcColors.ink)),
-                    Text('+\${fmtPrice(item.cashbackTotal)} cashback', style: const TextStyle(fontSize: 11, color: EgcColors.ok, fontWeight: FontWeight.w600)),
+                    Text('+${fmtPrice(item.cashbackTotal)} cashback', style: const TextStyle(fontSize: 11, color: EgcColors.ok, fontWeight: FontWeight.w600)),
                     const SizedBox(height: 8),
                     Row(children: [
                       _qtyBtn(Icons.remove, () => notifier.decrement(item.articleId)),

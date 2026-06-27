@@ -51,12 +51,12 @@ class OrdersScreen extends ConsumerWidget {
     final steps = ['confirmed', 'processing', 'shipped', 'delivered'];
     final si = steps.indexOf(order.status).clamp(0, 3);
     return GestureDetector(
-      onTap: () => context.push('/order/\${order.id}'),
+      onTap: () => context.push('/order/${order.id}'),
       child: Container(padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line, width: 1.5)),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(children: [
-            Text('#\${order.orderId.length > 14 ? order.orderId.substring(0, 14) : order.orderId}',
+            Text('#${order.orderId.length > 14 ? order.orderId.substring(0, 14) : order.orderId}',
               style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: EgcColors.ink)),
             const Spacer(),
             StatusPill(order.status, labels: kOrderStatus),
@@ -71,7 +71,7 @@ class OrdersScreen extends ConsumerWidget {
           ])))),
           const SizedBox(height: 6),
           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-            Text('\${order.items.length} article(s)', style: const TextStyle(fontSize: 12, color: EgcColors.ink3)),
+            Text('${order.items.length} article(s)', style: const TextStyle(fontSize: 12, color: EgcColors.ink3)),
             Text(fmtPrice(order.subtotal), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: EgcColors.ink)),
           ]),
         ])),

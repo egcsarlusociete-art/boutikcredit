@@ -124,9 +124,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       const SizedBox(height: 16),
       const Text('Plan de remboursement', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: EgcColors.ink)),
       const SizedBox(height: 10),
-      _planOpt('daily', 'Quotidien — 100 jours', '\${fmtPrice(daily)} / jour'),
+      _planOpt('daily', 'Quotidien — 100 jours', '${fmtPrice(daily)} / jour'),
       const SizedBox(height: 8),
-      _planOpt('weekly', 'Hebdomadaire — 15 semaines', '\${fmtPrice(weekly)} / semaine'),
+      _planOpt('weekly', 'Hebdomadaire — 15 semaines', '${fmtPrice(weekly)} / semaine'),
       const SizedBox(height: 16),
       const Text('Opérateur de paiement', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: EgcColors.ink)),
       const SizedBox(height: 10),
@@ -139,9 +139,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     // Step 2 — Confirmation
     final cart = ref.read(cartProvider);
     return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      _section('Articles', cart.map((i) => '\${i.name} ×\${i.qty}  →  \${fmtPrice(i.total)}').toList()),
-      _section('Livraison', ['\${_nameC.text}', '\${_phoneC.text}', '\${_city ?? ''} — \${_addrC.text}']),
-      _section('Paiement', ['\${_plan == "daily" ? "Quotidien" : "Hebdomadaire"}', '\${(_operator ?? '').toUpperCase()} — \${_payNumC.text}']),
+      _section('Articles', cart.map((i) => '${i.name} ×${i.qty}  →  ${fmtPrice(i.total)}').toList()),
+      _section('Livraison', ['${_nameC.text}', '${_phoneC.text}', '\${_city ?? ''} — \${_addrC.text}']),
+      _section('Paiement', ['${_plan == "daily" ? "Quotidien" : "Hebdomadaire"}', '${(_operator ?? '').toUpperCase()} — ${_payNumC.text}']),
       Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: EgcColors.okBg, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.okLine)),
         child: const Text('✅  Livraison garantie sous 48h. Vous payez à réception.', style: TextStyle(fontSize: 13, color: EgcColors.ok, height: 1.5))),
       const SizedBox(height: 20),
@@ -152,7 +152,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     Container(width: 26, height: 26, decoration: BoxDecoration(shape: BoxShape.circle,
       color: _step >= n ? EgcColors.primary : EgcColors.bg3,
       border: Border.all(color: _step >= n ? EgcColors.primary : EgcColors.line2, width: 1.5)),
-      child: Center(child: _step > n ? const Icon(Icons.check, size: 13, color: Colors.white) : Text('\${n+1}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: _step >= n ? Colors.white : EgcColors.ink3)))),
+      child: Center(child: _step > n ? const Icon(Icons.check, size: 13, color: Colors.white) : Text('${n+1}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: _step >= n ? Colors.white : EgcColors.ink3)))),
     const SizedBox(height: 4),
     Text(label, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: _step >= n ? EgcColors.primary : EgcColors.ink3)),
   ]);

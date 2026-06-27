@@ -29,7 +29,7 @@ class OrderSuccessScreen extends StatelessWidget {
             child: Column(children: [
               const Text('Numéro de commande', style: TextStyle(fontSize: 12, color: EgcColors.ink3)),
               const SizedBox(height: 6),
-              Text('#\${orderId.length > 16 ? orderId.substring(0, 16) : orderId}',
+              Text('#${orderId.length > 16 ? orderId.substring(0, 16) : orderId}',
                 style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: EgcColors.ink)),
             ])),
           const SizedBox(height: 32),
