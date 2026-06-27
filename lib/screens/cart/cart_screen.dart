@@ -56,7 +56,7 @@ class CartScreen extends ConsumerWidget {
                     Row(children: [
                       _qtyBtn(Icons.remove, () => notifier.decrement(item.articleId)),
                       Container(width: 36, alignment: Alignment.center,
-                        child: Text('\${item.qty}', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700))),
+                        child: Text('${item.qty}', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700))),
                       _qtyBtn(Icons.add, () => notifier.increment(item.articleId)),
                       const Spacer(),
                       TextButton(onPressed: () => notifier.remove(item.articleId),
@@ -71,7 +71,7 @@ class CartScreen extends ConsumerWidget {
               child: SafeArea(child: Column(children: [
                 _sumRow('Sous-total', fmtPrice(total)),
                 _sumRow('Livraison', 'Gratuite', valueColor: EgcColors.ok),
-                _sumRow('Cashback estimé', '+\${fmtPrice(cashback)}', valueColor: EgcColors.ok),
+                _sumRow('Cashback estimé', '+${fmtPrice(cashback)}', valueColor: EgcColors.ok),
                 const Divider(),
                 _sumRow('Total', fmtPrice(total), bold: true),
                 const SizedBox(height: 12),
