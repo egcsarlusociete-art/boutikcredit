@@ -26,7 +26,7 @@ class OrderDetailScreen extends ConsumerWidget {
         final stepLabels = ['Confirmée', 'Préparation', 'En livraison', 'Livrée'];
         return Scaffold(
           backgroundColor: EgcColors.bg,
-          appBar: AppBar(title: Text('#${order.orderId.substring(0, 14)}')),
+          appBar: AppBar(title: Text('#${order.orderId.length > 14 ? order.orderId.substring(0, 14) : order.orderId}')),
           body: ListView(padding: const EdgeInsets.all(16), children: [
             // Status + tracker
             Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line, width: 1.5)),
