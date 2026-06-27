@@ -66,7 +66,7 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             decoration: BoxDecoration(
               color: EgcColors.err,
               shape: BoxShape.circle,
-              boxShadow: [BoxShadow(color: EgcColors.err.withValues(alpha: 0.4), blurRadius: 12, spreadRadius: 2)],
+              boxShadow: [BoxShadow(color: EgcColors.err.withOpacity(0.4), blurRadius: 12, spreadRadius: 2)],
             ),
             child: Stack(alignment: Alignment.center, children: [
               const Icon(Icons.play_circle_fill, color: Colors.white, size: 28),
