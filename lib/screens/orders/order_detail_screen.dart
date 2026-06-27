@@ -73,6 +73,56 @@ class OrderDetailScreen extends ConsumerWidget {
             const SizedBox(height: 12),
             _section('Paiement', Text('${order.paymentPlan == "daily" ? "Quotidien" : "Hebdomadaire"}\n${order.paymentMethod.toUpperCase()} — ${order.paymentPhone}',
               style: const TextStyle(fontSize: 13, color: EgcColors.ink2, height: 1.6))),
+            const SizedBox(height: 12),
+            _section('📅 Suivi des paiements', Builder(builder: (_) {
+              final isDaily = order.paymentPlan == 'daily';
+              final total = order.subtotal * 1.15; // avec 15% intérêts
+              final paiement = isDaily ? total / 100 : total / 15;
+              final duree = isDaily ? 100 : 15;
+              final unite = isDaily ? 'jours' : 'semaines';
+              return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  const Text('Montant total avec intérêts', style: TextStyle(fontSize: 12, color: EgcColors.ink3)),
+                  Text(fmtPrice(total), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.ink)),
+                ]),
+                const SizedBox(height: 8),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  Text('Paiement ${isDaily ? "quotidien" : "hebdomadaire"}', style: const TextStyle(fontSize: 12, color: EgcColors.ink3)),
+                  Text(fmtPrice(paiement), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.primary)),
+                ]),
+                const SizedBox(height: 8),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  const Text('Durée totale', style: TextStyle(fontSize: 12, color: EgcColors.ink3)),
+                  Text('$duree $unite', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: EgcColors.ink)),
+                ]),
+                const SizedBox(height: 12),
+                const Divider(),
+                const SizedBox(height: 12),
+                // Bouton paiement CinetPay
+                Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(color: EgcColors.primaryBg, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.primaryMid)),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    const Row(children: [
+                      Text('💳', style: TextStyle(fontSize: 20)),
+                      SizedBox(width: 8),
+                      Text('Payer via CinetPay', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: EgcColors.primaryDark)),
+                    ]),
+                    const SizedBox(height: 6),
+                    Text('Effectuez votre paiement ${isDaily ? "quotidien" : "hebdomadaire"} de ${fmtPrice(paiement)} via Mobile Money.', style: const TextStyle(fontSize: 12, color: EgcColors.ink2, height: 1.5)),
+                    const SizedBox(height: 10),
+                    ElevatedButton.icon(
+                      onPressed: () => launchUrl(Uri.parse('https://checkout.cinetpay.com/?apikey=VOTRE_CLE_CINETPAY&site_id=VOTRE_SITE_ID&transaction_id=${order.orderId}&amount=${paiement.round()}&currency=XOF&description=Paiement+commande+${order.orderId}&notify_url=https://egcsarlu-app-b2ba4.web.app/api/notify')),
+                      icon: const Icon(Icons.payment, size: 18),
+                      label: Text('Payer ${fmtPrice(paiement)}'),
+                      style: ElevatedButton.styleFrom(backgroundColor: EgcColors.primary, minimumSize: const Size(double.infinity, 46)),
+                    ),
+                    const SizedBox(height: 6),
+                    const Text('✅ Orange Money · MTN MoMo · Moov · Wave', style: TextStyle(fontSize: 11, color: EgcColors.ink3, height: 1.5)),
+                  ]),
+                ),
+              ]);
+            })),
             const SizedBox(height: 16),
             ElevatedButton.icon(
               onPressed: () => launchUrl(Uri.parse('https://wa.me/2250152372300?text=Support+commande+%23${order.orderId}')),
