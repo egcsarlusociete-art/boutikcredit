@@ -17,7 +17,7 @@ class DefaultFirebaseOptions {
   // Télécharger google-services.json → copier dans android/app/
   static const FirebaseOptions android = FirebaseOptions(
     apiKey:            'AIzaSyAjKGNOv-cbv7PPN8vYPDf2eAOSuGLNVQQ',
-    appId:             '1:695609211507:android:1:695609211507:android:461499ea4c20493e2c8806',
+    appId:             '1:695609211507:android:461499ea4c20493e2c8806',
     messagingSenderId: '695609211507',
     projectId:         'egcsarlu-app-b2ba4',
     storageBucket:     'egcsarlu-app-b2ba4.firebasestorage.app',
