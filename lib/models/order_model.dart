@@ -129,11 +129,11 @@ class BonusEntry {
   bool get isPositive => amount > 0;
   String get emoji {
     switch (type) {
-      case 'cashback': return 'shopping_cart';
-      case 'referral': return 'link';
-      case 'welcome':  return 'card_giftcard';
-      case 'withdrawal': return 'money_off';
-      default: return 'diamond';
+      case 'cashback': return '🛒';
+      case 'referral': return '🔗';
+      case 'welcome':  return '🎁';
+      case 'withdrawal': return '💸';
+      default: return '💎';
     }
   }
 }
