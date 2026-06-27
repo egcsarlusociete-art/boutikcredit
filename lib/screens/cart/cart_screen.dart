@@ -21,7 +21,7 @@ class CartScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: EgcColors.bg,
-      appBar: AppBar(title: Text('Mon panier (\${cart.length})')),
+      appBar: AppBar(title: Text('Mon panier (${cart.length})')),
       body: cart.isEmpty
         ? Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
             const Text('🛒', style: TextStyle(fontSize: 64)),
