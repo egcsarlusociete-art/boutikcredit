@@ -4,9 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/firestore_service.dart';
+import '../../services/providers.dart';
+import 'shop_screen.dart';
+
 import '../../utils/theme.dart';
 import '../../utils/helpers.dart';
-import '../shop/shop_screen.dart';
+
 
 class ProductDetailScreen extends ConsumerWidget {
   final String id;

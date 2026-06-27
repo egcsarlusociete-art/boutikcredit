@@ -6,7 +6,8 @@ import 'package:go_router/go_router.dart';
 import '../../utils/theme.dart';
 import '../../utils/helpers.dart';
 import '../../widgets/egc_button.dart';
-import '../shop/shop_screen.dart';
+import '../../services/providers.dart';
+import '../../screens/shop/shop_screen.dart';
 
 class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});

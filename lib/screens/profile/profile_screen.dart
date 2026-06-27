@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../services/auth_service.dart';
@@ -57,6 +58,29 @@ class ProfileScreen extends ConsumerWidget {
               _menuItem(Icons.store_outlined, 'Espace Vendeur', 'Gérer mes articles', () => context.push('/vendor'), highlight: true),
             _menuItem(Icons.headset_mic_outlined, 'Support client 24h/24', 'WhatsApp & Email',
               () => launchUrl(Uri.parse('https://wa.me/2250152372300?text=Bonjour+EGC-SARLU'))),
+            _menuItem(Icons.delete_forever_outlined, 'Supprimer mon compte', 'Action irréversible', () async {
+              final ok = await showDialog<bool>(context: context, builder: (_) => AlertDialog(
+                title: const Text('Supprimer le compte'),
+                content: const Text('Cette action est irréversible. Toutes vos données seront supprimées. Voulez-vous continuer ?'),
+                actions: [
+                  TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Annuler')),
+                  TextButton(onPressed: () => Navigator.pop(context, true),
+                    child: const Text('Supprimer', style: TextStyle(color: EgcColors.err))),
+                ],
+              ));
+              if (ok == true) {
+                try {
+                  final uid = AuthService().uid;
+                  if (uid != null) {
+                    await FirebaseFirestore.instance.collection('users').doc(uid).delete();
+                  }
+                  await AuthService().signOut();
+                  if (context.mounted) showSnack(context, 'Compte supprimé avec succès');
+                } catch (e) {
+                  if (context.mounted) showSnack(context, 'Erreur : reconnectez-vous et réessayez', isError: true);
+                }
+              }
+            }, textColor: EgcColors.err),
             _menuItem(Icons.logout, 'Déconnexion', 'Fermer la session', () async {
               final ok = await showDialog<bool>(context: context, builder: (_) => AlertDialog(
                 title: const Text('Déconnexion'), content: const Text('Voulez-vous vous déconnecter ?'),

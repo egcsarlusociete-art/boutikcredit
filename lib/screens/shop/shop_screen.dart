@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../../services/firestore_service.dart';
+import '../../services/providers.dart';
 import '../../models/article_model.dart';
 import '../../utils/theme.dart';
 import '../../utils/helpers.dart';
@@ -11,8 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
 // Provider articles publiés
-final publishedArticlesProvider = StreamProvider<List<ArticleModel>>((ref) =>
-  FirestoreService().publishedArticles());
+
 
 // Provider panier (local)
 final cartProvider = StateNotifierProvider<CartNotifier, List<CartItem>>((ref) => CartNotifier());

@@ -73,3 +73,4 @@ final allOrdersProvider = StreamProvider<List<OrderModel>>((ref) {
 final allWithdrawalsProvider = StreamProvider<List<WithdrawalModel>>((ref) {
   return ref.watch(firestoreServiceProvider).allWithdrawals();
 });
+
