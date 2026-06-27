@@ -12,14 +12,20 @@ class FirestoreService {
       .where('status', isEqualTo: 'published')
       .orderBy('createdAt', descending: true)
       .snapshots()
-      .map((s) => s.docs.map(ArticleModel.fromFirestore).toList());
+      .map((s) {
+        print('DEBUG articles: \${s.docs.length} documents trouvés');
+        return s.docs.map(ArticleModel.fromFirestore).toList();
+      });
 
   Stream<List<ArticleModel>> vendeurArticles(String uid) => _db
       .collection('articles')
       .where('vendeurId', isEqualTo: uid)
       .orderBy('createdAt', descending: true)
       .snapshots()
-      .map((s) => s.docs.map(ArticleModel.fromFirestore).toList());
+      .map((s) {
+        print('DEBUG articles: \${s.docs.length} documents trouvés');
+        return s.docs.map(ArticleModel.fromFirestore).toList();
+      });
 
   Future<void> submitArticle(Map<String, dynamic> data) =>
       _db.collection('articles').add({
