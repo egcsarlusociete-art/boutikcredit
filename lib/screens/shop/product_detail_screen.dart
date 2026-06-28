@@ -32,9 +32,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 child: CircleAvatar(backgroundColor: Colors.white.withOpacity(0.9),
                   child: IconButton(icon: const Icon(Icons.arrow_back_ios_new, size: 16, color: EgcColors.ink), onPressed: () => context.pop()))),
               flexibleSpace: FlexibleSpaceBar(
-                background: a.hasImage
-                  ? CachedNetworkImage(imageUrl: a.imageUrl!, fit: BoxFit.cover)
-                  : Container(color: EgcColors.bg3, child: const Center(child: Text('📦', style: TextStyle(fontSize: 80)))))),
+                background: _ImageCarousel(article: a))),
             SliverToBoxAdapter(child: Padding(padding: const EdgeInsets.all(20), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Row(children: [
                 Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
@@ -113,4 +111,73 @@ class ProductDetailScreen extends ConsumerWidget {
       Text(sub, style: const TextStyle(fontSize: 10, color: EgcColors.ink3), textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis),
     ]),
   ));
+}
+
+class _ImageCarousel extends StatefulWidget {
+  final dynamic article;
+  const _ImageCarousel({required this.article});
+  @override
+  State<_ImageCarousel> createState() => _ImageCarouselState();
+}
+
+class _ImageCarouselState extends State<_ImageCarousel> {
+  final _controller = PageController();
+  int _current = 0;
+
+  @override
+  void dispose() { _controller.dispose(); super.dispose(); }
+
+  @override
+  Widget build(BuildContext context) {
+    final images = [
+      if (widget.article.imageUrl != null) widget.article.imageUrl!,
+      if (widget.article.imageUrl2 != null) widget.article.imageUrl2!,
+      if (widget.article.imageUrl3 != null) widget.article.imageUrl3!,
+    ];
+
+    if (images.isEmpty) {
+      return Container(color: EgcColors.bg3, child: const Center(
+        child: Icon(Icons.image_outlined, size: 64, color: EgcColors.ink3)));
+    }
+
+    if (images.length == 1) {
+      return CachedNetworkImage(imageUrl: images[0], fit: BoxFit.cover,
+        errorWidget: (_, __, ___) => Container(color: EgcColors.bg3));
+    }
+
+    return Stack(fit: StackFit.expand, children: [
+      PageView.builder(
+        controller: _controller,
+        itemCount: images.length,
+        onPageChanged: (i) => setState(() => _current = i),
+        itemBuilder: (_, i) => CachedNetworkImage(
+          imageUrl: images[i], fit: BoxFit.cover,
+          errorWidget: (_, __, ___) => Container(color: EgcColors.bg3)),
+      ),
+      // Indicateurs de points
+      Positioned(bottom: 16, left: 0, right: 0,
+        child: Row(mainAxisAlignment: MainAxisAlignment.center,
+          children: List.generate(images.length, (i) => AnimatedContainer(
+            duration: const Duration(milliseconds: 300),
+            margin: const EdgeInsets.symmetric(horizontal: 4),
+            width: _current == i ? 20 : 8,
+            height: 8,
+            decoration: BoxDecoration(
+              color: _current == i ? EgcColors.primary : Colors.white.withOpacity(0.6),
+              borderRadius: BorderRadius.circular(4),
+            ),
+          )),
+        ),
+      ),
+      // Compteur images
+      Positioned(top: 16, right: 16,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+          decoration: BoxDecoration(color: Colors.black45, borderRadius: BorderRadius.circular(20)),
+          child: Text('${_current + 1}/${images.length}',
+            style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+        ),
+      ),
+    ]);
+  }
 }
