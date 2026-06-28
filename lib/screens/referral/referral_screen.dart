@@ -23,7 +23,7 @@ class ReferralScreen extends ConsumerWidget {
         data: (user) {
           if (user == null) return const Center(child: Text('Non connecté'));
           final code = user.referralCode;
-          final link = 'https://boutikcredit.egc-sarlu.com/?ref=$code';
+          final link = 'https://egcsarlu-app-b2ba4.web.app/?ref=$code';
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
