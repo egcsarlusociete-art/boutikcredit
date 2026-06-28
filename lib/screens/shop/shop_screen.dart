@@ -129,6 +129,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
 
         // Hero
         SliverToBoxAdapter(child: _hero(articlesAsync)),
+        // Plafond credit
+        SliverToBoxAdapter(child: _PlafondWidget()),
+        const SliverToBoxAdapter(child: SizedBox(height: 8)),
 
         // Catégories
         SliverToBoxAdapter(
