@@ -75,7 +75,7 @@ class _GuestSheet extends StatelessWidget {
         // Avantages rapides
         _perk('🛒', 'Commandez à crédit', 'Cat A à J — jusqu\'à 1 000 000 FCFA'),
         _perk('💰', 'Cashback garanti', 'Sur chaque achat validé'),
-        _perk('🔗', 'Parrainage', '1 000 FCFA par ami inscrit'),
+        _perk('🔗', 'Parrainage', '500 FCFA par ami inscrit'),
         const SizedBox(height: 20),
         // Boutons
         SizedBox(width: double.infinity, height: 50,
