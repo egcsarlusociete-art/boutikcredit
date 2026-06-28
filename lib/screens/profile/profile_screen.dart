@@ -84,7 +84,7 @@ class ProfileScreen extends ConsumerWidget {
                 '📋 *MON PROBLÈME*\n'
                 '[Décrivez votre problème ici]'
               );
-              launchUrl(Uri.parse('https://wa.me/2250152372300?text=\$msg'));
+              launchUrl(Uri.parse('https://wa.me/2250152372300?text=${msg}'));
             }),
             _menuItem(Icons.delete_forever_outlined, 'Supprimer mon compte', 'Action irréversible', () async {
               final ok = await showDialog<bool>(context: context, builder: (dialogContext) => AlertDialog(
