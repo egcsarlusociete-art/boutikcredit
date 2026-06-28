@@ -28,6 +28,7 @@ dependencies:
   package_info_plus: ^5.0.1
   uuid: ^4.2.2
   youtube_player_flutter: ^9.0.4
+  qr_flutter: ^4.1.0
 
 flutter_icons:
   android: true
