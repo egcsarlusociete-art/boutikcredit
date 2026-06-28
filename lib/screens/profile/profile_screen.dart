@@ -62,8 +62,30 @@ class ProfileScreen extends ConsumerWidget {
               _menuItem(Icons.admin_panel_settings_outlined, 'Espace Admin', 'Gérer articles, commandes, retraits', () => context.push('/admin'), highlight: true),
             _menuItem(Icons.swap_vert_outlined, 'Changer de catégorie', 'Modifier votre plafond de crédit — 500 FCFA', () => _showChangeCat(context, user)),
             _menuItem(Icons.description_outlined, 'Conditions Générales', 'CGV et modalités de crédit', () => context.push('/cgv')),
-            _menuItem(Icons.headset_mic_outlined, 'Support client 24h/24', 'WhatsApp & Email',
-              () => launchUrl(Uri.parse('https://wa.me/2250152372300?text=Bonjour+EGC-SARLU'))),
+            _menuItem(Icons.headset_mic_outlined, 'Support client 24h/24', 'WhatsApp & Email', () {
+              if (user == null) {
+                launchUrl(Uri.parse('https://wa.me/2250152372300?text=Bonjour+EGC-SARLU'));
+                return;
+              }
+              final cat = cc.kCategories.firstWhere((c) => c.id == (user.creditCat ?? 'A'), orElse: () => cc.kCategories.first);
+              final msg = Uri.encodeComponent(
+                'Bonjour EGC-SARLU,\n\n'
+                '👤 *INFORMATIONS CLIENT*\n'
+                '• Nom : ${user.name}\n'
+                '• Email : ${user.email}\n'
+                '• Téléphone : ${user.phone}\n'
+                '• Ville : ${user.city}\n\n'
+                '💳 *COMPTE*\n'
+                '• Catégorie : Cat. ${user.creditCat ?? 'A'} — Plafond ${fmtPrice(cat.plafond)}\n'
+                '• Plan : ${user.plan == 'seller' ? 'Vendeur' : 'Client'}\n'
+                '• Statut : ${user.planStatus == 'active' ? 'Actif' : user.planStatus == 'pending' ? 'En attente' : 'Inactif'}\n'
+                '• Code parrainage : ${user.referralCode}\n'
+                '• Création : ${fmtDate(user.createdAt)}\n\n'
+                '📋 *MON PROBLÈME*\n'
+                '[Décrivez votre problème ici]'
+              );
+              launchUrl(Uri.parse('https://wa.me/2250152372300?text=\$msg'));
+            }),
             _menuItem(Icons.delete_forever_outlined, 'Supprimer mon compte', 'Action irréversible', () async {
               final ok = await showDialog<bool>(context: context, builder: (dialogContext) => AlertDialog(
                 title: const Text('Supprimer le compte'),
