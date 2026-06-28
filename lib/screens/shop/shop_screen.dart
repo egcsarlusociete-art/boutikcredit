@@ -6,6 +6,7 @@ import '../../services/firestore_service.dart';
 import '../../services/providers.dart';
 import '../../models/article_model.dart';
 import '../../utils/theme.dart';
+import '../../models/credit_category.dart' as cc;
 import '../../utils/helpers.dart';
 import '../../widgets/product_card.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -217,4 +218,64 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     Text(v, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.white)),
     Text(l, style: const TextStyle(fontSize: 11, color: Colors.white60)),
   ]);
+}
+
+class _PlafondWidget extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(userDataProvider);
+    final cartAsync = ref.watch(cartProvider);
+    return userAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, __) => const SizedBox.shrink(),
+      data: (user) {
+        if (user == null) return const SizedBox.shrink();
+        final cat = cc.kCategories.firstWhere((c) => c.id == user.creditCat, orElse: () => cc.kCategories.first);
+        final cartTotal = cartAsync.fold(0.0, (s, i) => s + i.total);
+        final spent = user.totalOrders > 0 ? cartTotal : cartTotal;
+        final restant = (cat.plafond - spent).clamp(0.0, cat.plafond);
+        final pct = ((cat.plafond - restant) / cat.plafond).clamp(0.0, 1.0);
+        return Container(
+          margin: const EdgeInsets.fromLTRB(16, 0, 16, 4),
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: EgcColors.bg2,
+            borderRadius: EgcRadius.mdBorder,
+            border: Border.all(color: EgcColors.line, width: 1.5),
+          ),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            Row(children: [
+              const Text('💳', style: TextStyle(fontSize: 16)),
+              const SizedBox(width: 8),
+              Text('Plafond Catégorie ${cat.id}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: EgcColors.ink)),
+              const Spacer(),
+              Text(fmtPrice(restant), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.primary)),
+            ]),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: EgcRadius.pill,
+              child: LinearProgressIndicator(
+                value: pct,
+                minHeight: 6,
+                backgroundColor: EgcColors.bg3,
+                valueColor: AlwaysStoppedAnimation<Color>(pct > 0.8 ? EgcColors.err : EgcColors.primary),
+              ),
+            ),
+            const SizedBox(height: 6),
+            Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+              Text('Panier : ${fmtPrice(cartTotal)}', style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+              Text('Plafond max : ${fmtPrice(cat.plafond)}', style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+            ]),
+            if (restant == 0) ...[
+              const SizedBox(height: 6),
+              const Text('⚠️ Plafond atteint — vous ne pouvez plus ajouter d\'articles', style: TextStyle(fontSize: 11, color: EgcColors.err, fontWeight: FontWeight.w600)),
+            ] else if (pct > 0.8) ...[
+              const SizedBox(height: 6),
+              Text('⚠️ Il vous reste ${fmtPrice(restant)} de disponible', style: const TextStyle(fontSize: 11, color: EgcColors.gold, fontWeight: FontWeight.w600)),
+            ],
+          ]),
+        );
+      },
+    );
+  }
 }
