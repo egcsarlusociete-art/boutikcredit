@@ -5,7 +5,6 @@ plugins {
     id "com.google.gms.google-services"
 }
 
-
 def keystoreProperties = new Properties()
 def keystorePropertiesFile = rootProject.file('key.properties')
 if (keystorePropertiesFile.exists()) {
@@ -15,16 +14,13 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace "com.boutikcredit.app"
     compileSdk 35
-
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
-
     kotlinOptions {
         jvmTarget = '1.8'
     }
-
     defaultConfig {
         applicationId "com.boutikcredit.app"
         minSdk 21
@@ -33,10 +29,8 @@ android {
         versionName "1.0.0"
         multiDexEnabled true
     }
-
     signingConfigs {
         release {
-            signingConfig signingConfigs.release
             keyAlias keystoreProperties['keyAlias']
             keyPassword keystoreProperties['keyPassword']
             storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
@@ -46,7 +40,6 @@ android {
     buildTypes {
         release {
             signingConfig signingConfigs.release
-            signingConfig signingConfigs.debug
             minifyEnabled false
             shrinkResources false
         }
