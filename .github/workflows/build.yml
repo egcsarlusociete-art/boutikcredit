@@ -18,16 +18,31 @@ jobs:
           channel: 'stable'
       - name: google-services
         run: echo '{"project_info":{"project_number":"695609211507","project_id":"egcsarlu-app-b2ba4","storage_bucket":"egcsarlu-app-b2ba4.firebasestorage.app"},"client":[{"client_info":{"mobilesdk_app_id":"1:695609211507:android:461499ea4c20493e2c8806","android_client_info":{"package_name":"com.boutikcredit.app"}},"api_key":[{"current_key":"AIzaSyAjKGNOv-cbv7PPN8vYPDf2eAOSuGLNVQQ"}],"services":{"appinvite_service":{"other_platform_oauth_client":[]}}}],"configuration_version":"1"}' > android/app/google-services.json
+
+      - name: Setup keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > android/app/boutikcredit.jks
+          cat > android/key.properties << EOF2
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=boutikcredit.jks
+          EOF2
+
       - run: flutter pub get
+
       - name: Build APK
         continue-on-error: true
         run: flutter build apk --release --no-tree-shake-icons --split-per-abi
+
       - name: Find APK
         if: always()
         run: find . -name "*.apk" 2>/dev/null | head -10 || echo "Aucun APK"
+
       - name: Upload AAB
         continue-on-error: true
         run: flutter build appbundle --release --no-tree-shake-icons
+
       - uses: actions/upload-artifact@v4
         with:
           name: BoutikCredit-APK
