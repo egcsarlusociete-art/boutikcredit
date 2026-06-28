@@ -60,7 +60,7 @@ class ProfileScreen extends ConsumerWidget {
               _menuItem(Icons.store_outlined, 'Espace Vendeur', 'Gérer mes articles', () => context.push('/vendor'), highlight: true),
             if (user?.uid == '9D76f2HLPrNODPN8HtPDbzwG4wA3')
               _menuItem(Icons.admin_panel_settings_outlined, 'Espace Admin', 'Gérer articles, commandes, retraits', () => context.push('/admin'), highlight: true),
-            _menuItem(Icons.swap_vert_outlined, 'Changer de catégorie', 'Modifier votre plafond de crédit — 500 FCFA', () => _showChangeCat(context, user)),
+            _menuItem(Icons.swap_vert_outlined, 'Changer de catégorie', 'Modifier votre plafond de crédit — 1 000 FCFA', () => _showChangeCat(context, user)),
             _menuItem(Icons.description_outlined, 'Conditions Générales', 'CGV et modalités de crédit', () => context.push('/cgv')),
             _menuItem(Icons.headset_mic_outlined, 'Support client 24h/24', 'WhatsApp & Email', () {
               if (user == null) {
@@ -161,7 +161,7 @@ class ProfileScreen extends ConsumerWidget {
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
             const Text('Changer de catégorie', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: EgcColors.ink)),
             const SizedBox(height: 4),
-            const Text('Frais de changement : 500 FCFA', style: TextStyle(fontSize: 13, color: EgcColors.ink3)),
+            const Text('Frais de changement : 1 000 FCFA', style: TextStyle(fontSize: 13, color: EgcColors.ink3)),
             const SizedBox(height: 16),
             // Catégorie actuelle
             Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: EgcColors.primaryBg, borderRadius: EgcRadius.smBorder, border: Border.all(color: EgcColors.primaryMid)),
@@ -202,7 +202,7 @@ class ProfileScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 16),
             Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: EgcColors.goldBg, borderRadius: EgcRadius.smBorder, border: Border.all(color: EgcColors.gold.withOpacity(0.3))),
-              child: const Text('⚠️ Le changement sera effectif après paiement des frais de 500 FCFA via Mobile Money. Notre équipe vous contactera dans les 24h.', style: TextStyle(fontSize: 12, color: EgcColors.gold, height: 1.5))),
+              child: const Text('⚠️ Le changement sera effectif après paiement des frais de 1 000 FCFA via Mobile Money. Notre équipe vous contactera dans les 24h.', style: TextStyle(fontSize: 12, color: EgcColors.gold, height: 1.5))),
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: selectedCat == user.creditCat ? null : () async {
@@ -218,9 +218,9 @@ class ProfileScreen extends ConsumerWidget {
                   'status': 'pending',
                   'createdAt': FieldValue.serverTimestamp(),
                 });
-                if (context.mounted) showSnack(context, '✅ Demande envoyée ! Payez 500 FCFA et notre équipe traitera votre demande sous 24h');
+                if (context.mounted) showSnack(context, '✅ Demande envoyée ! Payez 1 000 FCFA et notre équipe traitera votre demande sous 24h');
               },
-              child: Text('Demander le passage à Cat. $selectedCat — 500 FCFA'),
+              child: Text('Demander le passage à Cat. $selectedCat — 1 000 FCFA'),
             ),
             const SizedBox(height: 8),
           ]),

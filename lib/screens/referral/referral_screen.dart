@@ -42,7 +42,7 @@ class ReferralScreen extends ConsumerWidget {
                   const SizedBox(height: 8),
                   const Text('Parrainez vos proches', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: Colors.white)),
                   const SizedBox(height: 4),
-                  const Text('Gagnez 1 000 F CFA par filleul inscrit', style: TextStyle(fontSize: 13, color: Colors.white70)),
+                  const Text('Gagnez 500 F CFA par filleul inscrit', style: TextStyle(fontSize: 13, color: Colors.white70)),
                 ]),
               ),
 
@@ -131,7 +131,7 @@ class ReferralScreen extends ConsumerWidget {
                 ), 'Filleuls')),
                 const SizedBox(width: 12),
                 Expanded(child: _statCard('💰', fmtPrice(referralsAsync.when(
-                  data: (r) => r.length * 1000.0,
+                  data: (r) => r.length * 500.0,
                   loading: () => 0.0,
                   error: (_, __) => 0.0,
                 )), 'Gains parrainage')),
@@ -173,7 +173,7 @@ class ReferralScreen extends ConsumerWidget {
                         ])),
                         Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                           decoration: BoxDecoration(color: EgcColors.okBg, borderRadius: EgcRadius.pill),
-                          child: const Text('+1 000 F', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: EgcColors.ok))),
+                          child: const Text('+500 F', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: EgcColors.ok))),
                       ]),
                     )),
                   ]);
