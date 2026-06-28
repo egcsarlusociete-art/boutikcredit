@@ -23,9 +23,17 @@ android {
         versionName "1.0.0"
         multiDexEnabled true
     }
+    signingConfigs {
+        release {
+            storeFile file("boutikcredit.jks")
+            storePassword "BoutikCredit2024!"
+            keyAlias "boutikcredit"
+            keyPassword "BoutikCredit2024!"
+        }
+    }
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled false
             shrinkResources false
         }
