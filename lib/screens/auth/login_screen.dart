@@ -54,14 +54,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               // Logo
               Center(child: Column(children: [
-                Container(
-                  width: 60, height: 60,
-                  decoration: BoxDecoration(color: EgcColors.primary, borderRadius: EgcRadius.mdBorder),
-                  child: const Center(child: Text('E', style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800))),
-                ),
-                const SizedBox(height: 16),
-                Image.asset('assets/images/logo_boutikcredit.png', height: 70),
-                const SizedBox(height: 6),
+                Image.asset('assets/images/logo_boutikcredit.png', height: 100),
+                const SizedBox(height: 12),
                 const Text('Connectez-vous à votre compte', textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 14, color: EgcColors.ink3)),
               ])),

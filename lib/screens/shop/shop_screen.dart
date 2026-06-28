@@ -89,7 +89,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         SliverAppBar(
           pinned: true, floating: true,
           backgroundColor: EgcColors.bg2,
-          title: Image.asset('assets/images/logo_boutikcredit.png', height: 32, fit: BoxFit.contain),
+          title: Image.asset('assets/images/logo_boutikcredit.png', height: 36, fit: BoxFit.contain),
           actions: [
             Stack(children: [
               IconButton(icon: const Icon(Icons.shopping_cart_outlined), onPressed: () => context.go('/cart')),
