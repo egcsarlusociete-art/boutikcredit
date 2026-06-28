@@ -178,6 +178,19 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
                   crossAxisCount: 2, crossAxisSpacing: 10, mainAxisSpacing: 10, childAspectRatio: 0.62),
                 delegate: SliverChildBuilderDelegate(
                   (ctx, i) => ProductCard(article: filtered[i], onAddToCart: () {
+                    // Vérifier plafond avant ajout
+                    final user = ref.read(userDataProvider).value;
+                    if (user != null) {
+                      final cat = cc.kCategories.firstWhere((c) => c.id == user.creditCat, orElse: () => cc.kCategories.first);
+                      final cartT = ref.read(cartProvider).fold(0.0, (s, i) => s + i.total);
+                      final ordT = ref.read(userOrdersProvider).value
+                          ?.where((o) => !['cancelled','delivered'].contains(o.status))
+                          .fold(0.0, (s, o) => s + o.subtotal) ?? 0.0;
+                      if (cartT + ordT + filtered[i].price > cat.plafond) {
+                        showSnack(context, '⚠️ Plafond atteint — article dépasse votre limite de ${fmtPrice(cat.plafond)}', isError: true);
+                        return;
+                      }
+                    }
                     ref.read(cartProvider.notifier).add(filtered[i]);
                     showSnack(context, '${filtered[i].name} ajouté au panier ✓');
                   }),
@@ -235,7 +248,16 @@ class _PlafondWidget extends ConsumerWidget {
         if (user == null) return const SizedBox.shrink();
         final cat = cc.kCategories.firstWhere((c) => c.id == user.creditCat, orElse: () => cc.kCategories.first);
         final cartTotal = cartAsync.fold(0.0, (s, i) => s + i.total);
-        final spent = user.totalOrders > 0 ? cartTotal : cartTotal;
+        // Inclure les commandes déjà validées
+        final ordersAsync = ref.watch(userOrdersProvider);
+        final ordersTotal = ordersAsync.when(
+          data: (orders) => orders
+              .where((o) => !['cancelled', 'delivered'].contains(o.status))
+              .fold(0.0, (s, o) => s + o.subtotal),
+          loading: () => 0.0,
+          error: (_, __) => 0.0,
+        );
+        final spent = cartTotal + ordersTotal;
         final restant = (cat.plafond - spent).clamp(0.0, cat.plafond);
         final pct = ((cat.plafond - restant) / cat.plafond).clamp(0.0, 1.0);
         return Container(
