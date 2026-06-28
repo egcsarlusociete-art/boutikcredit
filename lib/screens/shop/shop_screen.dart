@@ -89,14 +89,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         SliverAppBar(
           pinned: true, floating: true,
           backgroundColor: EgcColors.bg2,
-          title: Row(children: [
-            Container(width: 28, height: 28, decoration: BoxDecoration(color: EgcColors.primary, borderRadius: BorderRadius.circular(7)),
-              child: const Center(child: Text('E', style: TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w800)))),
-            const SizedBox(width: 8),
-            RichText(text: const TextSpan(
-              text: 'EGC', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: EgcColors.ink),
-              children: [TextSpan(text: '.SARLU', style: TextStyle(color: EgcColors.primary))])),
-          ]),
+          title: Image.asset('assets/images/logo_boutikcredit.png', height: 32, fit: BoxFit.contain),
           actions: [
             Stack(children: [
               IconButton(icon: const Icon(Icons.shopping_cart_outlined), onPressed: () => context.go('/cart')),

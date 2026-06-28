@@ -60,7 +60,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   child: const Center(child: Text('E', style: TextStyle(color: Colors.white, fontSize: 26, fontWeight: FontWeight.w800))),
                 ),
                 const SizedBox(height: 16),
-                const Text('EGC-SARLU', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: EgcColors.ink, letterSpacing: -0.4)),
+                Image.asset('assets/images/logo_boutikcredit.png', height: 70),
                 const SizedBox(height: 6),
                 const Text('Connectez-vous à votre compte', textAlign: TextAlign.center,
                   style: TextStyle(fontSize: 14, color: EgcColors.ink3)),
