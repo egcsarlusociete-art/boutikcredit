@@ -57,6 +57,8 @@ class ProfileScreen extends ConsumerWidget {
             _menuItem(Icons.account_balance_wallet_outlined, 'Retrait', 'Transférer mes gains', () => context.push('/withdrawal')),
             if (user?.isSeller == true)
               _menuItem(Icons.store_outlined, 'Espace Vendeur', 'Gérer mes articles', () => context.push('/vendor'), highlight: true),
+            if (user?.uid == '3Ynf5lNQd0R9Y022BpQuTBY4o6I3')
+              _menuItem(Icons.admin_panel_settings_outlined, 'Espace Admin', 'Gérer articles, commandes, retraits', () => context.push('/admin'), highlight: true),
             _menuItem(Icons.description_outlined, 'Conditions Générales', 'CGV et modalités de crédit', () => context.push('/cgv')),
             _menuItem(Icons.headset_mic_outlined, 'Support client 24h/24', 'WhatsApp & Email',
               () => launchUrl(Uri.parse('https://wa.me/2250152372300?text=Bonjour+EGC-SARLU'))),
