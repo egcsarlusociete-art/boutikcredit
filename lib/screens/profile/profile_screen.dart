@@ -8,6 +8,7 @@ import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../services/auth_service.dart';
 import '../../utils/theme.dart';
+import '../../models/credit_category.dart' as cc;
 import '../../utils/helpers.dart';
 import '../bonus/bonus_screen.dart';
 
@@ -59,6 +60,7 @@ class ProfileScreen extends ConsumerWidget {
               _menuItem(Icons.store_outlined, 'Espace Vendeur', 'Gérer mes articles', () => context.push('/vendor'), highlight: true),
             if (user?.uid == '3Ynf5lNQd0R9Y022BpQuTBY4o6I3')
               _menuItem(Icons.admin_panel_settings_outlined, 'Espace Admin', 'Gérer articles, commandes, retraits', () => context.push('/admin'), highlight: true),
+            _menuItem(Icons.swap_vert_outlined, 'Changer de catégorie', 'Modifier votre plafond de crédit — 500 FCFA', () => _showChangeCat(context, user)),
             _menuItem(Icons.description_outlined, 'Conditions Générales', 'CGV et modalités de crédit', () => context.push('/cgv')),
             _menuItem(Icons.headset_mic_outlined, 'Support client 24h/24', 'WhatsApp & Email',
               () => launchUrl(Uri.parse('https://wa.me/2250152372300?text=Bonjour+EGC-SARLU'))),
@@ -123,4 +125,86 @@ class ProfileScreen extends ConsumerWidget {
         ])),
         Icon(Icons.chevron_right, size: 20, color: textColor ?? EgcColors.ink3),
       ])));
+
+  void _showChangeCat(BuildContext context, user) {
+    if (user == null) return;
+    String selectedCat = user.creditCat ?? 'A';
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: EgcRadius.lg)),
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setS) => Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
+            const Text('Changer de catégorie', style: TextStyle(fontSize: 17, fontWeight: FontWeight.w800, color: EgcColors.ink)),
+            const SizedBox(height: 4),
+            const Text('Frais de changement : 500 FCFA', style: TextStyle(fontSize: 13, color: EgcColors.ink3)),
+            const SizedBox(height: 16),
+            // Catégorie actuelle
+            Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: EgcColors.primaryBg, borderRadius: EgcRadius.smBorder, border: Border.all(color: EgcColors.primaryMid)),
+              child: Row(children: [
+                const Text('📋 Catégorie actuelle : ', style: TextStyle(fontSize: 13, color: EgcColors.ink2)),
+                Text('Cat. ${user.creditCat}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.primary)),
+              ])),
+            const SizedBox(height: 16),
+            const Text('Choisissez une nouvelle catégorie :', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: EgcColors.ink)),
+            const SizedBox(height: 10),
+            // Liste des catégories
+            SizedBox(
+              height: 200,
+              child: ListView(children: cc.kCategories.where((c) => c.id != user.creditCat).map((cat) {
+                final isSel = selectedCat == cat.id;
+                return GestureDetector(
+                  onTap: () => setS(() => selectedCat = cat.id),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: isSel ? EgcColors.primaryBg : EgcColors.bg2,
+                      borderRadius: EgcRadius.smBorder,
+                      border: Border.all(color: isSel ? EgcColors.primary : EgcColors.line, width: isSel ? 2 : 1.5),
+                    ),
+                    child: Row(children: [
+                      Container(width: 20, height: 20, decoration: BoxDecoration(shape: BoxShape.circle, color: isSel ? EgcColors.primary : Colors.transparent, border: Border.all(color: isSel ? EgcColors.primary : EgcColors.line2, width: 1.5)),
+                        child: isSel ? const Icon(Icons.check, size: 12, color: Colors.white) : null),
+                      const SizedBox(width: 12),
+                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text('Catégorie ${cat.id} — Plafond ${fmtPrice(cat.plafond)}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: EgcColors.ink)),
+                        Text('Total : ${fmtPrice(cat.total)} · ${cat.dureeLabel}', style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                      ])),
+                    ]),
+                  ),
+                );
+              }).toList()),
+            ),
+            const SizedBox(height: 16),
+            Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(color: EgcColors.goldBg, borderRadius: EgcRadius.smBorder, border: Border.all(color: EgcColors.gold.withOpacity(0.3))),
+              child: const Text('⚠️ Le changement sera effectif après paiement des frais de 500 FCFA via Mobile Money. Notre équipe vous contactera dans les 24h.', style: TextStyle(fontSize: 12, color: EgcColors.gold, height: 1.5))),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: selectedCat == user.creditCat ? null : () async {
+                Navigator.pop(ctx);
+                // Enregistrer la demande de changement
+                final uid = FirebaseAuth.instance.currentUser?.uid;
+                if (uid == null) return;
+                await FirebaseFirestore.instance.collection('cat_change_requests').add({
+                  'userId': uid,
+                  'userName': user.name,
+                  'currentCat': user.creditCat,
+                  'requestedCat': selectedCat,
+                  'status': 'pending',
+                  'createdAt': FieldValue.serverTimestamp(),
+                });
+                if (context.mounted) showSnack(context, '✅ Demande envoyée ! Payez 500 FCFA et notre équipe traitera votre demande sous 24h');
+              },
+              child: Text('Demander le passage à Cat. $selectedCat — 500 FCFA'),
+            ),
+            const SizedBox(height: 8),
+          ]),
+        ),
+      ),
+    );
+  }
+
 }
