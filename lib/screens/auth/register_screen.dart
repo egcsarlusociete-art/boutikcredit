@@ -50,6 +50,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
         child: Form(key: _form, child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          Center(child: Image.asset('assets/images/logo_boutikcredit.png', height: 60)),
+          const SizedBox(height: 16),
           // Plan choice
           const Text('Choisissez votre abonnement', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: EgcColors.ink)),
           const SizedBox(height: 10),
