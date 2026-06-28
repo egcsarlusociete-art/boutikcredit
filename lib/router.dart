@@ -22,7 +22,7 @@ import 'screens/vendor/vendor_articles_screen.dart';
 import 'screens/admin/admin_screen.dart';
 import 'screens/cgv/cgv_screen.dart';
 
-const String kAdminUid = '3Ynf5lNQd0R9Y022BpQuTBY4o6I3';
+const String kAdminUid = '9D76f2HLPrNODPN8HtPDbzwG4wA3';
 
 // Listenable qui ecoute les changements Firebase Auth
 class _AuthChangeNotifier extends ChangeNotifier {
