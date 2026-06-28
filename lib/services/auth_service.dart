@@ -23,6 +23,7 @@ class AuthService {
     required String city,
     required String plan,
     String creditCat = 'A',
+    String referralCode = '',
   }) async {
     final cred = await _auth.createUserWithEmailAndPassword(
       email: email.trim(), password: password);
@@ -37,6 +38,7 @@ class AuthService {
       'totalOrders': 0, 'totalReferrals': 0,
       'referralCode': generateReferralCode(),
       'creditCat': creditCat,
+      'referredBy': referralCode.isNotEmpty ? referralCode : null,
       'cgvAccepted': false,
       'createdAt': FieldValue.serverTimestamp(),
     };

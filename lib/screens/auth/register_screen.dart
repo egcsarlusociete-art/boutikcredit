@@ -19,6 +19,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _phoneC = TextEditingController();
   final _emailC = TextEditingController();
   final _passC  = TextEditingController();
+  final _refC   = TextEditingController();
   String _plan = 'client';
   String _creditCat = 'A';
   String? _city;
@@ -26,7 +27,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _auth = AuthService();
 
   @override
-  void dispose() { _nameC.dispose(); _phoneC.dispose(); _emailC.dispose(); _passC.dispose(); super.dispose(); }
+  void dispose() { _nameC.dispose(); _phoneC.dispose(); _emailC.dispose(); _passC.dispose(); _refC.dispose(); super.dispose(); }
 
   Future<void> _register() async {
     if (!_form.currentState!.validate()) return;
@@ -34,7 +35,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _loading = true);
     try {
       await _auth.register(email: _emailC.text, password: _passC.text,
-        name: _nameC.text, phone: _phoneC.text, city: _city!, plan: _plan, creditCat: _creditCat);
+        name: _nameC.text, phone: _phoneC.text, city: _city!, plan: _plan, creditCat: _creditCat,
+        referralCode: _refC.text.trim().toUpperCase());
     } catch (e) {
       if (mounted) showSnack(context, e.toString().contains('email-already-in-use') ? 'Email déjà utilisé' : 'Erreur : vérifiez vos informations', isError: true);
     } finally {
@@ -126,6 +128,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           EgcTextField(label: 'Email', hint: 'votre@email.com', controller: _emailC, keyboardType: TextInputType.emailAddress, validator: validateEmail, textInputAction: TextInputAction.next),
           const SizedBox(height: 14),
           EgcTextField(label: 'Mot de passe', hint: '6 caractères minimum', controller: _passC, obscure: true, validator: validatePassword),
+          const SizedBox(height: 14),
+          EgcTextField(
+            label: 'Code parrain (optionnel)',
+            hint: 'Ex: EGCADMIN',
+            controller: _refC,
+            textInputAction: TextInputAction.done,
+          ),
           const SizedBox(height: 24),
           EgcButton(label: 'Créer mon compte', onTap: _register, loading: _loading, icon: Icons.person_add_outlined),
           const SizedBox(height: 16),
