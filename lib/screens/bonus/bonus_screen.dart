@@ -44,7 +44,7 @@ class BonusScreen extends ConsumerWidget {
           const SizedBox(height: 12),
           // Quick actions
           Row(children: [
-            Expanded(child: _actionCard('🔗', 'Parrainer', 'Gagner 1 000 F', () => context.push('/referral'))),
+            Expanded(child: _actionCard('🔗', 'Parrainer', 'Gagner 500 F', () => context.push('/referral'))),
             const SizedBox(width: 10),
             Expanded(child: _actionCard('💸', 'Retirer', 'Transférer mes gains', () => context.push('/withdrawal'))),
           ]),
@@ -55,7 +55,7 @@ class BonusScreen extends ConsumerWidget {
               const Text('Comment gagner du bonus', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: EgcColors.ink)),
               const SizedBox(height: 12),
               _howRow('🛒', 'Achat validé', 'Cashback automatique', 'Variable'),
-              _howRow('🔗', 'Parrainage accepté', 'Par ami inscrit', '+1 000 F'),
+              _howRow('🔗', 'Parrainage accepté', 'Par ami inscrit', '+500 F'),
               _howRow('🎁', 'Bonus bienvenue', 'A l inscription', '+500 F'),
             ])),
           const SizedBox(height: 16),
