@@ -278,12 +278,36 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
           final ville = d['city'] ?? '';
           final plan = d['plan'] == 'seller' ? 'Vendeur' : 'Client';
           final statut = d['planStatus'] == 'active' ? 'Actif' : 'En attente';
+          final cat = d['creditCat'] ?? 'A';
+          final refCode = d['referralCode'] ?? '';
+          final plafonds = {'A':'100 000','B':'200 000','C':'300 000','D':'400 000','E':'500 000','F':'600 000','G':'700 000','H':'800 000','I':'900 000','J':'1 000 000'};
           final montant = fmtPrice(subtotal);
           final statusLabel = kOrderStatus[status] ?? status;
-          final msg = 'Bonjour EGC-SARLU,%0A%0ACLIENT%0ANom: \$nom%0AEmail: \$email%0ATel: \$tel%0AVille: \$ville%0A%0ACOMPTE%0APlan: \$plan%0AStatut: \$statut%0A%0ACOMMANDE%0ARef: \$orderId%0AMontant: \$montant%0AStatut: \$statusLabel';
-          await launchUrl(Uri.parse('https://wa.me/2250152372300?text=\$msg'));
+          if (!ctx.mounted) return;
+          showDialog(context: ctx, builder: (_) => AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: EgcRadius.mdBorder),
+            title: const Row(children: [Icon(Icons.person_outline, color: EgcColors.primary), SizedBox(width: 8), Text('Infos Client', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800))]),
+            content: SingleChildScrollView(child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+              _infoRow('👤 Nom', nom),
+              _infoRow('📧 Email', email),
+              _infoRow('📞 Téléphone', tel),
+              _infoRow('🏙️ Ville', ville),
+              const Divider(height: 20),
+              _infoRow('💳 Plan', plan),
+              _infoRow('📊 Catégorie', 'Cat. \$cat — \${plafonds[cat] ?? '?'} F CFA'),
+              _infoRow('✅ Statut', statut),
+              _infoRow('🔗 Code parrain', refCode),
+              const Divider(height: 20),
+              _infoRow('📦 Commande', '#\$orderId'),
+              _infoRow('💰 Montant', montant),
+              _infoRow('🚚 Statut', statusLabel),
+            ])),
+            actions: [
+              TextButton(onPressed: () => Navigator.pop(_), child: const Text('Fermer')),
+            ],
+          ));
         } catch (e) {
-          if (ctx.mounted) showSnack(ctx, 'Erreur', isError: true);
+          if (ctx.mounted) showSnack(ctx, 'Erreur: \$e', isError: true);
         }
       },
       child: Container(
@@ -297,6 +321,14 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
       ),
     );
   }
+
+  Widget _infoRow(String label, String value) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      SizedBox(width: 130, child: Text(label, style: const TextStyle(fontSize: 12, color: EgcColors.ink3))),
+      Expanded(child: Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: EgcColors.ink))),
+    ]),
+  );
 
   Widget _loadingWidget() => const Center(child: CircularProgressIndicator(color: EgcColors.primary));
   
