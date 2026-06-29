@@ -41,6 +41,9 @@ class OrderModel {
   final String status;
   final String? estimatedDelivery;
   final DateTime? createdAt;
+  final DateTime? processingAt;
+  final DateTime? shippedAt;
+  final DateTime? deliveredAt;
 
   const OrderModel({
     required this.id, required this.orderId, required this.userId,
@@ -49,6 +52,7 @@ class OrderModel {
     required this.paymentMethod, required this.paymentPhone,
     required this.delivery, required this.status,
     this.estimatedDelivery, this.createdAt,
+    this.processingAt, this.shippedAt, this.deliveredAt,
   });
 
   factory OrderModel.fromFirestore(DocumentSnapshot doc) {
@@ -67,6 +71,9 @@ class OrderModel {
       status: d['status'] ?? 'confirmed',
       estimatedDelivery: d['estimatedDelivery'],
       createdAt: (d['createdAt'] as Timestamp?)?.toDate(),
+      processingAt: (d['processingAt'] as Timestamp?)?.toDate(),
+      shippedAt: (d['shippedAt'] as Timestamp?)?.toDate(),
+      deliveredAt: (d['deliveredAt'] as Timestamp?)?.toDate(),
     );
   }
 

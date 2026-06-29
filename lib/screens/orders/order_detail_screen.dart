@@ -84,8 +84,15 @@ class OrderDetailScreen extends ConsumerWidget {
                             child: const Text('Validé ✓', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: EgcColors.ok))),
                         ],
                       ]),
-                      Text(i < si ? 'Étape validée' : i == si ? 'En cours...' : 'En attente',
-                        style: TextStyle(fontSize: 11, color: i <= si ? EgcColors.primary : EgcColors.ink3)),
+                      Builder(builder: (_) {
+                        final dates = [order.createdAt, order.processingAt, order.shippedAt, order.deliveredAt];
+                        final dateStr = dates[i] != null ? fmtDate(dates[i]) : null;
+                        final label = i < si ? 'Étape validée' : i == si ? (order.status == 'delivered' ? 'Réceptionnée ✓' : 'En cours...') : 'En attente';
+                        return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text(label, style: TextStyle(fontSize: 11, color: i <= si ? EgcColors.primary : EgcColors.ink3)),
+                          if (dateStr != null) Text(dateStr, style: const TextStyle(fontSize: 10, color: EgcColors.ink3)),
+                        ]);
+                      }),
                     ])),
                   ]))),
               ])),

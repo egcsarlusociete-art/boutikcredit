@@ -189,8 +189,20 @@ class FirestoreService {
   Future<void> adminUpdateArticle(String id, Map<String, dynamic> data) =>
       _db.collection('articles').doc(id).update({...data, 'updatedAt': FieldValue.serverTimestamp()});
 
-  Future<void> adminUpdateOrderStatus(String id, String status) =>
-      _db.collection('orders').doc(id).update({'status': status, 'updatedAt': FieldValue.serverTimestamp()});
+  Future<void> adminUpdateOrderStatus(String id, String status) {
+    final dateField = {
+      'processing': 'processingAt',
+      'shipped': 'shippedAt',
+      'delivered': 'deliveredAt',
+      'cancelled': 'cancelledAt',
+    }[status];
+    final updates = <String, dynamic>{
+      'status': status,
+      'updatedAt': FieldValue.serverTimestamp(),
+    };
+    if (dateField != null) updates[dateField] = FieldValue.serverTimestamp();
+    return _db.collection('orders').doc(id).update(updates);
+  }
 
   Future<void> adminApproveWithdrawal(String id) =>
       _db.collection('withdrawals').doc(id).update({'status': 'approved', 'approvedAt': FieldValue.serverTimestamp()});
