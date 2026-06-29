@@ -16,6 +16,7 @@ class UserModel {
   final int totalReferrals;
   final String referralCode;
   final String creditCat;
+  final int articlesCount;
   final DateTime? createdAt;
 
   const UserModel({
@@ -34,6 +35,7 @@ class UserModel {
     this.totalReferrals = 0,
     this.referralCode = '',
     this.creditCat = 'A',
+    this.articlesCount = 0,
     this.createdAt,
   });
 
@@ -55,6 +57,7 @@ class UserModel {
       totalReferrals: (d['totalReferrals'] ?? 0).toInt(),
       referralCode: d['referralCode'] ?? '',
       creditCat: d['creditCat'] ?? 'A',
+      articlesCount: (d['articlesCount'] ?? 0).toInt(),
       createdAt: (d['createdAt'] as Timestamp?)?.toDate(),
     );
   }

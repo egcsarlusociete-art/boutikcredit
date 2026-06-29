@@ -19,7 +19,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _phoneC = TextEditingController();
   final _emailC = TextEditingController();
   final _passC  = TextEditingController();
-  final _refC   = TextEditingController();
+  final _refC      = TextEditingController();
+  final _shopNameC = TextEditingController();
+  final _locationC = TextEditingController();
   String _plan = 'client';
   String _creditCat = 'A';
   String? _city;
@@ -27,7 +29,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _auth = AuthService();
 
   @override
-  void dispose() { _nameC.dispose(); _phoneC.dispose(); _emailC.dispose(); _passC.dispose(); _refC.dispose(); super.dispose(); }
+  void dispose() { _nameC.dispose(); _phoneC.dispose(); _emailC.dispose(); _passC.dispose(); _refC.dispose(); _shopNameC.dispose(); _locationC.dispose(); super.dispose(); }
 
   Future<void> _register() async {
     if (!_form.currentState!.validate()) return;
@@ -35,8 +37,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
     setState(() => _loading = true);
     try {
       await _auth.register(email: _emailC.text, password: _passC.text,
-        name: _nameC.text, phone: _phoneC.text, city: _city!, plan: _plan, creditCat: _creditCat,
-        referralCode: _refC.text.trim().toUpperCase());
+        name: _plan == 'seller' ? _shopNameC.text : _nameC.text,
+        phone: _phoneC.text, city: _city!, plan: _plan, creditCat: _creditCat,
+        referralCode: _refC.text.trim().toUpperCase(),
+        shopName: _shopNameC.text.trim(),
+        location: _locationC.text.trim());
     } catch (e) {
       if (mounted) showSnack(context, e.toString().contains('email-already-in-use') ? 'Email déjà utilisé' : 'Erreur : vérifiez vos informations', isError: true);
     } finally {
@@ -114,7 +119,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
             const SizedBox(height: 16),
           ],
           const SizedBox(height: 4),
-          EgcTextField(label: 'Nom complet', hint: 'Prénom NOM', controller: _nameC, validator: (v) => validateRequired(v, 'Le nom'), textInputAction: TextInputAction.next),
+          // Champs spécifiques vendeur
+          if (_plan == 'seller') ...[
+            EgcTextField(label: 'Nom de la boutique', hint: 'Ex: Boutique Mode Abidjan', controller: _shopNameC,
+              validator: (v) => validateRequired(v, 'Le nom de la boutique'), textInputAction: TextInputAction.next),
+            const SizedBox(height: 14),
+            EgcTextField(label: 'Localisation de la boutique', hint: 'Ville / Quartier / Adresse', controller: _locationC,
+              validator: (v) => validateRequired(v, 'La localisation'), textInputAction: TextInputAction.next),
+            const SizedBox(height: 14),
+          ],
+          EgcTextField(label: _plan == 'seller' ? 'Nom du gérant' : 'Nom complet', hint: 'Prénom NOM', controller: _nameC, validator: (v) => validateRequired(v, 'Le nom'), textInputAction: TextInputAction.next),
           const SizedBox(height: 14),
           EgcTextField(label: 'Téléphone', hint: '07XXXXXXXX', controller: _phoneC, keyboardType: TextInputType.phone, validator: validatePhone, textInputAction: TextInputAction.next),
           const SizedBox(height: 14),
