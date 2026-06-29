@@ -170,13 +170,8 @@ class FirestoreService {
 
   Stream<List<OrderModel>> allOrders() => _db
       .collection('orders')
-      .orderBy('createdAt', descending: true)
       .snapshots()
-      .map((s) => s.docs.map(OrderModel.fromFirestore).toList())
-      .handleError((e) {
-        print('allOrders error: \$e');
-        return <OrderModel>[];
-      });
+      .map((s) => s.docs.map(OrderModel.fromFirestore).toList());
 
   Stream<List<WithdrawalModel>> allWithdrawals() => _db
       .collection('withdrawals')

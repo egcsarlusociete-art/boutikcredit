@@ -123,7 +123,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
   Widget _ordersTab() => StreamBuilder(
     stream: _fs.allOrders(),
     builder: (ctx, snap) {
-      if (snap.hasError) return Center(child: Text('Erreur: \${snap.error}', style: const TextStyle(color: EgcColors.err)));
+      if (snap.hasError) return Center(child: Padding(padding: const EdgeInsets.all(16), child: Text('Erreur: \${snap.error}', style: const TextStyle(color: EgcColors.err), textAlign: TextAlign.center)));
       if (!snap.hasData) return const Center(child: CircularProgressIndicator(color: EgcColors.primary));
       final orders = snap.data!;
       if (orders.isEmpty) return const Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
