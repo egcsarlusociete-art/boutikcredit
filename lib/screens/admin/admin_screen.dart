@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/firestore_service.dart';
@@ -187,14 +188,129 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                 Text('${o.delivery.name} · ${o.delivery.city} · ${fmtPrice(o.subtotal)}',
                   style: const TextStyle(fontSize: 12, color: EgcColors.ink3)),
                 Text(fmtDate(o.createdAt), style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                const SizedBox(height: 6),
+                // Bouton infos client
+                GestureDetector(
+                  onTap: () async {
+                    // Chercher infos client dans users et vendeurs
+                    try {
+                      DocumentSnapshot? userDoc;
+                      var snap = await FirebaseFirestore.instance.collection('users').doc(o.userId).get();
+                      if (snap.exists) {
+                        userDoc = snap;
+                      } else {
+                        snap = await FirebaseFirestore.instance.collection('vendeurs').doc(o.userId).get();
+                        if (snap.exists) userDoc = snap;
+                      }
+                      if (userDoc != null && context.mounted) {
+                        final d = userDoc.data() as Map<String, dynamic>;
+                        final cat = d['creditCat'] ?? 'A';
+                        final plafonds = {'A':'100 000','B':'200 000','C':'300 000','D':'400 000','E':'500 000','F':'600 000','G':'700 000','H':'800 000','I':'900 000','J':'1 000 000'};
+                        final msg = Uri.encodeComponent(
+                          'Bonjour EGC-SARLU,
+
+'
+                          '👤 *INFORMATIONS CLIENT*
+'
+                          '• Nom : \${d['name'] ?? ''}
+'
+                          '• Email : \${d['email'] ?? ''}
+'
+                          '• Téléphone : \${d['phone'] ?? ''}
+'
+                          '• Ville : \${d['city'] ?? ''}
+
+'
+                          '💳 *COMPTE*
+'
+                          '• Catégorie : Cat. \$cat — Plafond \${plafonds[cat] ?? '?'} F CFA
+'
+                          '• Plan : \${d['plan'] == 'seller' ? 'Vendeur' : 'Client'}
+'
+                          '• Statut : \${d['planStatus'] == 'active' ? 'Actif' : 'En attente'}
+'
+                          '• Code parrainage : \${d['referralCode'] ?? ''}
+
+'
+                          '📦 *COMMANDE*
+'
+                          '• Ref : #\${o.orderId}
+'
+                          '• Montant : \${fmtPrice(o.subtotal)}
+'
+                          '• Statut : \${kOrderStatus[o.status] ?? o.status}
+'
+                        );
+                        await launchUrl(Uri.parse('https://wa.me/2250152372300?text=\$msg'));
+                      }
+                    } catch (e) {
+                      if (context.mounted) showSnack(context, 'Erreur: \$e', isError: true);
+                    }
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    decoration: BoxDecoration(color: EgcColors.primaryBg, borderRadius: EgcRadius.pill, border: Border.all(color: EgcColors.primaryMid)),
+                    child: const Row(mainAxisSize: MainAxisSize.min, children: [
+                      Icon(Icons.person_outline, size: 14, color: EgcColors.primary),
+                      SizedBox(width: 4),
+                      Text('Infos client', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: EgcColors.primary)),
+                    ]),
+                  ),
+                ),
                 const SizedBox(height: 8),
+                // Boutons statut
+              if (o.status == 'delivered') ...[
+                Container(
+                  margin: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(color: EgcColors.okBg, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.okLine)),
+                  child: const Row(children: [
+                    Text('🎉', style: TextStyle(fontSize: 20)),
+                    SizedBox(width: 8),
+                    Expanded(child: Text('Commande livrée et réceptionnée', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: EgcColors.ok))),
+                  ]),
+                ),
+              ] else if (o.status != 'cancelled') ...[
                 SingleChildScrollView(scrollDirection: Axis.horizontal, child: Row(children: [
-                  ...['processing', 'shipped', 'delivered', 'cancelled']
-                    .where((s) => s != o.status)
-                    .map((s) => Padding(padding: const EdgeInsets.only(right: 6),
-                      child: _aBtn(kOrderStatus[s] ?? s, statusColor(s),
-                        () => _fs.adminUpdateOrderStatus(o.id, s)))),
+                  // Boutons étapes précédentes grisés
+                  ...['confirmed', 'processing', 'shipped', 'delivered'].map((s) {
+                    final steps = ['confirmed', 'processing', 'shipped', 'delivered'];
+                    final currentIdx = steps.indexOf(o.status);
+                    final sIdx = steps.indexOf(s);
+                    final isPast = sIdx < currentIdx;
+                    final isCurrent = s == o.status;
+                    final labels = {'confirmed': 'Confirmée', 'processing': 'En préparation', 'shipped': 'En livraison', 'delivered': 'Livrée'};
+                    if (isPast || isCurrent) {
+                      return Padding(padding: const EdgeInsets.only(right: 6),
+                        child: ElevatedButton(
+                          onPressed: null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: EgcColors.bg3,
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            shape: RoundedRectangleBorder(borderRadius: EgcRadius.smBorder)),
+                          child: Text(labels[s] ?? s, style: const TextStyle(fontSize: 12, color: EgcColors.ink3)),
+                        ));
+                    }
+                    if (s == 'cancelled') return const SizedBox.shrink();
+                    return Padding(padding: const EdgeInsets.only(right: 6),
+                      child: _aBtn(labels[s] ?? s, statusColor(s), () => _fs.adminUpdateOrderStatus(o.id, s)));
+                  }).toList(),
+                  // Bouton annuler toujours disponible
+                  _aBtn('Annuler', EgcColors.err, () => _fs.adminUpdateOrderStatus(o.id, 'cancelled')),
                 ])),
+              ] else ...[
+                Container(
+                  margin: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(color: const Color(0xFFFEE2E2), borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.err)),
+                  child: const Row(children: [
+                    Text('❌', style: TextStyle(fontSize: 20)),
+                    SizedBox(width: 8),
+                    Expanded(child: Text('Commande annulée', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: EgcColors.err))),
+                  ]),
+                ),
+              ],
               ]),
             );
           });
