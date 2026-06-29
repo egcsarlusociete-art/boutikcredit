@@ -23,7 +23,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
   final _fs = FirestoreService();
 
   @override
-  void initState() { super.initState(); _tabs = TabController(length: 5, vsync: this); }
+  void initState() { super.initState(); _tabs = TabController(length: 6, vsync: this); }
   @override
   void dispose() { _tabs.dispose(); super.dispose(); }
 
@@ -44,7 +44,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
           ]),
       ),
       body: TabBarView(controller: _tabs, children: [
-        _articlesTab(), _imagesTab(), _vendeursTab(), _ordersTab(), _withdrawalsTab()
+        _articlesTab(), _imagesTab(), _vendeursTab(), _ordersTab(), _withdrawalsTab(), _catRequestsTab()
       ]),
     );
   }
@@ -354,4 +354,100 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
       shape: RoundedRectangleBorder(borderRadius: EgcRadius.smBorder)),
     child: Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: Colors.white)),
   );
+
+  // ── DEMANDES CHANGEMENT CATEGORIE ────────────────────────────────
+  Widget _catRequestsTab() => StreamBuilder<QuerySnapshot>(
+    stream: FirebaseFirestore.instance.collection('cat_change_requests')
+        .orderBy('createdAt', descending: true).snapshots(),
+    builder: (ctx, snap) {
+      if (snap.hasError) return _errWidget(snap.error);
+      if (!snap.hasData) return _loadingWidget();
+      final docs = snap.data!.docs;
+      if (docs.isEmpty) return _emptyWidget('Aucune demande de changement');
+      return ListView.separated(
+        padding: const EdgeInsets.all(12), itemCount: docs.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 8),
+        itemBuilder: (ctx, i) {
+          final d = docs[i].data() as Map<String, dynamic>;
+          final docId = docs[i].id;
+          final status = d['status'] ?? 'pending';
+          final userId = d['userId'] ?? '';
+          final userName = d['userName'] ?? '';
+          final currentCat = d['currentCat'] ?? '';
+          final requestedCat = d['requestedCat'] ?? '';
+          final isPending = status == 'pending';
+
+          return Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: EgcColors.bg2,
+              borderRadius: EgcRadius.mdBorder,
+              border: Border.all(color: isPending ? EgcColors.primaryMid : EgcColors.line, width: 1.5)),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                CircleAvatar(radius: 18, backgroundColor: EgcColors.primaryBg,
+                  child: Text(userName.isNotEmpty ? userName[0].toUpperCase() : 'U',
+                    style: const TextStyle(fontWeight: FontWeight.w800, color: EgcColors.primary))),
+                const SizedBox(width: 10),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(userName, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: EgcColors.ink)),
+                  Text('Cat. $currentCat → Cat. $requestedCat',
+                    style: const TextStyle(fontSize: 12, color: EgcColors.primary, fontWeight: FontWeight.w700)),
+                ])),
+                Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: isPending ? EgcColors.primaryBg : status == 'approved' ? EgcColors.okBg : const Color(0xFFFEE2E2),
+                    borderRadius: EgcRadius.pill),
+                  child: Text(isPending ? 'En attente' : status == 'approved' ? 'Approuvée' : 'Refusée',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
+                      color: isPending ? EgcColors.primary : status == 'approved' ? EgcColors.ok : EgcColors.err))),
+              ]),
+              if (isPending) ...[
+                const SizedBox(height: 12),
+                Row(children: [
+                  Expanded(child: _aBtn('✅ Valider', EgcColors.ok, () async {
+                    // 1. Mettre à jour la catégorie utilisateur
+                    // Chercher dans users d'abord, sinon vendeurs
+                    final userSnap = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+                    final coll = userSnap.exists ? 'users' : 'vendeurs';
+                    await FirebaseFirestore.instance.collection(coll).doc(userId).update({
+                      'creditCat': requestedCat, 'updatedAt': FieldValue.serverTimestamp()
+                    });
+                    // 2. Mettre à jour le statut de la demande
+                    await FirebaseFirestore.instance.collection('cat_change_requests').doc(docId).update({
+                      'status': 'approved', 'approvedAt': FieldValue.serverTimestamp()
+                    });
+                    // 3. Ajouter une notification pour l'utilisateur
+                    await FirebaseFirestore.instance.collection('notifications').add({
+                      'userId': userId,
+                      'type': 'cat_change',
+                      'title': 'Catégorie mise à jour',
+                      'message': 'Votre demande de passage à Cat. $requestedCat a été approuvée !',
+                      'read': false,
+                      'createdAt': FieldValue.serverTimestamp(),
+                    });
+                    if (context.mounted) showSnack(context, '✅ Catégorie mise à jour pour $userName');
+                  })),
+                  const SizedBox(width: 8),
+                  Expanded(child: _aBtn('❌ Refuser', EgcColors.err, () async {
+                    await FirebaseFirestore.instance.collection('cat_change_requests').doc(docId).update({
+                      'status': 'rejected', 'rejectedAt': FieldValue.serverTimestamp()
+                    });
+                    // Notification de refus
+                    await FirebaseFirestore.instance.collection('notifications').add({
+                      'userId': userId,
+                      'type': 'cat_change',
+                      'title': 'Demande refusée',
+                      'message': 'Votre demande de passage à Cat. $requestedCat a été refusée.',
+                      'read': false,
+                      'createdAt': FieldValue.serverTimestamp(),
+                    });
+                    if (context.mounted) showSnack(context, 'Demande refusée');
+                  })),
+                ]),
+              ],
+            ]),
+          );
+        });
+    });
 }
