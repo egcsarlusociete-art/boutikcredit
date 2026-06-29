@@ -23,27 +23,70 @@ class OrderDetailScreen extends ConsumerWidget {
         if (order == null) return Scaffold(appBar: AppBar(), body: const Center(child: Text('Commande introuvable')));
         final steps = ['confirmed', 'processing', 'shipped', 'delivered'];
         final si = steps.indexOf(order.status).clamp(0, 3);
-        final stepLabels = ['Confirmée', 'Préparation', 'En livraison', 'Livrée'];
+        final stepLabels = ['Confirmée', 'En préparation', 'En livraison', 'Livrée'];
+        final isDelivered = order.status == 'delivered';
+        final isCancelled = order.status == 'cancelled';
         return Scaffold(
           backgroundColor: EgcColors.bg,
           appBar: AppBar(title: Text('#${order.orderId.length > 14 ? order.orderId.substring(0, 14) : order.orderId}')),
           body: ListView(padding: const EdgeInsets.all(16), children: [
+            // Ecran livraison
+            if (isDelivered) Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(color: EgcColors.okBg, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.okLine, width: 2)),
+              child: Column(children: const [
+                Text('🎉', style: TextStyle(fontSize: 48)),
+                SizedBox(height: 8),
+                Text('Article livré avec succès !', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: EgcColors.ok)),
+                SizedBox(height: 4),
+                Text('Votre commande a été livrée et réceptionnée.', style: TextStyle(fontSize: 13, color: EgcColors.ok), textAlign: TextAlign.center),
+              ]),
+            ),
+            if (isCancelled) Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              margin: const EdgeInsets.only(bottom: 12),
+              decoration: BoxDecoration(color: Color(0xFFFEE2E2), borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.err, width: 2)),
+              child: const Column(children: [
+                Text('❌', style: TextStyle(fontSize: 48)),
+                SizedBox(height: 8),
+                Text('Commande annulée', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: EgcColors.err)),
+              ]),
+            ),
             // Status + tracker
             Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line, width: 1.5)),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                Row(children: [const Text('Suivi', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)), const Spacer(), StatusPill(order.status, labels: kOrderStatus)]),
+                Row(children: [const Text('Suivi de commande', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700)), const Spacer(), StatusPill(order.status, labels: kOrderStatus)]),
                 const SizedBox(height: 16),
                 ...List.generate(4, (i) => Padding(padding: const EdgeInsets.only(bottom: 8),
                   child: Row(children: [
                     Column(children: [
-                      Container(width: 14, height: 14, decoration: BoxDecoration(shape: BoxShape.circle, color: i <= si ? EgcColors.primary : EgcColors.bg3, border: Border.all(color: i <= si ? EgcColors.primary : EgcColors.line2, width: 1.5))),
-                      if (i < 3) Container(width: 1.5, height: 28, color: i < si ? EgcColors.primary : EgcColors.line),
+                      Container(width: 28, height: 28,
+                        decoration: BoxDecoration(shape: BoxShape.circle,
+                          color: i <= si ? EgcColors.primary : EgcColors.bg3,
+                          border: Border.all(color: i <= si ? EgcColors.primary : EgcColors.line2, width: 1.5)),
+                        child: Center(child: Text(i <= si ? '✓' : '${i+1}',
+                          style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800,
+                            color: i <= si ? Colors.white : EgcColors.ink3)))),
+                      if (i < 3) Container(width: 2, height: 32, color: i < si ? EgcColors.primary : EgcColors.line),
                     ]),
                     const SizedBox(width: 12),
-                    Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text(stepLabels[i], style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: i <= si ? EgcColors.ink : EgcColors.ink3)),
-                      Text(i < si ? 'Terminé' : i == si ? 'En cours' : 'En attente', style: TextStyle(fontSize: 11, color: i <= si ? EgcColors.primary : EgcColors.ink3)),
-                    ]),
+                    Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Row(children: [
+                        Text(stepLabels[i], style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+                          color: i <= si ? EgcColors.ink : EgcColors.ink3)),
+                        if (i < si) ...[
+                          const SizedBox(width: 6),
+                          Container(padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(color: EgcColors.okBg, borderRadius: EgcRadius.pill),
+                            child: const Text('Validé ✓', style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: EgcColors.ok))),
+                        ],
+                      ]),
+                      Text(i < si ? 'Étape validée' : i == si ? 'En cours...' : 'En attente',
+                        style: TextStyle(fontSize: 11, color: i <= si ? EgcColors.primary : EgcColors.ink3)),
+                    ])),
                   ]))),
               ])),
             const SizedBox(height: 12),
