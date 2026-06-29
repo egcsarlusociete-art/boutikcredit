@@ -123,8 +123,14 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
   Widget _ordersTab() => StreamBuilder(
     stream: _fs.allOrders(),
     builder: (ctx, snap) {
+      if (snap.hasError) return Center(child: Text('Erreur: \${snap.error}', style: const TextStyle(color: EgcColors.err)));
       if (!snap.hasData) return const Center(child: CircularProgressIndicator(color: EgcColors.primary));
       final orders = snap.data!;
+      if (orders.isEmpty) return const Center(child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+        Text('📭', style: TextStyle(fontSize: 48)),
+        SizedBox(height: 12),
+        Text('Aucune commande', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+      ]));
       return ListView.separated(padding: const EdgeInsets.all(12), itemCount: orders.length, separatorBuilder: (_,__) => const SizedBox(height: 8),
         itemBuilder: (ctx, i) {
           final o = orders[i];

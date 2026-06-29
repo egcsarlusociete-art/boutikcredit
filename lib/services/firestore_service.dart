@@ -169,12 +169,24 @@ class FirestoreService {
       .snapshots().map((s) => s.docs.map(UserModel.fromFirestore).toList());
 
   Stream<List<OrderModel>> allOrders() => _db
-      .collection('orders').orderBy('createdAt', descending: true)
-      .snapshots().map((s) => s.docs.map(OrderModel.fromFirestore).toList());
+      .collection('orders')
+      .orderBy('createdAt', descending: true)
+      .snapshots()
+      .map((s) => s.docs.map(OrderModel.fromFirestore).toList())
+      .handleError((e) {
+        print('allOrders error: \$e');
+        return <OrderModel>[];
+      });
 
   Stream<List<WithdrawalModel>> allWithdrawals() => _db
-      .collection('withdrawals').orderBy('createdAt', descending: true)
-      .snapshots().map((s) => s.docs.map(WithdrawalModel.fromFirestore).toList());
+      .collection('withdrawals')
+      .orderBy('createdAt', descending: true)
+      .snapshots()
+      .map((s) => s.docs.map(WithdrawalModel.fromFirestore).toList())
+      .handleError((e) {
+        print('allWithdrawals error: \$e');
+        return <WithdrawalModel>[];
+      });
 
   Future<void> adminUpdateArticle(String id, Map<String, dynamic> data) =>
       _db.collection('articles').doc(id).update({...data, 'updatedAt': FieldValue.serverTimestamp()});
