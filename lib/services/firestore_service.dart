@@ -157,15 +157,15 @@ class FirestoreService {
 
   // ADMIN
   Stream<List<ArticleModel>> allArticles() => _db
-      .collection('articles').orderBy('createdAt', descending: true)
+      .collection('articles')
       .snapshots().map((s) => s.docs.map(ArticleModel.fromFirestore).toList());
 
   Stream<List<UserModel>> allUsers() => _db
-      .collection('users').orderBy('createdAt', descending: true)
+      .collection('users')
       .snapshots().map((s) => s.docs.map(UserModel.fromFirestore).toList());
 
   Stream<List<UserModel>> allVendeurs() => _db
-      .collection('vendeurs').orderBy('createdAt', descending: true)
+      .collection('vendeurs')
       .snapshots().map((s) => s.docs.map(UserModel.fromFirestore).toList());
 
   Stream<List<OrderModel>> allOrders() => _db
