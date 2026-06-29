@@ -168,10 +168,13 @@ class FirestoreService {
       .collection('vendeurs')
       .snapshots().map((s) => s.docs.map(UserModel.fromFirestore).toList());
 
-  Stream<List<OrderModel>> allOrders() => _db
+  Stream<List<OrderModel>> allOrders() {
+    return _db
       .collection('orders')
+      .where('status', whereIn: ['confirmed', 'processing', 'shipped', 'delivered', 'cancelled'])
       .snapshots()
       .map((s) => s.docs.map(OrderModel.fromFirestore).toList());
+  }
 
   Stream<List<WithdrawalModel>> allWithdrawals() => _db
       .collection('withdrawals')
