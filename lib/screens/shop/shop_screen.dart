@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -91,6 +92,9 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
           backgroundColor: EgcColors.bg2,
           title: Image.asset('assets/images/logo_boutikcredit.png', height: 36, fit: BoxFit.contain),
           actions: [
+            // Cloche notifications commandes
+            _NotificationBell(),
+            // Panier
             Stack(children: [
               IconButton(icon: const Icon(Icons.shopping_cart_outlined), onPressed: () => context.go('/cart')),
               if (cartCount > 0) Positioned(top: 6, right: 6,
@@ -295,5 +299,134 @@ class _PlafondWidget extends ConsumerWidget {
         );
       },
     );
+  }
+}
+
+// ── WIDGET CLOCHE NOTIFICATIONS ──────────────────────────────────────
+class _NotificationBell extends ConsumerWidget {
+  const _NotificationBell();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final userAsync = ref.watch(userDataProvider);
+    final user = userAsync.asData?.value;
+    if (user == null) return const SizedBox.shrink();
+
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance
+          .collection('orders')
+          .where('userId', isEqualTo: user.uid)
+          .snapshots(),
+      builder: (ctx, snap) {
+        if (!snap.hasData) return IconButton(
+          icon: const Icon(Icons.notifications_outlined),
+          onPressed: () => context.go('/orders'),
+        );
+
+        final orders = snap.data!.docs;
+        // Compter commandes avec statut récent (non confirmées = en cours de livraison)
+        final activeOrders = orders.where((d) {
+          final status = ((d.data() as Map?)??{})['status'] ?? '';
+          return status == 'processing' || status == 'shipped';
+        }).length;
+
+        return Stack(children: [
+          IconButton(
+            icon: const Icon(Icons.notifications_outlined),
+            onPressed: () {
+              if (orders.isEmpty) {
+                context.go('/orders');
+                return;
+              }
+              // Afficher liste des commandes actives
+              showModalBottomSheet(
+                context: context,
+                backgroundColor: EgcColors.bg,
+                shape: const RoundedRectangleBorder(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+                builder: (_) => _OrderNotificationsSheet(orders: orders),
+              );
+            },
+          ),
+          if (activeOrders > 0) Positioned(top: 6, right: 6,
+            child: Container(width: 16, height: 16,
+              decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+              child: Center(child: Text('$activeOrders',
+                style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w700))))),
+        ]);
+      },
+    );
+  }
+}
+
+class _OrderNotificationsSheet extends StatelessWidget {
+  final List<QueryDocumentSnapshot> orders;
+  const _OrderNotificationsSheet({required this.orders});
+
+  @override
+  Widget build(BuildContext context) {
+    final activeOrders = orders.where((d) {
+      final status = ((d.data() as Map?)??{})['status'] ?? '';
+      return status == 'processing' || status == 'shipped' || status == 'confirmed';
+    }).toList();
+
+    final statusLabels = {
+      'confirmed': '✅ Commande confirmée',
+      'processing': '📦 En cours de préparation',
+      'shipped': '🚚 En cours de livraison',
+      'delivered': '🎉 Livrée',
+      'cancelled': '❌ Annulée',
+    };
+
+    final statusColors = {
+      'confirmed': EgcColors.primary,
+      'processing': Colors.blue,
+      'shipped': Colors.orange,
+      'delivered': EgcColors.ok,
+      'cancelled': EgcColors.err,
+    };
+
+    return Column(mainAxisSize: MainAxisSize.min, children: [
+      Container(
+        margin: const EdgeInsets.symmetric(vertical: 8),
+        width: 40, height: 4,
+        decoration: BoxDecoration(color: EgcColors.line, borderRadius: EgcRadius.pill)),
+      const Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(children: [
+          Icon(Icons.notifications_outlined, color: EgcColors.primary),
+          SizedBox(width: 8),
+          Text('Notifications commandes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+        ]),
+      ),
+      const Divider(height: 1),
+      if (activeOrders.isEmpty)
+        const Padding(
+          padding: EdgeInsets.all(24),
+          child: Text('Aucune notification active', style: TextStyle(color: EgcColors.ink3)),
+        )
+      else
+        ...activeOrders.map((d) {
+          final data = (d.data() as Map<String, dynamic>?) ?? {};
+          final status = data['status'] ?? '';
+          final orderId = data['orderId'] ?? d.id;
+          final shortId = orderId.length > 14 ? orderId.substring(0, 14) : orderId;
+          return ListTile(
+            leading: Container(width: 10, height: 10,
+              decoration: BoxDecoration(
+                color: statusColors[status] ?? EgcColors.ink3,
+                shape: BoxShape.circle)),
+            title: Text('#$shortId', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+            subtitle: Text(statusLabels[status] ?? status,
+              style: TextStyle(fontSize: 12, color: statusColors[status] ?? EgcColors.ink3)),
+            trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: EgcColors.ink3),
+            onTap: () {
+              Navigator.pop(context);
+              context.go('/orders');
+            },
+          );
+        }),
+      const SizedBox(height: 16),
+    ]);
   }
 }
