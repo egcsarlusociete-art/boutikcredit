@@ -314,27 +314,31 @@ class _NotificationBell extends ConsumerWidget {
 
     return StreamBuilder<QuerySnapshot>(
       stream: FirebaseFirestore.instance
-          .collection('orders')
+          .collection('notifications')
           .where('userId', isEqualTo: user.uid)
+          .where('read', isEqualTo: false)
           .snapshots(),
       builder: (ctx, snap) {
-        if (!snap.hasData) return IconButton(
-          icon: const Icon(Icons.notifications_outlined),
-          onPressed: () => context.go('/orders'),
-        );
-
-        final orders = snap.data!.docs;
-        // Compter commandes avec statut récent (non confirmées = en cours de livraison)
-        final activeOrders = orders.where((d) {
-          final status = ((d.data() as Map?)??{})['status'] ?? '';
-          return status == 'processing' || status == 'shipped';
-        }).length;
+        // Aussi écouter les commandes actives
+        return StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('orders')
+              .where('userId', isEqualTo: user.uid)
+              .snapshots(),
+          builder: (ctx2, orderSnap) {
+            final orders = orderSnap.data?.docs ?? [];
+            final activeOrders = orders.where((d) {
+              final status = ((d.data() as Map?)??{})['status'] ?? '';
+              return status == 'processing' || status == 'shipped';
+            }).length;
+            final unreadNotifs = snap.data?.docs.length ?? 0;
+            final totalBadge = activeOrders + unreadNotifs;
 
         return Stack(children: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () {
-              if (orders.isEmpty) {
+              if (orders.isEmpty && unreadNotifs == 0) {
                 context.go('/orders');
                 return;
               }
@@ -348,12 +352,14 @@ class _NotificationBell extends ConsumerWidget {
               );
             },
           ),
-          if (activeOrders > 0) Positioned(top: 6, right: 6,
+          if (totalBadge > 0) Positioned(top: 6, right: 6,
             child: Container(width: 16, height: 16,
               decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-              child: Center(child: Text('$activeOrders',
+              child: Center(child: Text('$totalBadge',
                 style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w700))))),
         ]);
+          },
+        );
       },
     );
   }
