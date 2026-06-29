@@ -294,7 +294,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
               _infoRow('🏙️ Ville', ville),
               const Divider(height: 20),
               _infoRow('💳 Plan', plan),
-              _infoRow('📊 Catégorie', 'Cat. \$cat — \${plafonds[cat] ?? '?'} F CFA'),
+              _infoRow('Categorie', 'Cat. \$cat - \${plafonds[cat] ?? "?"} F CFA'),
               _infoRow('✅ Statut', statut),
               _infoRow('🔗 Code parrain', refCode),
               const Divider(height: 20),
