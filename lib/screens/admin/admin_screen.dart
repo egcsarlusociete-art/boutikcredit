@@ -364,12 +364,26 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
       if (!snap.hasData) return _loadingWidget();
       final docs = snap.data!.docs;
       if (docs.isEmpty) return _emptyWidget('Aucune demande de changement');
+      final treated = docs.where((d) => ['approved','rejected'].contains(((d.data() as Map?)??{})['status'] ?? '')).toList();
       return ListView.separated(
-        padding: const EdgeInsets.all(12), itemCount: docs.length,
+        padding: const EdgeInsets.all(12), itemCount: docs.length + (treated.isNotEmpty ? 1 : 0),
         separatorBuilder: (_, __) => const SizedBox(height: 8),
         itemBuilder: (ctx, i) {
-          final d = docs[i].data() as Map<String, dynamic>;
-          final docId = docs[i].id;
+          if (treated.isNotEmpty && i == 0) return Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                for (final d in treated) await FirebaseFirestore.instance.collection('cat_change_requests').doc(d.id).delete();
+                if (context.mounted) showSnack(context, treated.length.toString() + ' demandes supprimees');
+              },
+              icon: const Icon(Icons.cleaning_services_outlined, size: 16),
+              label: Text('Nettoyer ' + treated.length.toString() + ' demandes traitees'),
+              style: ElevatedButton.styleFrom(backgroundColor: EgcColors.ink3, minimumSize: const Size(double.infinity, 44)),
+            ),
+          );
+          final idx = treated.isNotEmpty ? i - 1 : i;
+          final d = docs[idx].data() as Map<String, dynamic>;
+          final docId = docs[idx].id;
           final status = d['status'] ?? 'pending';
           final userId = d['userId'] ?? '';
           final userName = d['userName'] ?? '';
@@ -393,6 +407,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                   Text(userName, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: EgcColors.ink)),
                   Text('Cat. $currentCat → Cat. $requestedCat',
                     style: const TextStyle(fontSize: 12, color: EgcColors.primary, fontWeight: FontWeight.w700)),
+                  Text(fmtDate((d['createdAt'] as Timestamp?)?.toDate()), style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
                 ])),
                 Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
