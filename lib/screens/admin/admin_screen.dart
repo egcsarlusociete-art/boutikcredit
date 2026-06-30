@@ -427,6 +427,15 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                     style: ElevatedButton.styleFrom(backgroundColor: EgcColors.ok),
                     child: const Text('Valider'),
                   )),
+                  const SizedBox(width: 8),
+                  Expanded(child: ElevatedButton(
+                    onPressed: () async {
+                      await FirebaseFirestore.instance.collection('cat_change_requests').doc(docId).update({'status': 'rejected', 'rejectedAt': FieldValue.serverTimestamp()});
+                      if (context.mounted) showSnack(context, 'Demande refusee');
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: EgcColors.err),
+                    child: const Text('Refuser'),
+                  )),
                 ]),
             ]),
           );
