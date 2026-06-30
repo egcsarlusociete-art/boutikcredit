@@ -402,50 +402,32 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                     style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
                       color: isPending ? EgcColors.primary : status == 'approved' ? EgcColors.ok : EgcColors.err))),
               ]),
-              if (isPending) ...[
-                const SizedBox(height: 12),
+              if (isPending)
                 Row(children: [
-                  Expanded(child: _aBtn('✅ Valider', EgcColors.ok, () async {
-                    // 1. Mettre à jour la catégorie utilisateur
-                    // Chercher dans users d'abord, sinon vendeurs
-                    final userSnap = await FirebaseFirestore.instance.collection('users').doc(userId).get();
-                    final coll = userSnap.exists ? 'users' : 'vendeurs';
-                    await FirebaseFirestore.instance.collection(coll).doc(userId).update({
-                      'creditCat': requestedCat, 'updatedAt': FieldValue.serverTimestamp()
-                    });
-                    // 2. Mettre à jour le statut de la demande
-                    await FirebaseFirestore.instance.collection('cat_change_requests').doc(docId).update({
-                      'status': 'approved', 'approvedAt': FieldValue.serverTimestamp()
-                    });
-                    // 3. Ajouter une notification pour l'utilisateur
-                    await FirebaseFirestore.instance.collection('notifications').add({
-                      'userId': userId,
-                      'type': 'cat_change',
-                      'title': 'Catégorie mise à jour',
-                      'message': 'Votre demande de passage à Cat. $requestedCat a été approuvée !',
-                      'read': false,
-                      'createdAt': FieldValue.serverTimestamp(),
-                    });
-                    if (context.mounted) showSnack(context, '✅ Catégorie mise à jour pour $userName');
-                  })),
-                  const SizedBox(width: 8),
-                  Expanded(child: _aBtn('❌ Refuser', EgcColors.err, () async {
-                    await FirebaseFirestore.instance.collection('cat_change_requests').doc(docId).update({
-                      'status': 'rejected', 'rejectedAt': FieldValue.serverTimestamp()
-                    });
-                    // Notification de refus
-                    await FirebaseFirestore.instance.collection('notifications').add({
-                      'userId': userId,
-                      'type': 'cat_change',
-                      'title': 'Demande refusée',
-                      'message': 'Votre demande de passage à Cat. $requestedCat a été refusée.',
-                      'read': false,
-                      'createdAt': FieldValue.serverTimestamp(),
-                    });
-                    if (context.mounted) showSnack(context, 'Demande refusée');
-                  })),
+                  Expanded(child: ElevatedButton(
+                    onPressed: () async {
+                      final userSnap = await FirebaseFirestore.instance.collection('users').doc(userId).get();
+                      final coll = userSnap.exists ? 'users' : 'vendeurs';
+                      await FirebaseFirestore.instance.collection(coll).doc(userId).update({
+                        'creditCat': requestedCat, 'updatedAt': FieldValue.serverTimestamp()
+                      });
+                      await FirebaseFirestore.instance.collection('cat_change_requests').doc(docId).update({
+                        'status': 'approved', 'approvedAt': FieldValue.serverTimestamp()
+                      });
+                      await FirebaseFirestore.instance.collection('notifications').add({
+                        'userId': userId,
+                        'type': 'cat_change',
+                        'title': 'Categorie mise a jour',
+                        'message': 'Votre demande de passage a Cat. ' + requestedCat + ' a ete approuvee !',
+                        'read': false,
+                        'createdAt': FieldValue.serverTimestamp(),
+                      });
+                      if (context.mounted) showSnack(context, 'Categorie mise a jour pour ' + userName);
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: EgcColors.ok),
+                    child: const Text('Valider'),
+                  )),
                 ]),
-              ],
             ]),
           );
         });
