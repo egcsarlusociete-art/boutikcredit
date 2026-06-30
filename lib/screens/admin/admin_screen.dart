@@ -408,8 +408,21 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                 Align(alignment: Alignment.centerRight,
                   child: TextButton.icon(
                     onPressed: () async {
-                      await FirebaseFirestore.instance.collection('cat_change_requests').doc(docId).delete();
-                      if (context.mounted) showSnack(context, 'Demande supprimee');
+                      final confirm = await showDialog<bool>(
+                        context: context,
+                        builder: (_) => AlertDialog(
+                          title: const Text('Confirmer'),
+                          content: Text('Supprimer la demande de ' + userName + ' (Cat. ' + currentCat + ' → Cat. ' + requestedCat + ') ?'),
+                          actions: [
+                            TextButton(onPressed: () => Navigator.pop(_, false), child: const Text('Annuler')),
+                            TextButton(onPressed: () => Navigator.pop(_, true), child: const Text('Supprimer', style: TextStyle(color: EgcColors.err))),
+                          ],
+                        ),
+                      );
+                      if (confirm == true) {
+                        await FirebaseFirestore.instance.collection('cat_change_requests').doc(docId).delete();
+                        if (context.mounted) showSnack(context, 'Demande supprimee');
+                      }
                     },
                     icon: const Icon(Icons.delete_outline, size: 16, color: EgcColors.err),
                     label: const Text('Supprimer', style: TextStyle(fontSize: 12, color: EgcColors.err)),
