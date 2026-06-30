@@ -40,7 +40,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
           labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
           tabs: const [
             Tab(text: 'Articles'), Tab(text: 'Images'),
-            Tab(text: 'Vendeurs'), Tab(text: 'Commandes'), Tab(text: 'Retraits')
+            Tab(text: 'Vendeurs'), Tab(text: 'Commandes'), Tab(text: 'Retraits'), Tab(text: 'Changement Statut')
           ]),
       ),
       body: TabBarView(controller: _tabs, children: [
