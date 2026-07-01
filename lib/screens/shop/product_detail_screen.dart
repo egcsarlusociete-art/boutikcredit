@@ -59,8 +59,10 @@ class ProductDetailScreen extends ConsumerWidget {
               // Vendeur
               Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(border: Border.all(color: EgcColors.line, width: 1.5), borderRadius: EgcRadius.mdBorder),
                 child: Row(children: [
-                  Container(width: 40, height: 40, decoration: BoxDecoration(color: EgcColors.primaryBg, shape: BoxShape.circle),
-                    child: const Center(child: Text('🏪', style: TextStyle(fontSize: 20)))),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(8),
+                    child: _vendeurLogo(a.vendeurId),
+                  ),
                   const SizedBox(width: 12),
                   Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     Text(a.shopName, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: EgcColors.ink)),
@@ -180,4 +182,27 @@ class _ImageCarouselState extends State<_ImageCarousel> {
       ),
     ]);
   }
+}
+
+Widget _vendeurLogo(String vendeurId) {
+  // Map des logos par vendeurId
+  const logos = {
+    'impactveroty_vendor': 'https://impactveroty.com/logoIMPACT.jpg',
+  };
+  final url = logos[vendeurId];
+  if (url != null) {
+    return CachedNetworkImage(
+      imageUrl: url,
+      width: 40, height: 40,
+      fit: BoxFit.cover,
+      errorWidget: (_, __, ___) => Container(
+        width: 40, height: 40,
+        decoration: const BoxDecoration(color: EgcColors.primaryBg, shape: BoxShape.circle),
+        child: const Center(child: Text('🏪', style: TextStyle(fontSize: 20)))),
+    );
+  }
+  return Container(
+    width: 40, height: 40,
+    decoration: const BoxDecoration(color: EgcColors.primaryBg, shape: BoxShape.circle),
+    child: const Center(child: Text('🏪', style: TextStyle(fontSize: 20))));
 }
