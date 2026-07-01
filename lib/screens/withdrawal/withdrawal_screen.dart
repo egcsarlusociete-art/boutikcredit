@@ -139,7 +139,7 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
                       ),
                     ),
                     onDismissed: (_) async {
-                      await FirebaseFirestore.instance.collection('withdrawals').doc(w.id).delete();
+                      await FirebaseFirestore.instance.collection('withdrawals').doc(w.id).update({'deletedByUser': true});
                       if (context.mounted) showSnack(context, 'Retrait supprime');
                     },
                     child: Padding(padding: const EdgeInsets.symmetric(vertical: 8),
