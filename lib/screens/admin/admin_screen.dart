@@ -77,9 +77,25 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                 style: const TextStyle(fontSize: 11, color: EgcColors.blue)),
               const SizedBox(height: 8),
               Row(children: [
-                if (a.status != 'published') _aBtn('Publier', EgcColors.ok, () => _fs.adminUpdateArticle(a.id, {'status': 'published'})),
+                if (a.status != 'published') _aBtn('Publier', EgcColors.ok, () async {
+                  await _fs.adminUpdateArticle(a.id, {'status': 'published'});
+                  await FirebaseFirestore.instance.collection('notifications').add({
+                    'userId': a.vendeurId, 'type': 'article', 'read': false,
+                    'title': 'Article publié ✅',
+                    'message': 'Votre article "${a.name}" a été approuvé et publié sur BoutikCredit !',
+                    'createdAt': FieldValue.serverTimestamp(),
+                  });
+                }),
                 const SizedBox(width: 6),
-                if (a.status != 'rejected') _aBtn('Refuser', EgcColors.err, () => _fs.adminUpdateArticle(a.id, {'status': 'rejected'})),
+                if (a.status != 'rejected') _aBtn('Refuser', EgcColors.err, () async {
+                  await _fs.adminUpdateArticle(a.id, {'status': 'rejected'});
+                  await FirebaseFirestore.instance.collection('notifications').add({
+                    'userId': a.vendeurId, 'type': 'article', 'read': false,
+                    'title': 'Article refusé ❌',
+                    'message': 'Votre article "${a.name}" a été refusé. Contactez l\'admin pour plus d\'infos.',
+                    'createdAt': FieldValue.serverTimestamp(),
+                  });
+                }),
                 const Spacer(),
                 _deleteBtn(() async {
                   final ok = await _confirmDelete(context, a.name);
@@ -321,11 +337,23 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                 if (w.status == 'pending') ...[
                   _aBtn('Approuver', EgcColors.ok, () async {
                     await _fs.adminApproveWithdrawal(w.id);
+                    await FirebaseFirestore.instance.collection('notifications').add({
+                      'userId': w.userId, 'type': 'withdrawal', 'read': false,
+                      'title': 'Retrait approuvé ✅',
+                      'message': 'Votre retrait de ${w.amount.toInt()} F CFA via ${w.method.toUpperCase()} a été approuvé !',
+                      'createdAt': FieldValue.serverTimestamp(),
+                    });
                     if (context.mounted) showSnack(context, 'Retrait approuve');
                   }),
                   const SizedBox(width: 6),
                   _aBtn('Refuser', EgcColors.err, () async {
                     await _fs.adminRejectWithdrawal(w.id, w.userId, w.amount);
+                    await FirebaseFirestore.instance.collection('notifications').add({
+                      'userId': w.userId, 'type': 'withdrawal', 'read': false,
+                      'title': 'Retrait refusé ❌',
+                      'message': 'Votre retrait de ${w.amount.toInt()} F CFA via ${w.method.toUpperCase()} a été refusé. Le montant a été recrédité.',
+                      'createdAt': FieldValue.serverTimestamp(),
+                    });
                     if (context.mounted) showSnack(context, 'Retrait refuse');
                   }),
                 ],
@@ -363,7 +391,23 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
           child: ElevatedButton(onPressed: null,
             style: ElevatedButton.styleFrom(backgroundColor: EgcColors.bg3, padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6), minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap, shape: RoundedRectangleBorder(borderRadius: EgcRadius.smBorder)),
             child: Text(labels[s] ?? s, style: const TextStyle(fontSize: 11, color: EgcColors.ink3))));
-        return Padding(padding: const EdgeInsets.only(right: 6), child: _aBtn(labels[s] ?? s, statusColor(s), () => _fs.adminUpdateOrderStatus(o.id, s)));
+        return Padding(padding: const EdgeInsets.only(right: 6), child: _aBtn(labels[s] ?? s, statusColor(s), () async {
+          await _fs.adminUpdateOrderStatus(o.id, s);
+          final msgs = {
+            'processing': 'Votre commande #${o.orderId.substring(0,8)} est en cours de préparation 📦',
+            'shipped': 'Votre commande #${o.orderId.substring(0,8)} est en cours de livraison 🚚',
+            'delivered': 'Votre commande #${o.orderId.substring(0,8)} a été livrée avec succès 🎉',
+            'cancelled': 'Votre commande #${o.orderId.substring(0,8)} a été annulée ❌',
+          };
+          if (msgs.containsKey(s)) {
+            await FirebaseFirestore.instance.collection('notifications').add({
+              'userId': o.userId, 'type': 'order', 'read': false,
+              'title': 'Commande mise à jour',
+              'message': msgs[s],
+              'createdAt': FieldValue.serverTimestamp(),
+            });
+          }
+        }));
       }),
       _aBtn('Annuler', EgcColors.err, () => _fs.adminUpdateOrderStatus(o.id, 'cancelled')),
     ]));
