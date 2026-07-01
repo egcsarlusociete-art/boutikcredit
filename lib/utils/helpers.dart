@@ -59,7 +59,6 @@ const Map<String, String> kCategoryIcons = {
   'alimentation':  'restaurant',
   'food':          'restaurant',
   'sport':       'sports_soccer',
-  'food':        'restaurant',
   'other':       'inventory_2',
 };
 
