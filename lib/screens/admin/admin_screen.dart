@@ -631,6 +631,14 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                   Expanded(child: ElevatedButton(
                     onPressed: () async {
                       await FirebaseFirestore.instance.collection('cat_change_requests').doc(docId).update({'status': 'rejected', 'rejectedAt': FieldValue.serverTimestamp()});
+                      await FirebaseFirestore.instance.collection('notifications').add({
+                        'userId': userId,
+                        'type': 'cat_change',
+                        'title': 'Demande refusée ❌',
+                        'message': 'Votre demande de passage à Cat. ' + requestedCat + ' a été refusée.',
+                        'read': false,
+                        'createdAt': FieldValue.serverTimestamp(),
+                      });
                       if (context.mounted) showSnack(context, 'Demande refusee');
                     },
                     style: ElevatedButton.styleFrom(backgroundColor: EgcColors.err),
