@@ -32,7 +32,7 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
 
   Future<void> _submit(UserModel? user) async {
     final amt = double.tryParse(_amtC.text.replaceAll(' ', '')) ?? 0;
-    if (amt < 10000) { showSnack(context, 'Montant minimum : 10 000 F CFA', isError: true); return; }
+    if (amt < 1000) { showSnack(context, 'Montant minimum : 1 000 F CFA', isError: true); return; }
     if (amt > (user?.bonus ?? 0)) { showSnack(context, 'Solde insuffisant', isError: true); return; }
     if (_operator == null) { showSnack(context, 'Choisissez un opérateur', isError: true); return; }
     if (_accC.text.isEmpty) { showSnack(context, 'Entrez votre numéro', isError: true); return; }
@@ -72,7 +72,7 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
               const Text('Solde disponible', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: EgcColors.ink3, letterSpacing: 0.4)),
               const SizedBox(height: 6),
               Text(fmtPrice(user?.bonus ?? 0), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: EgcColors.ink, letterSpacing: -0.5)),
-              const Text('Retrait minimum : 10 000 F CFA', style: TextStyle(fontSize: 12, color: EgcColors.ink3)),
+              const Text('Retrait minimum : 1 000 F CFA', style: TextStyle(fontSize: 12, color: EgcColors.ink3)),
             ])),
           const SizedBox(height: 16),
           // Form
