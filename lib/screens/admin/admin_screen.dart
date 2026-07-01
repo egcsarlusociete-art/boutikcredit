@@ -80,6 +80,14 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                 if (a.status != 'published') _aBtn('Publier', EgcColors.ok, () => _fs.adminUpdateArticle(a.id, {'status': 'published'})),
                 const SizedBox(width: 6),
                 if (a.status != 'rejected') _aBtn('Refuser', EgcColors.err, () => _fs.adminUpdateArticle(a.id, {'status': 'rejected'})),
+                const Spacer(),
+                _deleteBtn(() async {
+                  final ok = await _confirmDelete(context, a.name);
+                  if (ok == true) {
+                    await FirebaseFirestore.instance.collection('articles').doc(a.id).delete();
+                    if (context.mounted) showSnack(context, 'Article supprime');
+                  }
+                }),
               ]),
             ]),
           );
@@ -146,13 +154,23 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                 Text('${v.email} · ${v.city}', style: const TextStyle(fontSize: 11, color: EgcColors.ink3), overflow: TextOverflow.ellipsis),
                 StatusPill(v.planStatus, labels: {'pending': 'En attente', 'active': 'Actif', 'suspended': 'Suspendu'}),
               ])),
-              if (v.planStatus != 'active')
-                _aBtn('Activer', EgcColors.ok, () async {
-                  await FirebaseFirestore.instance.collection('vendeurs').doc(v.uid).update({
-                    'planStatus': 'active', 'activatedAt': FieldValue.serverTimestamp()
-                  });
-                  if (context.mounted) showSnack(context, '✅ Vendeur activé');
+              Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                if (v.planStatus != 'active')
+                  _aBtn('Activer', EgcColors.ok, () async {
+                    await FirebaseFirestore.instance.collection('vendeurs').doc(v.uid).update({
+                      'planStatus': 'active', 'activatedAt': FieldValue.serverTimestamp()
+                    });
+                    if (context.mounted) showSnack(context, 'Vendeur active');
+                  }),
+                const SizedBox(height: 6),
+                _deleteBtn(() async {
+                  final ok = await _confirmDelete(context, v.name);
+                  if (ok == true) {
+                    await FirebaseFirestore.instance.collection('vendeurs').doc(v.uid).delete();
+                    if (context.mounted) showSnack(context, 'Vendeur supprime');
+                  }
                 }),
+              ]),
             ]),
           );
         });
@@ -192,6 +210,15 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                 _clientInfoBtn(context, o.userId, o.orderId, o.subtotal, o.status),
                 const SizedBox(height: 8),
                 _buildOrderActions(o),
+              const SizedBox(height: 4),
+              Align(alignment: Alignment.centerRight,
+                child: _deleteBtn(() async {
+                  final ok = await _confirmDelete(context, '#' + o.orderId);
+                  if (ok == true) {
+                    await FirebaseFirestore.instance.collection('orders').doc(o.id).delete();
+                    if (context.mounted) showSnack(context, 'Commande supprimee');
+                  }
+                })),
               ]),
             );
           });
@@ -290,15 +317,25 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                 ),
               ),
               const SizedBox(height: 8),
-              if (w.status == 'pending') Row(children: [
-                _aBtn('Approuver', EgcColors.ok, () async {
-                  await _fs.adminApproveWithdrawal(w.id);
-                  if (context.mounted) showSnack(context, '✅ Retrait approuvé');
-                }),
-                const SizedBox(width: 6),
-                _aBtn('Refuser', EgcColors.err, () async {
-                  await _fs.adminRejectWithdrawal(w.id, w.userId, w.amount);
-                  if (context.mounted) showSnack(context, 'Retrait refusé');
+              Row(children: [
+                if (w.status == 'pending') ...[
+                  _aBtn('Approuver', EgcColors.ok, () async {
+                    await _fs.adminApproveWithdrawal(w.id);
+                    if (context.mounted) showSnack(context, 'Retrait approuve');
+                  }),
+                  const SizedBox(width: 6),
+                  _aBtn('Refuser', EgcColors.err, () async {
+                    await _fs.adminRejectWithdrawal(w.id, w.userId, w.amount);
+                    if (context.mounted) showSnack(context, 'Retrait refuse');
+                  }),
+                ],
+                const Spacer(),
+                _deleteBtn(() async {
+                  final ok = await _confirmDelete(context, 'retrait de ' + w.userName);
+                  if (ok == true) {
+                    await FirebaseFirestore.instance.collection('withdrawals').doc(w.id).delete();
+                    if (context.mounted) showSnack(context, 'Retrait supprime');
+                  }
                 }),
               ]),
             ]),
@@ -396,6 +433,32 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
       SizedBox(width: 130, child: Text(label, style: const TextStyle(fontSize: 12, color: EgcColors.ink3))),
       Expanded(child: Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: EgcColors.ink))),
     ]),
+  );
+
+  Widget _deleteBtn(VoidCallback onTap) => GestureDetector(
+    onTap: onTap,
+    child: Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(color: const Color(0xFFFEE2E2), borderRadius: EgcRadius.pill, border: Border.all(color: EgcColors.err)),
+      child: const Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(Icons.delete_outline, size: 14, color: EgcColors.err),
+        SizedBox(width: 4),
+        Text('Supprimer', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: EgcColors.err)),
+      ]),
+    ),
+  );
+
+  Future<bool?> _confirmDelete(BuildContext ctx, String name) => showDialog<bool>(
+    context: ctx,
+    builder: (_) => AlertDialog(
+      title: const Text('Confirmer la suppression'),
+      content: Text('Supprimer "$name" ? Cette action est irreversible.'),
+      actions: [
+        TextButton(onPressed: () => Navigator.pop(_, false), child: const Text('Annuler')),
+        TextButton(onPressed: () => Navigator.pop(_, true),
+          child: const Text('Supprimer', style: TextStyle(color: EgcColors.err))),
+      ],
+    ),
   );
 
   Widget _loadingWidget() => const Center(child: CircularProgressIndicator(color: EgcColors.primary));
