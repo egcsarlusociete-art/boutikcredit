@@ -221,6 +221,74 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
               ]),
               Text('${w.method.toUpperCase()} — ${w.account}  ·  ${fmtPrice(w.amount)}',
                 style: const TextStyle(fontSize: 12, color: EgcColors.ink3)),
+              const SizedBox(height: 6),
+              // Bouton voir filleuls
+              GestureDetector(
+                onTap: () async {
+                  final snap = await FirebaseFirestore.instance
+                      .collection('referrals')
+                      .where('referrerId', isEqualTo: w.userId)
+                      .get();
+                  if (!context.mounted) return;
+                  showDialog(context: context, builder: (_) => AlertDialog(
+                    shape: RoundedRectangleBorder(borderRadius: EgcRadius.mdBorder),
+                    title: Row(children: [
+                      const Icon(Icons.people_outline, color: EgcColors.primary),
+                      const SizedBox(width: 8),
+                      Expanded(child: Text('Filleuls de ' + w.userName, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800))),
+                    ]),
+                    content: snap.docs.isEmpty
+                      ? const Text('Aucun filleul pour ce compte.', style: TextStyle(color: EgcColors.ink3))
+                      : SizedBox(width: double.maxFinite, child: ListView.separated(
+                          shrinkWrap: true,
+                          itemCount: snap.docs.length,
+                          separatorBuilder: (_, __) => const Divider(height: 1),
+                          itemBuilder: (_, i) {
+                            final r = snap.docs[i].data();
+                            final name = r['name'] ?? 'Inconnu';
+                            final date = (r['createdAt'] as Timestamp?)?.toDate();
+                            return FutureBuilder<DocumentSnapshot>(
+                              future: FirebaseFirestore.instance.collection('users').doc(r['referredId'] ?? '').get(),
+                              builder: (_, userSnap) {
+                                String statut = 'En attente';
+                                if (userSnap.hasData && userSnap.data!.exists) {
+                                  final d = userSnap.data!.data() as Map<String, dynamic>?;
+                                  statut = d?['planStatus'] == 'active' ? 'Actif' : 'En attente';
+                                }
+                                return ListTile(
+                                  dense: true,
+                                  leading: CircleAvatar(radius: 16, backgroundColor: EgcColors.primaryBg,
+                                    child: Text(name.isNotEmpty ? name[0].toUpperCase() : 'U',
+                                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: EgcColors.primary))),
+                                  title: Text(name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                                  subtitle: date != null ? Text(fmtDate(date), style: const TextStyle(fontSize: 11)) : null,
+                                  trailing: Container(
+                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                                    decoration: BoxDecoration(
+                                      color: statut == 'Actif' ? EgcColors.okBg : EgcColors.primaryBg,
+                                      borderRadius: EgcRadius.pill),
+                                    child: Text(statut, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
+                                      color: statut == 'Actif' ? EgcColors.ok : EgcColors.primary))),
+                                );
+                              },
+                            );
+                          },
+                        )),
+                    actions: [
+                      TextButton(onPressed: () => Navigator.pop(_), child: const Text('Fermer')),
+                    ],
+                  ));
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                  decoration: BoxDecoration(color: EgcColors.primaryBg, borderRadius: EgcRadius.pill, border: Border.all(color: EgcColors.primaryMid)),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    const Icon(Icons.people_outline, size: 14, color: EgcColors.primary),
+                    const SizedBox(width: 4),
+                    Text('Filleuls (' + w.userName + ')', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: EgcColors.primary)),
+                  ]),
+                ),
+              ),
               const SizedBox(height: 8),
               if (w.status == 'pending') Row(children: [
                 _aBtn('Approuver', EgcColors.ok, () async {
