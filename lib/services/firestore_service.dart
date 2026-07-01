@@ -107,7 +107,7 @@ class FirestoreService {
       .snapshots()
       .map((s) => s.docs
         .map(WithdrawalModel.fromFirestore)
-        .where((w) => !w.deletedByUser)
+        .where((w) => w.deletedByUser != true)
         .toList());
 
   Future<void> requestWithdrawal({
@@ -183,7 +183,7 @@ class FirestoreService {
       .snapshots()
       .map((s) => s.docs
         .map(WithdrawalModel.fromFirestore)
-        .where((w) => !w.deletedByAdmin)
+        .where((w) => w.deletedByAdmin != true)
         .toList());
 
   Future<void> adminUpdateArticle(String id, Map<String, dynamic> data) =>
