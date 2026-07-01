@@ -114,22 +114,50 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
               wdAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator(color: EgcColors.primary)),
                 error: (_,__) => const Text('Erreur'),
-                data: (list) => list.isEmpty
-                  ? const Center(child: Padding(padding: EdgeInsets.all(16), child: Text('Aucun retrait', style: TextStyle(color: EgcColors.ink3))))
-                  : Column(children: list.map((w) => Padding(padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: Row(children: [
-                      Container(width: 38, height: 38, decoration: BoxDecoration(color: EgcColors.errBg, borderRadius: BorderRadius.circular(10)),
-                        child: const Center(child: Text('💸', style: TextStyle(fontSize: 18)))),
-                      const SizedBox(width: 12),
-                      Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                        Text('${w.method.toUpperCase()} — ${w.account}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: EgcColors.ink)),
-                        Text(fmtDate(w.createdAt), style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                data: (list) {
+                  final filtered = list.where((w) => !w.deletedByUser).toList();
+                  if (filtered.isEmpty) return const Center(child: Padding(padding: EdgeInsets.all(16), child: Text('Aucun retrait', style: TextStyle(color: EgcColors.ink3))));
+                  return Column(children: filtered.map((w) => Dismissible(
+                    key: Key(w.id),
+                    direction: DismissDirection.endToStart,
+                    background: Container(
+                      alignment: Alignment.centerRight,
+                      padding: const EdgeInsets.only(right: 16),
+                      margin: const EdgeInsets.symmetric(vertical: 4),
+                      decoration: BoxDecoration(color: EgcColors.err, borderRadius: BorderRadius.circular(10)),
+                      child: const Icon(Icons.delete_outline, color: Colors.white)),
+                    confirmDismiss: (_) => showDialog<bool>(
+                      context: context,
+                      builder: (ctx) => AlertDialog(
+                        title: const Text('Supprimer ce retrait ?'),
+                        content: const Text('Cette action supprimera le retrait de votre historique.'),
+                        actions: [
+                          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Annuler')),
+                          TextButton(onPressed: () => Navigator.pop(ctx, true),
+                            child: const Text('Supprimer', style: TextStyle(color: Color(0xFFDC2626)))),
+                        ],
+                      ),
+                    ),
+                    onDismissed: (_) async {
+                      await FirebaseFirestore.instance.collection('withdrawals').doc(w.id).update({'deletedByUser': true});
+                      if (context.mounted) showSnack(context, 'Retrait supprime');
+                    },
+                    child: Padding(padding: const EdgeInsets.symmetric(vertical: 8),
+                      child: Row(children: [
+                        Container(width: 38, height: 38, decoration: BoxDecoration(color: EgcColors.errBg, borderRadius: BorderRadius.circular(10)),
+                          child: const Center(child: Text('💸', style: TextStyle(fontSize: 18)))),
+                        const SizedBox(width: 12),
+                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text(w.method.toUpperCase() + ' — ' + w.account, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: EgcColors.ink)),
+                          Text(fmtDate(w.createdAt), style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                        ])),
+                        Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
+                          Text('-' + fmtPrice(w.amount), style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: EgcColors.err)),
+                          StatusPill(w.status, labels: kWithdrawalStatus),
+                        ]),
                       ])),
-                      Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
-                        Text('-${fmtPrice(w.amount)}', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: EgcColors.err)),
-                        StatusPill(w.status, labels: kWithdrawalStatus),
-                      ]),
-                    ]))).toList()),
+                  )).toList());
+                },
               ),
             ])),
           const SizedBox(height: 24),
