@@ -110,6 +110,8 @@ class WithdrawalModel {
       account: d['account'] ?? '', name: d['name'] ?? '',
       status: d['status'] ?? 'pending',
       createdAt: (d['createdAt'] as Timestamp?)?.toDate(),
+      deletedByUser: d['deletedByUser'] as bool?,
+      deletedByAdmin: d['deletedByAdmin'] as bool?,
     );
   }
 }
