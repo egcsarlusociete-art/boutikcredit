@@ -319,120 +319,175 @@ class _NotificationBell extends ConsumerWidget {
           .where('read', isEqualTo: false)
           .snapshots(),
       builder: (ctx, snap) {
-        // Aussi écouter les commandes actives
-        return StreamBuilder<QuerySnapshot>(
-          stream: FirebaseFirestore.instance
-              .collection('orders')
-              .where('userId', isEqualTo: user.uid)
-              .snapshots(),
-          builder: (ctx2, orderSnap) {
-            final orders = orderSnap.data?.docs ?? [];
-            final activeOrders = orders.where((d) {
-              final status = ((d.data() as Map?)??{})['status'] ?? '';
-              return status == 'processing' || status == 'shipped';
-            }).length;
-            final unreadNotifs = snap.data?.docs.length ?? 0;
-            final totalBadge = activeOrders + unreadNotifs;
-
+        final unread = snap.data?.docs ?? [];
+        final badge = unread.length;
         return Stack(children: [
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
-            onPressed: () {
-              if (orders.isEmpty && unreadNotifs == 0) {
-                context.go('/orders');
-                return;
-              }
-              // Afficher liste des commandes actives
-              showModalBottomSheet(
-                context: context,
-                backgroundColor: EgcColors.bg,
-                shape: const RoundedRectangleBorder(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-                builder: (_) => _OrderNotificationsSheet(orders: orders),
-              );
-            },
+            onPressed: () => showModalBottomSheet(
+              context: context,
+              backgroundColor: EgcColors.bg,
+              isScrollControlled: true,
+              shape: const RoundedRectangleBorder(
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+              builder: (_) => _NotificationsSheet(userId: user.uid),
+            ),
           ),
-          if (totalBadge > 0) Positioned(top: 6, right: 6,
+          if (badge > 0) Positioned(top: 6, right: 6,
             child: Container(width: 16, height: 16,
               decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-              child: Center(child: Text('$totalBadge',
+              child: Center(child: Text('$badge',
                 style: const TextStyle(color: Colors.white, fontSize: 9, fontWeight: FontWeight.w700))))),
         ]);
-          },
-        );
       },
     );
   }
 }
 
-class _OrderNotificationsSheet extends StatelessWidget {
-  final List<QueryDocumentSnapshot> orders;
-  const _OrderNotificationsSheet({required this.orders});
+class _NotificationsSheet extends StatelessWidget {
+  final String userId;
+  const _NotificationsSheet({required this.userId});
 
   @override
   Widget build(BuildContext context) {
-    final activeOrders = orders.where((d) {
-      final status = ((d.data() as Map?)??{})['status'] ?? '';
-      return status == 'processing' || status == 'shipped' || status == 'confirmed';
-    }).toList();
+    return DraggableScrollableSheet(
+      initialChildSize: 0.7,
+      maxChildSize: 0.95,
+      minChildSize: 0.4,
+      expand: false,
+      builder: (_, ctrl) => Column(children: [
+        // Handle
+        Container(margin: const EdgeInsets.symmetric(vertical: 10),
+          width: 40, height: 4,
+          decoration: BoxDecoration(color: EgcColors.line, borderRadius: EgcRadius.pill)),
+        // Header
+        Padding(padding: const EdgeInsets.fromLTRB(16, 0, 8, 8),
+          child: Row(children: [
+            const Icon(Icons.notifications_outlined, color: EgcColors.primary),
+            const SizedBox(width: 8),
+            const Expanded(child: Text('Notifications', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800))),
+            // Marquer tout comme lu
+            TextButton.icon(
+              onPressed: () async {
+                final snaps = await FirebaseFirestore.instance
+                    .collection('notifications')
+                    .where('userId', isEqualTo: userId)
+                    .where('read', isEqualTo: false)
+                    .get();
+                for (final d in snaps.docs) {
+                  await d.reference.update({'read': true});
+                }
+              },
+              icon: const Icon(Icons.done_all, size: 16),
+              label: const Text('Tout lire', style: TextStyle(fontSize: 12)),
+            ),
+          ]),
+        ),
+        const Divider(height: 1),
+        // Liste notifications
+        Expanded(child: StreamBuilder<QuerySnapshot>(
+          stream: FirebaseFirestore.instance
+              .collection('notifications')
+              .where('userId', isEqualTo: userId)
+              .orderBy('createdAt', descending: true)
+              .snapshots(),
+          builder: (ctx, snap) {
+            if (!snap.hasData) return const Center(child: CircularProgressIndicator(color: EgcColors.primary));
+            final docs = snap.data!.docs;
+            // Aussi ajouter les commandes actives
+            if (docs.isEmpty) return const Center(child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text('🔔', style: TextStyle(fontSize: 48)),
+                SizedBox(height: 12),
+                Text('Aucune notification', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: EgcColors.ink)),
+                SizedBox(height: 4),
+                Text('Vous serez notifié des mises à jour importantes', style: TextStyle(fontSize: 12, color: EgcColors.ink3), textAlign: TextAlign.center),
+              ],
+            ));
 
-    final statusLabels = {
-      'confirmed': '✅ Commande confirmée',
-      'processing': '📦 En cours de préparation',
-      'shipped': '🚚 En cours de livraison',
-      'delivered': '🎉 Livrée',
-      'cancelled': '❌ Annulée',
-    };
+            return ListView.separated(
+              controller: ctrl,
+              padding: const EdgeInsets.all(12),
+              itemCount: docs.length,
+              separatorBuilder: (_, __) => const SizedBox(height: 8),
+              itemBuilder: (ctx2, i) {
+                final d = docs[i].data() as Map<String, dynamic>;
+                final docId = docs[i].id;
+                final type = d['type'] ?? '';
+                final title = d['title'] ?? '';
+                final message = d['message'] ?? '';
+                final isRead = d['read'] ?? false;
+                final date = (d['createdAt'] as Timestamp?)?.toDate();
 
-    final statusColors = {
-      'confirmed': EgcColors.primary,
-      'processing': Colors.blue,
-      'shipped': Colors.orange,
-      'delivered': EgcColors.ok,
-      'cancelled': EgcColors.err,
-    };
+                // Icône selon type
+                final icon = type == 'cat_change' ? '📊'
+                    : type == 'order' ? '📦'
+                    : type == 'welcome' ? '🎉'
+                    : '🔔';
 
-    return Column(mainAxisSize: MainAxisSize.min, children: [
-      Container(
-        margin: const EdgeInsets.symmetric(vertical: 8),
-        width: 40, height: 4,
-        decoration: BoxDecoration(color: EgcColors.line, borderRadius: EgcRadius.pill)),
-      const Padding(
-        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        child: Row(children: [
-          Icon(Icons.notifications_outlined, color: EgcColors.primary),
-          SizedBox(width: 8),
-          Text('Notifications commandes', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
-        ]),
-      ),
-      const Divider(height: 1),
-      if (activeOrders.isEmpty)
+                final bgColor = isRead ? EgcColors.bg2 : EgcColors.primaryBg;
+                final borderColor = isRead ? EgcColors.line : EgcColors.primaryMid;
+
+                return Dismissible(
+                  key: Key(docId),
+                  direction: DismissDirection.endToStart,
+                  background: Container(
+                    alignment: Alignment.centerRight,
+                    padding: const EdgeInsets.only(right: 16),
+                    decoration: BoxDecoration(color: EgcColors.err, borderRadius: EgcRadius.mdBorder),
+                    child: const Icon(Icons.delete_outline, color: Colors.white),
+                  ),
+                  onDismissed: (_) async {
+                    await FirebaseFirestore.instance.collection('notifications').doc(docId).delete();
+                  },
+                  child: GestureDetector(
+                    onTap: () async {
+                      if (!isRead) {
+                        await FirebaseFirestore.instance.collection('notifications').doc(docId).update({'read': true});
+                      }
+                      if (type == 'order' && context.mounted) {
+                        Navigator.pop(context);
+                        context.go('/orders');
+                      }
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: bgColor,
+                        borderRadius: EgcRadius.mdBorder,
+                        border: Border.all(color: borderColor, width: 1.5)),
+                      child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                        Text(icon, style: const TextStyle(fontSize: 24)),
+                        const SizedBox(width: 12),
+                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Row(children: [
+                            Expanded(child: Text(title, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+                              color: isRead ? EgcColors.ink3 : EgcColors.ink))),
+                            if (!isRead) Container(width: 8, height: 8,
+                              decoration: const BoxDecoration(color: EgcColors.primary, shape: BoxShape.circle)),
+                          ]),
+                          const SizedBox(height: 4),
+                          Text(message, style: const TextStyle(fontSize: 12, color: EgcColors.ink2, height: 1.4)),
+                          if (date != null) ...[
+                            const SizedBox(height: 4),
+                            Text(fmtDate(date), style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                          ],
+                        ])),
+                      ]),
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        )),
+        // Footer info swipe
         const Padding(
-          padding: EdgeInsets.all(24),
-          child: Text('Aucune notification active', style: TextStyle(color: EgcColors.ink3)),
-        )
-      else
-        ...activeOrders.map((d) {
-          final data = (d.data() as Map<String, dynamic>?) ?? {};
-          final status = data['status'] ?? '';
-          final orderId = data['orderId'] ?? d.id;
-          final shortId = orderId.length > 14 ? orderId.substring(0, 14) : orderId;
-          return ListTile(
-            leading: Container(width: 10, height: 10,
-              decoration: BoxDecoration(
-                color: statusColors[status] ?? EgcColors.ink3,
-                shape: BoxShape.circle)),
-            title: Text('#$shortId', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
-            subtitle: Text(statusLabels[status] ?? status,
-              style: TextStyle(fontSize: 12, color: statusColors[status] ?? EgcColors.ink3)),
-            trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: EgcColors.ink3),
-            onTap: () {
-              Navigator.pop(context);
-              context.go('/orders');
-            },
-          );
-        }),
-      const SizedBox(height: 16),
-    ]);
+          padding: EdgeInsets.all(12),
+          child: Text('← Glissez une notification pour la supprimer', style: TextStyle(fontSize: 11, color: EgcColors.ink3), textAlign: TextAlign.center),
+        ),
+      ]),
+    );
   }
 }
