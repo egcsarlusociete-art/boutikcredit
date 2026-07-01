@@ -115,7 +115,7 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
                 loading: () => const Center(child: CircularProgressIndicator(color: EgcColors.primary)),
                 error: (_,__) => const Text('Erreur'),
                 data: (list) {
-                  final filtered = list.where((w) => !w.deletedByUser).toList();
+                  final filtered = list.where((w) => w.deletedByUser != true).toList();
                   if (filtered.isEmpty) return const Center(child: Padding(padding: EdgeInsets.all(16), child: Text('Aucun retrait', style: TextStyle(color: EgcColors.ink3))));
                   return Column(children: filtered.map((w) => Dismissible(
                     key: Key(w.id),
