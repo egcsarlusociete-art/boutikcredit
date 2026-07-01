@@ -92,11 +92,14 @@ class WithdrawalModel {
   final String name;
   final String status;
   final DateTime? createdAt;
+  final bool deletedByUser;
+  final bool deletedByAdmin;
 
   const WithdrawalModel({
     required this.id, required this.userId, required this.userName,
     required this.amount, required this.method, required this.account,
     required this.name, required this.status, this.createdAt,
+    this.deletedByUser = false, this.deletedByAdmin = false,
   });
 
   factory WithdrawalModel.fromFirestore(DocumentSnapshot doc) {

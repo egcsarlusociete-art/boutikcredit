@@ -333,7 +333,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                 _deleteBtn(() async {
                   final ok = await _confirmDelete(context, 'retrait de ' + w.userName);
                   if (ok == true) {
-                    await FirebaseFirestore.instance.collection('withdrawals').doc(w.id).delete();
+                    await FirebaseFirestore.instance.collection('withdrawals').doc(w.id).update({'deletedByAdmin': true});
                     if (context.mounted) showSnack(context, 'Retrait supprime');
                   }
                 }),

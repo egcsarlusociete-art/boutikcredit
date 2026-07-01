@@ -104,9 +104,11 @@ class FirestoreService {
   Stream<List<WithdrawalModel>> userWithdrawals(String uid) => _db
       .collection('withdrawals')
       .where('userId', isEqualTo: uid)
-      .orderBy('createdAt', descending: true)
       .snapshots()
-      .map((s) => s.docs.map(WithdrawalModel.fromFirestore).toList());
+      .map((s) => s.docs
+        .map(WithdrawalModel.fromFirestore)
+        .where((w) => !w.deletedByUser)
+        .toList());
 
   Future<void> requestWithdrawal({
     required String userId, required String userName,
@@ -178,13 +180,11 @@ class FirestoreService {
 
   Stream<List<WithdrawalModel>> allWithdrawals() => _db
       .collection('withdrawals')
-      .orderBy('createdAt', descending: true)
       .snapshots()
-      .map((s) => s.docs.map(WithdrawalModel.fromFirestore).toList())
-      .handleError((e) {
-        print('allWithdrawals error: \$e');
-        return <WithdrawalModel>[];
-      });
+      .map((s) => s.docs
+        .map(WithdrawalModel.fromFirestore)
+        .where((w) => !w.deletedByAdmin)
+        .toList());
 
   Future<void> adminUpdateArticle(String id, Map<String, dynamic> data) =>
       _db.collection('articles').doc(id).update({...data, 'updatedAt': FieldValue.serverTimestamp()});
