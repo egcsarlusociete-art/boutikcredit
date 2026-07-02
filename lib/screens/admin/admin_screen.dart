@@ -251,6 +251,10 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                 }),
                 const Spacer(),
                 _deleteBtn(() async {
+                  if (uid == '9D76f2HLPrNODPN8HtPDbzwG4wA3') {
+                    if (context.mounted) showSnack(context, '⚠️ Impossible de supprimer le compte Admin', isError: true);
+                    return;
+                  }
                   final ok = await _confirmDelete(context, name);
                   if (ok == true) {
                     await FirebaseFirestore.instance.collection('users').doc(uid).delete();
