@@ -242,11 +242,53 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                     'message': 'Votre compte BoutikCredit a été activé ! Bienvenue.',
                     'createdAt': FieldValue.serverTimestamp(),
                   });
+                  // Notifier le parrain si existe
+                  if (referredBy.isNotEmpty) {
+                    final parrainSnap = await FirebaseFirestore.instance.collection('users')
+                        .where('referralCode', isEqualTo: referredBy).limit(1).get();
+                    final parrainSnapV = await FirebaseFirestore.instance.collection('vendeurs')
+                        .where('referralCode', isEqualTo: referredBy).limit(1).get();
+                    String? parrainId;
+                    if (parrainSnap.docs.isNotEmpty) parrainId = parrainSnap.docs.first.id;
+                    else if (parrainSnapV.docs.isNotEmpty) parrainId = parrainSnapV.docs.first.id;
+                    if (parrainId != null) {
+                      await FirebaseFirestore.instance.collection('notifications').add({
+                        'userId': parrainId, 'type': 'referral', 'read': false,
+                        'title': 'Filleul activé 🎉',
+                        'message': 'Le compte de votre filleul $name a été validé par l\'admin !',
+                        'createdAt': FieldValue.serverTimestamp(),
+                      });
+                    }
+                  }
                   if (context.mounted) showSnack(context, 'Client activé');
                 }),
                 const SizedBox(width: 6),
                 if (status == 'active') _aBtn('Suspendre', EgcColors.err, () async {
                   await FirebaseFirestore.instance.collection('users').doc(uid).update({'planStatus': 'suspended'});
+                  await FirebaseFirestore.instance.collection('notifications').add({
+                    'userId': uid, 'type': 'welcome', 'read': false,
+                    'title': 'Compte suspendu ❌',
+                    'message': 'Votre compte BoutikCredit a été suspendu. Contactez l\'admin pour plus d\'infos.',
+                    'createdAt': FieldValue.serverTimestamp(),
+                  });
+                  // Notifier le parrain si existe
+                  if (referredBy.isNotEmpty) {
+                    final parrainSnap = await FirebaseFirestore.instance.collection('users')
+                        .where('referralCode', isEqualTo: referredBy).limit(1).get();
+                    final parrainSnapV = await FirebaseFirestore.instance.collection('vendeurs')
+                        .where('referralCode', isEqualTo: referredBy).limit(1).get();
+                    String? parrainId;
+                    if (parrainSnap.docs.isNotEmpty) parrainId = parrainSnap.docs.first.id;
+                    else if (parrainSnapV.docs.isNotEmpty) parrainId = parrainSnapV.docs.first.id;
+                    if (parrainId != null) {
+                      await FirebaseFirestore.instance.collection('notifications').add({
+                        'userId': parrainId, 'type': 'referral', 'read': false,
+                        'title': 'Filleul refusé ❌',
+                        'message': 'Le compte de votre filleul $name a été refusé par l\'admin.',
+                        'createdAt': FieldValue.serverTimestamp(),
+                      });
+                    }
+                  }
                   if (context.mounted) showSnack(context, 'Client suspendu');
                 }),
                 const Spacer(),
