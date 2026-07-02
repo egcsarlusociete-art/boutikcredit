@@ -23,7 +23,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
   final _fs = FirestoreService();
 
   @override
-  void initState() { super.initState(); _tabs = TabController(length: 6, vsync: this); }
+  void initState() { super.initState(); _tabs = TabController(length: 7, vsync: this); }
   @override
   void dispose() { _tabs.dispose(); super.dispose(); }
 
@@ -40,11 +40,11 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
           labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
           tabs: const [
             Tab(text: 'Articles'), Tab(text: 'Images'),
-            Tab(text: 'Vendeurs'), Tab(text: 'Commandes'), Tab(text: 'Retraits'), Tab(text: 'Changement Statut')
+            Tab(text: 'Vendeurs'), Tab(text: 'Clients'), Tab(text: 'Commandes'), Tab(text: 'Retraits'), Tab(text: 'Changement Statut')
           ]),
       ),
       body: TabBarView(controller: _tabs, children: [
-        _articlesTab(), _imagesTab(), _vendeursTab(), _ordersTab(), _withdrawalsTab(), _catRequestsTab()
+        _articlesTab(), _imagesTab(), _vendeursTab(), _clientsTab(), _ordersTab(), _withdrawalsTab(), _catRequestsTab()
       ]),
     );
   }
@@ -184,6 +184,77 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                   if (ok == true) {
                     await FirebaseFirestore.instance.collection('vendeurs').doc(v.uid).delete();
                     if (context.mounted) showSnack(context, 'Vendeur supprime');
+                  }
+                }),
+              ]),
+            ]),
+          );
+        });
+    });
+
+  // ── CLIENTS ──────────────────────────────────────────────────────
+  Widget _clientsTab() => StreamBuilder<QuerySnapshot>(
+    stream: FirebaseFirestore.instance.collection('users')
+        .orderBy('createdAt', descending: true).snapshots(),
+    builder: (ctx, snap) {
+      if (snap.hasError) return _errWidget(snap.error);
+      if (!snap.hasData) return _loadingWidget();
+      final docs = snap.data!.docs;
+      if (docs.isEmpty) return _emptyWidget('Aucun client');
+      return ListView.separated(
+        padding: const EdgeInsets.all(12), itemCount: docs.length,
+        separatorBuilder: (_, __) => const SizedBox(height: 8),
+        itemBuilder: (ctx, i) {
+          final d = docs[i].data() as Map<String, dynamic>;
+          final uid = docs[i].id;
+          final name = d['name'] ?? '';
+          final email = d['email'] ?? '';
+          final phone = d['phone'] ?? '';
+          final city = d['city'] ?? '';
+          final status = d['planStatus'] ?? 'pending';
+          final creditCat = d['creditCat'] ?? 'A';
+          final bonus = (d['bonus'] ?? 0).toDouble();
+          final referredBy = d['referredBy'] ?? '';
+          final createdAt = (d['createdAt'] as Timestamp?)?.toDate();
+          return Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line, width: 1.5)),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Row(children: [
+                Expanded(child: Text(name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: EgcColors.ink))),
+                StatusPill(status, labels: {'pending': 'En attente', 'active': 'Actif', 'suspended': 'Suspendu'}),
+              ]),
+              const SizedBox(height: 4),
+              Text(email, style: const TextStyle(fontSize: 12, color: EgcColors.ink3)),
+              if (phone.isNotEmpty) Text(phone + ' · ' + city, style: const TextStyle(fontSize: 12, color: EgcColors.ink3)),
+              Text('Cat. $creditCat · Bonus: ${fmtPrice(bonus)}' + (referredBy.isNotEmpty ? ' · Parrain: $referredBy' : ''),
+                style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+              if (createdAt != null) Text(fmtDate(createdAt), style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+              const SizedBox(height: 8),
+              Row(children: [
+                if (status != 'active') _aBtn('Activer', EgcColors.ok, () async {
+                  await FirebaseFirestore.instance.collection('users').doc(uid).update({
+                    'planStatus': 'active', 'activatedAt': FieldValue.serverTimestamp()
+                  });
+                  await FirebaseFirestore.instance.collection('notifications').add({
+                    'userId': uid, 'type': 'welcome', 'read': false,
+                    'title': 'Compte activé ✅',
+                    'message': 'Votre compte BoutikCredit a été activé ! Bienvenue.',
+                    'createdAt': FieldValue.serverTimestamp(),
+                  });
+                  if (context.mounted) showSnack(context, 'Client activé');
+                }),
+                const SizedBox(width: 6),
+                if (status == 'active') _aBtn('Suspendre', EgcColors.err, () async {
+                  await FirebaseFirestore.instance.collection('users').doc(uid).update({'planStatus': 'suspended'});
+                  if (context.mounted) showSnack(context, 'Client suspendu');
+                }),
+                const Spacer(),
+                _deleteBtn(() async {
+                  final ok = await _confirmDelete(context, name);
+                  if (ok == true) {
+                    await FirebaseFirestore.instance.collection('users').doc(uid).delete();
+                    if (context.mounted) showSnack(context, 'Client supprime');
                   }
                 }),
               ]),
