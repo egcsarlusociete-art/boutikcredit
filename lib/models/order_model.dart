@@ -166,7 +166,7 @@ class ReferralModel {
     final d = doc.data() as Map<String, dynamic>;
     return ReferralModel(
       id: doc.id, referrerId: d['referrerId'] ?? '',
-      refereeId: d['refereeId'] ?? '', name: d['name'] ?? '',
+      refereeId: d['referredId'] ?? '', name: d['name'] ?? '',
       createdAt: (d['createdAt'] as Timestamp?)?.toDate(),
     );
   }
