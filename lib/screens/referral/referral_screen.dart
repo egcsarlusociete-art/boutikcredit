@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
@@ -158,23 +159,40 @@ class ReferralScreen extends ConsumerWidget {
                   return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     const Text('Mes filleuls', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: EgcColors.ink)),
                     const SizedBox(height: 8),
-                    ...referrals.map((r) => Container(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line)),
-                      child: Row(children: [
-                        CircleAvatar(radius: 20, backgroundColor: EgcColors.primaryMid,
-                          child: Text(r.name.isNotEmpty ? r.name[0].toUpperCase() : 'U',
-                            style: const TextStyle(fontWeight: FontWeight.w800, color: EgcColors.primary))),
-                        const SizedBox(width: 12),
-                        Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text(r.name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: EgcColors.ink)),
-                          Text(fmtDate(r.createdAt), style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
-                        ])),
-                        Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(color: EgcColors.okBg, borderRadius: EgcRadius.pill),
-                          child: const Text('+500 F', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: EgcColors.ok))),
-                      ]),
+                    ...referrals.map((r) => FutureBuilder<DocumentSnapshot>(
+                      future: FirebaseFirestore.instance.collection('users').doc(r.referredId).get().then((s) => s.exists ? s : FirebaseFirestore.instance.collection('vendeurs').doc(r.referredId).get()),
+                      builder: (ctx, snap) {
+                        String statut = 'En attente';
+                        Color statutColor = EgcColors.primary;
+                        Color statutBg = EgcColors.primaryBg;
+                        if (snap.hasData && snap.data!.exists) {
+                          final ps = (snap.data!.data() as Map<String, dynamic>?)?['planStatus'] ?? 'pending';
+                          if (ps == 'active') { statut = 'Validé ✓'; statutColor = EgcColors.ok; statutBg = EgcColors.okBg; }
+                          else if (ps == 'suspended') { statut = 'Refusé'; statutColor = EgcColors.err; statutBg = const Color(0xFFFEE2E2); }
+                        }
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line)),
+                          child: Row(children: [
+                            CircleAvatar(radius: 20, backgroundColor: EgcColors.primaryMid,
+                              child: Text(r.name.isNotEmpty ? r.name[0].toUpperCase() : 'U',
+                                style: const TextStyle(fontWeight: FontWeight.w800, color: EgcColors.primary))),
+                            const SizedBox(width: 12),
+                            Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              Text(r.name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: EgcColors.ink)),
+                              Text(fmtDate(r.createdAt), style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                              const SizedBox(height: 3),
+                              Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                decoration: BoxDecoration(color: statutBg, borderRadius: EgcRadius.pill),
+                                child: Text(statut, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: statutColor))),
+                            ])),
+                            Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                              decoration: BoxDecoration(color: EgcColors.okBg, borderRadius: EgcRadius.pill),
+                              child: const Text('+500 F', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: EgcColors.ok))),
+                          ]),
+                        );
+                      },
                     )),
                   ]);
                 },
