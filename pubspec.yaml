@@ -42,9 +42,28 @@ dev_dependencies:
     sdk: flutter
   flutter_launcher_icons: ^0.13.1
   flutter_lints: ^3.0.0
+  flutter_native_splash: ^2.3.9
 
 flutter:
   uses-material-design: true
   assets:
     - assets/images/
     - assets/icons/
+
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/images/logo_boutikcredit.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#E84A1A"
+  adaptive_icon_foreground: "assets/images/logo_boutikcredit.png"
+
+flutter_native_splash:
+  color: "#E84A1A"
+  image: assets/images/logo_boutikcredit.png
+  android: true
+  ios: false
+  android_12:
+    image: assets/images/logo_boutikcredit.png
+    color: "#E84A1A"
+    icon_background_color: "#E84A1A"
