@@ -160,7 +160,10 @@ class ReferralScreen extends ConsumerWidget {
                     const Text('Mes filleuls', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: EgcColors.ink)),
                     const SizedBox(height: 8),
                     ...referrals.map((r) => FutureBuilder<DocumentSnapshot>(
-                      future: FirebaseFirestore.instance.collection('users').doc(r.referredId).get().then((s) => s.exists ? s : FirebaseFirestore.instance.collection('vendeurs').doc(r.referredId).get()),
+                      future: FirebaseFirestore.instance.collection('users').doc(r.refereeId).get().then((s) async {
+                          if (s.exists) return s;
+                          return await FirebaseFirestore.instance.collection('vendeurs').doc(r.refereeId).get();
+                        }),
                       builder: (ctx, snap) {
                         String statut = 'En attente';
                         Color statutColor = EgcColors.primary;
