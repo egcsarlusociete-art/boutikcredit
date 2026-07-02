@@ -63,7 +63,13 @@ flutter_native_splash:
   image: assets/images/logo_boutikcredit.png
   android: true
   ios: false
+  android_gravity: center
+  image_dark: assets/images/logo_boutikcredit.png
+  color_dark: "#E84A1A"
   android_12:
     image: assets/images/logo_boutikcredit.png
     color: "#E84A1A"
     icon_background_color: "#E84A1A"
+    image_dark: assets/images/logo_boutikcredit.png
+    color_dark: "#E84A1A"
+    icon_background_color_dark: "#E84A1A"
