@@ -1,4 +1,6 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../services/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,19 +32,85 @@ class OrderDetailScreen extends ConsumerWidget {
           appBar: AppBar(title: Text('#${order.orderId.length > 14 ? order.orderId.substring(0, 14) : order.orderId}')),
           body: ListView(padding: const EdgeInsets.all(16), children: [
             // Ecran livraison
-            if (isDelivered) Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(color: EgcColors.okBg, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.okLine, width: 2)),
-              child: Column(children: const [
-                Text('🎉', style: TextStyle(fontSize: 48)),
-                SizedBox(height: 8),
-                Text('Article livré avec succès !', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: EgcColors.ok)),
-                SizedBox(height: 4),
-                Text('Votre commande a été livrée et réceptionnée.', style: TextStyle(fontSize: 13, color: EgcColors.ok), textAlign: TextAlign.center),
-              ]),
-            ),
+            if (isDelivered) Column(children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                margin: const EdgeInsets.only(bottom: 12),
+                decoration: BoxDecoration(color: EgcColors.okBg, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.okLine, width: 2)),
+                child: Column(children: const [
+                  Text('🎉', style: TextStyle(fontSize: 48)),
+                  SizedBox(height: 8),
+                  Text('Article livré avec succès !', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: EgcColors.ok)),
+                  SizedBox(height: 4),
+                  Text('Votre commande a été livrée et réceptionnée.', style: TextStyle(fontSize: 13, color: EgcColors.ok), textAlign: TextAlign.center),
+                ]),
+              ),
+              // Notation
+              FutureBuilder<QuerySnapshot>(
+                future: FirebaseFirestore.instance.collection('ratings')
+                    .where('orderId', isEqualTo: order.id)
+                    .where('userId', isEqualTo: FirebaseAuth.instance.currentUser?.uid ?? '')
+                    .get(),
+                builder: (ctx, ratingSnap) {
+                  final alreadyRated = (ratingSnap.data?.docs.length ?? 0) > 0;
+                  if (alreadyRated) return Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line)),
+                    child: const Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                      Icon(Icons.star, color: Colors.amber, size: 20),
+                      SizedBox(width: 8),
+                      Text('Merci pour votre avis !', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: EgcColors.ink)),
+                    ]),
+                  );
+                  return StatefulBuilder(
+                    builder: (ctx, setState) {
+                      int selectedRating = 0;
+                      final commentC = TextEditingController();
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line)),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          const Text('⭐ Noter cette commande', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: EgcColors.ink)),
+                          const SizedBox(height: 12),
+                          Row(mainAxisAlignment: MainAxisAlignment.center, children: List.generate(5, (i) => GestureDetector(
+                            onTap: () => setState(() => selectedRating = i + 1),
+                            child: Icon(i < selectedRating ? Icons.star : Icons.star_border, color: Colors.amber, size: 36),
+                          ))),
+                          const SizedBox(height: 12),
+                          TextField(
+                            controller: commentC,
+                            decoration: InputDecoration(
+                              hintText: 'Laissez un commentaire (optionnel)',
+                              border: OutlineInputBorder(borderRadius: EgcRadius.mdBorder),
+                              contentPadding: const EdgeInsets.all(12),
+                            ),
+                            maxLines: 2,
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(width: double.infinity, child: ElevatedButton(
+                            onPressed: selectedRating == 0 ? null : () async {
+                              final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+                              await FirebaseFirestore.instance.collection('ratings').add({
+                                'orderId': order.id,
+                                'userId': uid,
+                                'rating': selectedRating,
+                                'comment': commentC.text.trim(),
+                                'createdAt': FieldValue.serverTimestamp(),
+                              });
+                              if (ctx.mounted) showSnack(ctx, 'Merci pour votre avis ! ⭐');
+                            },
+                            child: const Text('Soumettre mon avis'),
+                          )),
+                        ]),
+                      );
+                    },
+                  );
+                },
+              ),
+            ]),
             if (isCancelled) Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
