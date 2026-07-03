@@ -70,7 +70,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
     if (_cat != 'all') r = r.where((a) => a.category == _cat).toList();
     if (_search.isNotEmpty) {
       final q = _search.toLowerCase();
-      r = r.where((a) => a.name.toLowerCase().contains(q) || a.shopName.toLowerCase().contains(q)).toList();
+      r = r.where((a) => a.name.toLowerCase().contains(q) || a.shopName.toLowerCase().contains(q) || a.description.toLowerCase().contains(q) || (kCategories[a.category] ?? '').toLowerCase().contains(q) || fmtPrice(a.price).contains(q)).toList();
     }
     return r;
   }
@@ -90,6 +90,10 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
           backgroundColor: EgcColors.bg2,
           title: Image.asset('assets/images/logo_boutikcredit.png', height: 36, fit: BoxFit.contain),
           actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite_border),
+            onPressed: () => context.push('/favorites'),
+          ),
             // Cloche notifications commandes
             _NotificationBell(),
             // Panier

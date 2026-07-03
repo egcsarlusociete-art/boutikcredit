@@ -1,5 +1,8 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:go_router/go_router.dart';
@@ -30,6 +33,41 @@ class ProductDetailScreen extends ConsumerWidget {
               leading: Padding(padding: const EdgeInsets.all(8),
                 child: CircleAvatar(backgroundColor: Colors.white.withOpacity(0.9),
                   child: IconButton(icon: const Icon(Icons.arrow_back_ios_new, size: 16, color: EgcColors.ink), onPressed: () => context.pop()))),
+              actions: [
+                CircleAvatar(backgroundColor: Colors.white.withOpacity(0.9),
+                  child: IconButton(
+                    icon: const Icon(Icons.share_outlined, size: 18, color: EgcColors.ink),
+                    onPressed: () => Share.share('Découvrez ' + a.name + ' sur BoutikCredit !\n💰 ' + fmtPrice(a.price) + '\n📲 https://egc-sarlu.com/app-arm64-v8a-release.apk'),
+                  )),
+                const SizedBox(width: 4),
+                StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance.collection('favorites')
+                      .where('userId', isEqualTo: FirebaseAuth.instance.currentUser?.uid ?? '')
+                      .where('articleId', isEqualTo: a.id).snapshots(),
+                  builder: (ctx, snap) {
+                    final isFav = (snap.data?.docs.length ?? 0) > 0;
+                    return CircleAvatar(backgroundColor: Colors.white.withOpacity(0.9),
+                      child: IconButton(
+                        icon: Icon(isFav ? Icons.favorite : Icons.favorite_border, size: 18, color: isFav ? Colors.red : EgcColors.ink),
+                        onPressed: () async {
+                          final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+                          final favSnap = await FirebaseFirestore.instance.collection('favorites')
+                              .where('userId', isEqualTo: uid).where('articleId', isEqualTo: a.id).get();
+                          if (favSnap.docs.isNotEmpty) {
+                            await favSnap.docs.first.reference.delete();
+                            if (context.mounted) showSnack(context, 'Retiré des favoris');
+                          } else {
+                            await FirebaseFirestore.instance.collection('favorites').add({
+                              'userId': uid, 'articleId': a.id, 'createdAt': FieldValue.serverTimestamp()
+                            });
+                            if (context.mounted) showSnack(context, 'Ajouté aux favoris ❤️');
+                          }
+                        },
+                      ));
+                  },
+                ),
+                const SizedBox(width: 8),
+              ],
               flexibleSpace: FlexibleSpaceBar(
                 background: _ImageCarousel(article: a))),
             SliverToBoxAdapter(child: Padding(padding: const EdgeInsets.all(20), child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
