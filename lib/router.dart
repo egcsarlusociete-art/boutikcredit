@@ -21,6 +21,7 @@ import 'screens/vendor/vendor_add_article_screen.dart';
 import 'screens/vendor/vendor_articles_screen.dart';
 import 'screens/admin/admin_screen.dart';
 import 'screens/cgv/cgv_screen.dart';
+import 'screens/shop/favorites_screen.dart';
 
 const String kAdminUid = '9D76f2HLPrNODPN8HtPDbzwG4wA3';
 
@@ -62,6 +63,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(path: '/checkout',      builder: (c, s) => const CheckoutScreen()),
       GoRoute(path: '/order-success', builder: (c, s) => OrderSuccessScreen(orderId: s.uri.queryParameters['id'] ?? '')),
       GoRoute(path: '/order/:id',     builder: (c, s) => OrderDetailScreen(id: s.pathParameters['id']!)),
+      GoRoute(path: '/favorites',      builder: (c, s) => const FavoritesScreen()),
       GoRoute(path: '/referral',      builder: (c, s) => const ReferralScreen()),
       GoRoute(path: '/withdrawal',    builder: (c, s) => const WithdrawalScreen()),
       GoRoute(path: '/vendor',            builder: (c, s) => const VendorHomeScreen()),
