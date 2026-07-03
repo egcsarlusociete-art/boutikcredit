@@ -24,6 +24,7 @@ class VideoScreen extends ConsumerStatefulWidget {
 
 class _VideoScreenState extends ConsumerState<VideoScreen> {
   YoutubePlayerController? _controller;
+  // ignore: unused_field
   String? _activeVideoId;
   String? _activeDocId;
 

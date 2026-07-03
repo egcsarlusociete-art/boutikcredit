@@ -2,13 +2,10 @@
 import 'package:flutter/material.dart';
 import '../../services/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:go_router/go_router.dart';
-import '../../services/firestore_service.dart';
 import '../../utils/theme.dart';
 import '../../utils/helpers.dart';
 import '../../widgets/status_pill.dart';
-import '../bonus/bonus_screen.dart';
 
 
 class VendorHomeScreen extends ConsumerWidget {

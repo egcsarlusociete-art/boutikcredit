@@ -1,9 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../services/firestore_service.dart';
-import '../../services/providers.dart';
 import '../../utils/theme.dart';
 import '../../utils/helpers.dart';
 import '../../widgets/egc_text_field.dart';

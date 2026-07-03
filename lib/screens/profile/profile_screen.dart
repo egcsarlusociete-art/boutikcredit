@@ -10,7 +10,6 @@ import '../../services/auth_service.dart';
 import '../../utils/theme.dart';
 import '../../models/credit_category.dart' as cc;
 import '../../utils/helpers.dart';
-import '../bonus/bonus_screen.dart';
 
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});

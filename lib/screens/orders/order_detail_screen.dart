@@ -6,7 +6,6 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../utils/theme.dart';
 import '../../utils/helpers.dart';
 import '../../widgets/status_pill.dart';
-import 'orders_screen.dart';
 
 class OrderDetailScreen extends ConsumerWidget {
   final String id;

@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../utils/theme.dart';
 import '../../utils/helpers.dart';
 import '../../widgets/status_pill.dart';
-import 'vendor_home_screen.dart';
 
 class VendorArticlesScreen extends ConsumerWidget {
   const VendorArticlesScreen({super.key});

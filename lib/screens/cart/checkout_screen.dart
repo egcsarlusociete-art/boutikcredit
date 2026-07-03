@@ -38,7 +38,8 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final cart = ref.read(cartProvider);
     final uid = FirebaseAuth.instance.currentUser!.uid;
     try {
-      final orderId = await FirestoreService().placeOrder(
+      // ignore: unused_local_variable
+    final orderId = await FirestoreService().placeOrder(
         userId: uid,
         items: cart,
         delivery: DeliveryInfo(name: _nameC.text, phone: _phoneC.text, city: _city!, addr: _addrC.text),
