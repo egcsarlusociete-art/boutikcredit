@@ -49,6 +49,7 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
   void increment(String id) { final i = state.indexWhere((x) => x.articleId == id); if (i >= 0) { final s2 = List.of(state); s2[i].qty++; state = s2; _save(); } }
   void decrement(String id) { final i = state.indexWhere((x) => x.articleId == id); if (i >= 0) { if (state[i].qty <= 1) remove(id); else { final s3 = List.of(state); s3[i].qty--; state = s3; _save(); } } }
   void clear() { state = []; _save(); }
+  Future<void> reload() async { state = []; await _load(); }
 
   int get totalQty => state.fold(0, (s, i) => s + i.qty);
   double get total => state.fold(0.0, (s, i) => s + i.total);

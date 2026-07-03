@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../services/auth_service.dart';
+import '../shop/shop_screen.dart';
 import '../../utils/theme.dart';
 import '../../utils/helpers.dart';
 import '../../widgets/egc_button.dart';
@@ -28,6 +29,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     setState(() => _loading = true);
     try {
       await _auth.signIn(_emailC.text, _passC.text);
+      // Recharger le panier pour ce compte
+      if (mounted) ref.read(cartProvider.notifier).reload();
     } catch (e) {
       if (mounted) showSnack(context, _friendlyError(e.toString()), isError: true);
     } finally {
