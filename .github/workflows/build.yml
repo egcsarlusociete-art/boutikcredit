@@ -55,3 +55,7 @@ jobs:
           path: |
             android/app/build/outputs/flutter-apk/*.apk
             android/app/build/outputs/apk/release/*.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: BoutikCredit-AAB
+          path: android/app/build/outputs/bundle/release/*.aab
