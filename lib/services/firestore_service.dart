@@ -88,6 +88,20 @@ class FirestoreService {
       'label': 'Cashback commande ${orderId.substring(0, 12)}',
       'createdAt': FieldValue.serverTimestamp(),
     });
+    // Notifier chaque vendeur
+    final vendeurIds = items.map((i) => i.vendeurId).toSet();
+    for (final vendeurId in vendeurIds) {
+      final vendeurItems = items.where((i) => i.vendeurId == vendeurId).toList();
+      final itemNames = vendeurItems.map((i) => i.name).take(2).join(', ');
+      await _db.collection('notifications').add({
+        'userId': vendeurId,
+        'type': 'order',
+        'title': '\u0001F6CD\uFE0F Nouvelle commande !',
+        'message': vendeurItems.length.toString() + ' article(s) : ' + itemNames,
+        'read': false,
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
     return orderId;
   }
 
