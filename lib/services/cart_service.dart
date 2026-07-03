@@ -4,7 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/article_model.dart';
 
 class CartService {
-  static String get _key => 'egc_cart_\${FirebaseAuth.instance.currentUser?.uid ?? 'guest'}';
+  static String get _key => 'egc_cart_\${FirebaseAuth.instance.currentUser?.uid ?? "guest"}';
   final List<CartItem> _items = [];
 
   List<CartItem> get items => List.unmodifiable(_items);
