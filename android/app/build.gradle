@@ -6,6 +6,14 @@ plugins {
 }
 
 android {
+    signingConfigs {
+        release {
+            storeFile file('boutikcredit-release.jks')
+            storePassword 'EgcSarlu2026'
+            keyAlias 'boutikcredit'
+            keyPassword 'EgcSarlu2026'
+        }
+    }
     namespace "com.boutikcredit.app"
     compileSdk 35
     compileOptions {
@@ -25,7 +33,7 @@ android {
     }
     buildTypes {
         release {
-            signingConfig signingConfigs.debug
+            signingConfig signingConfigs.release
             minifyEnabled false
             shrinkResources false
         }
