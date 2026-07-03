@@ -214,6 +214,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
           final bonus = (d['bonus'] ?? 0).toDouble();
           final referredBy = d['referredBy'] ?? '';
           final createdAt = (d['createdAt'] as Timestamp?)?.toDate();
+          final cgvAccepted = d['cgvAccepted'] ?? false;
           return Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line, width: 1.5)),
@@ -228,6 +229,25 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
               Text('Cat. $creditCat · Bonus: ${fmtPrice(bonus)}' + (referredBy.isNotEmpty ? ' · Parrain: $referredBy' : ''),
                 style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
               if (createdAt != null) Text(fmtDate(createdAt), style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+              const SizedBox(height: 4),
+              Row(children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: cgvAccepted ? EgcColors.okBg : const Color(0xFFFEE2E2),
+                    borderRadius: EgcRadius.pill,
+                    border: Border.all(color: cgvAccepted ? EgcColors.ok : EgcColors.err),
+                  ),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(cgvAccepted ? Icons.check_circle_outline : Icons.warning_amber_outlined,
+                      size: 12, color: cgvAccepted ? EgcColors.ok : EgcColors.err),
+                    const SizedBox(width: 4),
+                    Text(cgvAccepted ? 'CGV signées ✓' : 'CGV non signées ⚠️',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
+                        color: cgvAccepted ? EgcColors.ok : EgcColors.err)),
+                  ]),
+                ),
+              ]),
               const SizedBox(height: 8),
               Row(children: [
                 if (status != 'active') _aBtn('Activer', EgcColors.ok, () async {
