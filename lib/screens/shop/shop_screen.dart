@@ -23,7 +23,7 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
 
   Future<void> _load() async {
     final prefs = await SharedPreferences.getInstance();
-    final raw = prefs.getString('egc_cart');
+    final raw = prefs.getString('egc_cart_${FirebaseAuth.instance.currentUser?.uid ?? "guest"}');
     if (raw != null) {
       final list = (jsonDecode(raw) as List).map((m) => CartItem.fromMap(Map<String,dynamic>.from(m))).toList();
       state = list;
@@ -32,7 +32,7 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
 
   Future<void> _save() async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('egc_cart', jsonEncode(state.map((i) => i.toMap()).toList()));
+    await prefs.setString('egc_cart_${FirebaseAuth.instance.currentUser?.uid ?? "guest"}', jsonEncode(state.map((i) => i.toMap()).toList()));
   }
 
   void add(ArticleModel a) {
