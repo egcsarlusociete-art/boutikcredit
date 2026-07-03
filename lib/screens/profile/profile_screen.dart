@@ -53,6 +53,7 @@ class ProfileScreen extends ConsumerWidget {
           Container(color: EgcColors.bg2, child: Column(children: [
             _menuItem(Icons.inventory_2_outlined, 'Mes commandes', 'Suivi en temps réel', () => context.go('/orders')),
             _menuItem(Icons.workspace_premium_outlined, 'Bonus & Cashback', 'Gérer mes gains', () => context.go('/bonus')),
+            _menuItem(Icons.favorite_outline, 'Mes Favoris', 'Articles sauvegardés', () => context.push('/favorites')),
             _menuItem(Icons.people_outline, 'Parrainage', 'Inviter des amis', () => context.push('/referral')),
             _menuItem(Icons.account_balance_wallet_outlined, 'Retrait', 'Transférer mes gains', () => context.push('/withdrawal')),
             if (user?.isSeller == true) ...[
