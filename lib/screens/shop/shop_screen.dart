@@ -39,7 +39,7 @@ class CartNotifier extends StateNotifier<List<CartItem>> {
     if (idx >= 0) {
       final s = List.of(state); s[idx].qty++; state = s;
     } else {
-      state = [...state, CartItem(articleId: a.id, name: a.name, price: a.price, cashback: a.cashback, imageUrl: a.imageUrl, shopName: a.shopName)];
+      state = [...state, CartItem(articleId: a.id, name: a.name, price: a.price, cashback: a.cashback, imageUrl: a.imageUrl, shopName: a.shopName, vendeurId: a.vendeurId)];
     }
     _save();
   }

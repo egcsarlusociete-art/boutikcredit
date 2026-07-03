@@ -38,6 +38,7 @@ class CartService {
         cashback: article.cashback,
         imageUrl: article.imageUrl,
         shopName: article.shopName,
+        vendeurId: article.vendeurId,
       ));
     }
     await _save();

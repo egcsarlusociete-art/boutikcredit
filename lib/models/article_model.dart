@@ -90,6 +90,7 @@ class CartItem {
   final double cashback;
   final String? imageUrl;
   final String shopName;
+  final String vendeurId;
   int qty;
 
   CartItem({
@@ -99,6 +100,7 @@ class CartItem {
     required this.cashback,
     this.imageUrl,
     required this.shopName,
+    this.vendeurId = '',
     this.qty = 1,
   });
 
@@ -106,8 +108,8 @@ class CartItem {
   double get cashbackTotal => (total * cashback / 100).roundToDouble();
 
   Map<String, dynamic> toMap() => {
-    'id': articleId, 'name': name, 'price': price,
-    'cb': cashback, 'img': imageUrl, 'shop': shopName, 'qty': qty,
+    'id': articleId, 'articleId': articleId, 'name': name, 'price': price,
+    'cb': cashback, 'img': imageUrl, 'shop': shopName, 'vendeurId': vendeurId, 'qty': qty,
   };
 
   factory CartItem.fromMap(Map<String, dynamic> m) => CartItem(
