@@ -202,7 +202,6 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
 
   Widget _hero(AsyncValue<List<ArticleModel>> async) {
     final count = async.valueOrNull?.length ?? 0;
-    final vendors = async.valueOrNull?.map((a) => a.vendeurId).toSet().length ?? 0;
     return Container(
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(20),
@@ -217,7 +216,10 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         Row(children: [
           _stat('$count', 'Articles'),
           const SizedBox(width: 24),
-          _stat('$vendors', 'Vendeurs'),
+          StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('vendeurs').snapshots(),
+              builder: (ctx, snap) => _stat('\${snap.data?.docs.length ?? 0}', 'Vendeurs'),
+            ),
           const SizedBox(width: 24),
           _stat('48h', 'Livraison'),
         ]),
