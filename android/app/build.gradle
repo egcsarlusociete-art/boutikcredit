@@ -5,13 +5,19 @@ plugins {
     id "com.google.gms.google-services"
 }
 
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(new FileInputStream(keystorePropertiesFile))
+}
+
 android {
     signingConfigs {
         release {
-            storeFile file('boutikcredit-release.jks')
-            storePassword 'EgcSarlu2026'
-            keyAlias 'boutikcredit'
-            keyPassword 'EgcSarlu2026'
+            storeFile keystoreProperties['storeFile'] ? file("app/" + keystoreProperties['storeFile']) : file('boutikcredit-release.jks')
+            storePassword keystoreProperties['storePassword'] ?: 'EgcSarlu2026'
+            keyAlias keystoreProperties['keyAlias'] ?: 'boutikcredit'
+            keyPassword keystoreProperties['keyPassword'] ?: 'EgcSarlu2026'
         }
     }
     namespace "com.boutikcredit.app"
