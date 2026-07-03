@@ -18,6 +18,7 @@ class UserModel {
   final String creditCat;
   final int articlesCount;
   final DateTime? createdAt;
+  final bool cgvAccepted;
 
   const UserModel({
     required this.uid,
@@ -37,6 +38,7 @@ class UserModel {
     this.creditCat = 'A',
     this.articlesCount = 0,
     this.createdAt,
+    this.cgvAccepted = false,
   });
 
   factory UserModel.fromFirestore(DocumentSnapshot doc) {
@@ -59,6 +61,7 @@ class UserModel {
       creditCat: d['creditCat'] ?? 'A',
       articlesCount: (d['articlesCount'] ?? 0).toInt(),
       createdAt: (d['createdAt'] as Timestamp?)?.toDate(),
+      cgvAccepted: d['cgvAccepted'] ?? false,
     );
   }
 

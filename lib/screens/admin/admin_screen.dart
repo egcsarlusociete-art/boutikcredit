@@ -167,6 +167,23 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                 Text(v.name, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: EgcColors.ink)),
                 Text('${v.email} · ${v.city}', style: const TextStyle(fontSize: 11, color: EgcColors.ink3), overflow: TextOverflow.ellipsis),
                 StatusPill(v.planStatus, labels: {'pending': 'En attente', 'active': 'Actif', 'suspended': 'Suspendu'}),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: v.cgvAccepted ? EgcColors.okBg : const Color(0xFFFEE2E2),
+                    borderRadius: EgcRadius.pill,
+                    border: Border.all(color: v.cgvAccepted ? EgcColors.ok : EgcColors.err),
+                  ),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(v.cgvAccepted ? Icons.check_circle_outline : Icons.warning_amber_outlined,
+                      size: 12, color: v.cgvAccepted ? EgcColors.ok : EgcColors.err),
+                    const SizedBox(width: 4),
+                    Text(v.cgvAccepted ? 'CGV signées ✓' : 'CGV non signées ⚠️',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
+                        color: v.cgvAccepted ? EgcColors.ok : EgcColors.err)),
+                  ]),
+                ),
               ])),
               Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                 if (v.planStatus != 'active')
