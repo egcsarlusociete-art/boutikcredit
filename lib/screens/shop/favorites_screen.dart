@@ -6,7 +6,6 @@ import 'package:go_router/go_router.dart';
 import '../../models/article_model.dart';
 import '../../utils/helpers.dart';
 import '../../utils/theme.dart';
-import '../../widgets/common.dart';
 
 class FavoritesScreen extends ConsumerWidget {
   const FavoritesScreen({super.key});

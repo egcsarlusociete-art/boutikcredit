@@ -89,7 +89,6 @@ class VendorHomeScreen extends ConsumerWidget {
               stream: FirebaseFirestore.instance.collection('orders').snapshots(),
               builder: (ctx, snap) {
                 if (!snap.hasData) return const SizedBox.shrink();
-                final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
                 final myArticleIds = arts.map((a) => a.id).toSet();
                 // Filtrer commandes contenant mes articles
                 final myOrders = snap.data!.docs.where((doc) {
@@ -100,6 +99,7 @@ class VendorHomeScreen extends ConsumerWidget {
                 final pending = myOrders.where((d) => (d.data() as Map)['status'] == 'confirmed').length;
                 final processing = myOrders.where((d) => (d.data() as Map)['status'] == 'processing').length;
                 final delivered = myOrders.where((d) => (d.data() as Map)['status'] == 'delivered').length;
+                // ignore: unused_local_variable
                 final cancelled = myOrders.where((d) => (d.data() as Map)['status'] == 'cancelled').length;
 
                 return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
