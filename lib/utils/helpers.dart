@@ -108,6 +108,7 @@ const List<String> kCities = [
   'Abidjan', 'Bouake', 'Daloa', 'San-Pedro',
   'Korhogo', 'Yamoussoukro', 'Man', 'Gagnoa',
   'Abengourou', 'Divo', 'Bondoukou', 'Agboville',
+  'Autre',
 ];
 
 Color statusColor(String status) {

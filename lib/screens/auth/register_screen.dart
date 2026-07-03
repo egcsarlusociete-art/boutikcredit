@@ -25,20 +25,23 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String _plan = 'client';
   String _creditCat = 'A';
   String? _city;
+  final _cityCustomC = TextEditingController();
   bool _loading = false;
   final _auth = AuthService();
 
   @override
-  void dispose() { _nameC.dispose(); _phoneC.dispose(); _emailC.dispose(); _passC.dispose(); _refC.dispose(); _shopNameC.dispose(); _locationC.dispose(); super.dispose(); }
+  void dispose() {
+    _cityCustomC.dispose(); _nameC.dispose(); _phoneC.dispose(); _emailC.dispose(); _passC.dispose(); _refC.dispose(); _shopNameC.dispose(); _locationC.dispose(); super.dispose(); }
 
   Future<void> _register() async {
     if (!_form.currentState!.validate()) return;
     if (_city == null) { showSnack(context, 'Choisissez votre ville', isError: true); return; }
+    if (_city == 'Autre' && _cityCustomC.text.trim().isEmpty) { showSnack(context, 'Précisez votre ville', isError: true); return; }
     setState(() => _loading = true);
     try {
       await _auth.register(email: _emailC.text, password: _passC.text,
         name: _plan == 'seller' ? _shopNameC.text : _nameC.text,
-        phone: _phoneC.text, city: _city!, plan: _plan, creditCat: _creditCat,
+        phone: _phoneC.text, city: _city == 'Autre' ? _cityCustomC.text.trim() : _city!, plan: _plan, creditCat: _creditCat,
         referralCode: _refC.text.trim().toUpperCase(),
         shopName: _shopNameC.text.trim(),
         location: _locationC.text.trim());
@@ -133,11 +136,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
           EgcTextField(label: 'Téléphone', hint: '07XXXXXXXX', controller: _phoneC, keyboardType: TextInputType.phone, validator: validatePhone, textInputAction: TextInputAction.next),
           const SizedBox(height: 14),
           EgcDropdown<String>(
-            label: 'Ville', value: _city,
+            label: 'Ville / Pays', value: _city,
             items: kCities.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-            onChanged: (v) => setState(() => _city = v),
+            onChanged: (v) => setState(() { _city = v; if (v != 'Autre') _cityCustomC.clear(); }),
             validator: (v) => v == null ? 'Choisissez une ville' : null,
           ),
+          if (_city == 'Autre') ...[
+            const SizedBox(height: 14),
+            EgcTextField(
+              label: 'Précisez votre ville / pays',
+              hint: 'Ex: Paris, France',
+              controller: _cityCustomC,
+              validator: (v) => (v == null || v.trim().isEmpty) ? 'Précisez votre ville' : null,
+              textInputAction: TextInputAction.next,
+            ),
+          ],
           const SizedBox(height: 14),
           EgcTextField(label: 'Email', hint: 'votre@email.com', controller: _emailC, keyboardType: TextInputType.emailAddress, validator: validateEmail, textInputAction: TextInputAction.next),
           const SizedBox(height: 14),
