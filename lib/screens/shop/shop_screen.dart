@@ -218,7 +218,10 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
           const SizedBox(width: 24),
           StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection('vendeurs').snapshots(),
-              builder: (ctx, snap) => _stat('\${snap.data?.docs.length ?? 0}', 'Vendeurs'),
+              builder: (ctx, snap) {
+                final count = snap.data?.docs.length ?? 0;
+                return _stat(count.toString(), 'Vendeurs');
+              },
             ),
           const SizedBox(width: 24),
           _stat('48h', 'Livraison'),
