@@ -199,6 +199,56 @@ class VendorHomeScreen extends ConsumerWidget {
                 ]);
               },
             ),
+                  const SizedBox(height: 14),
+                  // Avis clients
+                  StreamBuilder<QuerySnapshot>(
+                    stream: FirebaseFirestore.instance.collection('ratings').snapshots(),
+                    builder: (ctx, rSnap) {
+                      if (!rSnap.hasData) return const SizedBox.shrink();
+                      // Filtrer les avis liés aux commandes de ce vendeur
+                      final myOrderIds = myOrders.map((d) => d.id).toSet();
+                      final myRatings = rSnap.data!.docs.where((d) => myOrderIds.contains((d.data() as Map)['orderId'])).toList();
+                      if (myRatings.isEmpty) return const SizedBox.shrink();
+                      final avgRating = myRatings.fold(0.0, (s, d) => s + ((d.data() as Map)['rating'] ?? 0)) / myRatings.length;
+                      return Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line)),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Row(children: [
+                            const Text('⭐ Avis clients', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: EgcColors.ink)),
+                            const Spacer(),
+                            Text(avgRating.toStringAsFixed(1), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.amber)),
+                            const Text('/5', style: TextStyle(fontSize: 12, color: EgcColors.ink3)),
+                            const SizedBox(width: 4),
+                            Text('(\${myRatings.length} avis)', style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                          ]),
+                          const SizedBox(height: 10),
+                          ...myRatings.take(3).map((d) {
+                            final data = d.data() as Map<String, dynamic>;
+                            final rating = data['rating'] ?? 0;
+                            final comment = data['comment'] ?? '';
+                            final date = (data['createdAt'] as Timestamp?)?.toDate();
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 8),
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(color: EgcColors.bg, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line)),
+                              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Row(children: [
+                                  Row(children: List.generate(5, (i) => Icon(i < rating ? Icons.star : Icons.star_border, color: Colors.amber, size: 14))),
+                                  const Spacer(),
+                                  if (date != null) Text(fmtDate(date), style: const TextStyle(fontSize: 10, color: EgcColors.ink3)),
+                                ]),
+                                if (comment.isNotEmpty) ...[
+                                  const SizedBox(height: 4),
+                                  Text(comment, style: const TextStyle(fontSize: 12, color: EgcColors.ink2)),
+                                ],
+                              ]),
+                            );
+                          }),
+                        ]),
+                      );
+                    },
+                  ),
             const SizedBox(height: 24),
           ]);
         },
