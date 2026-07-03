@@ -96,7 +96,7 @@ class ProfileScreen extends ConsumerWidget {
                 launchUrl(Uri.parse('https://wa.me/2250152372300?text=Bonjour+EGC-SARLU'));
                 return;
               }
-              final cat = cc.kCategories.firstWhere((c) => c.id == (user.creditCat ?? 'A'), orElse: () => cc.kCategories.first);
+              final cat = cc.kCategories.firstWhere((c) => c.id == user.creditCat, orElse: () => cc.kCategories.first);
               final msg = Uri.encodeComponent(
                 'Bonjour EGC-SARLU,\n\n'
                 '👤 *INFORMATIONS CLIENT*\n'
@@ -105,7 +105,7 @@ class ProfileScreen extends ConsumerWidget {
                 '• Téléphone : ${user.phone}\n'
                 '• Ville : ${user.city}\n\n'
                 '💳 *COMPTE*\n'
-                '• Catégorie : Cat. ${user.creditCat ?? 'A'} — Plafond ${fmtPrice(cat.plafond)}\n'
+                '• Catégorie : Cat. ${user.creditCat}' — Plafond ${fmtPrice(cat.plafond)}\n'
                 '• Plan : ${user.plan == 'seller' ? 'Vendeur' : 'Client'}\n'
                 '• Statut : ${user.planStatus == 'active' ? 'Actif' : user.planStatus == 'pending' ? 'En attente' : 'Inactif'}\n'
                 '• Code parrainage : ${user.referralCode}\n'
