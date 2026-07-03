@@ -64,50 +64,7 @@ class OrderDetailScreen extends ConsumerWidget {
                       Text('Merci pour votre avis !', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: EgcColors.ink)),
                     ]),
                   );
-                  return StatefulBuilder(
-                    builder: (ctx, setState) {
-                      int selectedRating = 0;
-                      final commentC = TextEditingController();
-                      return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line)),
-                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          const Text('⭐ Noter cette commande', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: EgcColors.ink)),
-                          const SizedBox(height: 12),
-                          Row(mainAxisAlignment: MainAxisAlignment.center, children: List.generate(5, (i) => GestureDetector(
-                            onTap: () => setState(() => selectedRating = i + 1),
-                            child: Icon(i < selectedRating ? Icons.star : Icons.star_border, color: Colors.amber, size: 36),
-                          ))),
-                          const SizedBox(height: 12),
-                          TextField(
-                            controller: commentC,
-                            decoration: InputDecoration(
-                              hintText: 'Laissez un commentaire (optionnel)',
-                              border: OutlineInputBorder(borderRadius: EgcRadius.mdBorder),
-                              contentPadding: const EdgeInsets.all(12),
-                            ),
-                            maxLines: 2,
-                          ),
-                          const SizedBox(height: 12),
-                          SizedBox(width: double.infinity, child: ElevatedButton(
-                            onPressed: selectedRating == 0 ? null : () async {
-                              final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-                              await FirebaseFirestore.instance.collection('ratings').add({
-                                'orderId': order.id,
-                                'userId': uid,
-                                'rating': selectedRating,
-                                'comment': commentC.text.trim(),
-                                'createdAt': FieldValue.serverTimestamp(),
-                              });
-                              if (ctx.mounted) showSnack(ctx, 'Merci pour votre avis ! ⭐');
-                            },
-                            child: const Text('Soumettre mon avis'),
-                          )),
-                        ]),
-                      );
-                    },
-                  );
+                  return _RatingWidget(orderId: order.id);
                 },
               ),
             ]),
@@ -262,4 +219,63 @@ class OrderDetailScreen extends ConsumerWidget {
         child: Text(title, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: EgcColors.ink3, letterSpacing: 0.4))),
       Padding(padding: const EdgeInsets.all(14), child: content),
     ]));
+}
+
+class _RatingWidget extends StatefulWidget {
+  final String orderId;
+  const _RatingWidget({required this.orderId});
+  @override
+  State<_RatingWidget> createState() => _RatingWidgetState();
+}
+
+class _RatingWidgetState extends State<_RatingWidget> {
+  int _rating = 0;
+  final _commentC = TextEditingController();
+  bool _loading = false;
+
+  @override
+  void dispose() { _commentC.dispose(); super.dispose(); }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        const Text('⭐ Noter cette commande', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: EgcColors.ink)),
+        const SizedBox(height: 12),
+        Row(mainAxisAlignment: MainAxisAlignment.center, children: List.generate(5, (i) => GestureDetector(
+          onTap: () => setState(() => _rating = i + 1),
+          child: Icon(i < _rating ? Icons.star : Icons.star_border, color: Colors.amber, size: 36),
+        ))),
+        const SizedBox(height: 12),
+        TextField(
+          controller: _commentC,
+          decoration: InputDecoration(
+            hintText: 'Laissez un commentaire (optionnel)',
+            border: OutlineInputBorder(borderRadius: EgcRadius.mdBorder),
+            contentPadding: const EdgeInsets.all(12),
+          ),
+          maxLines: 2,
+        ),
+        const SizedBox(height: 12),
+        SizedBox(width: double.infinity, child: ElevatedButton(
+          onPressed: (_rating == 0 || _loading) ? null : () async {
+            setState(() => _loading = true);
+            final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+            await FirebaseFirestore.instance.collection('ratings').add({
+              'orderId': widget.orderId,
+              'userId': uid,
+              'rating': _rating,
+              'comment': _commentC.text.trim(),
+              'createdAt': FieldValue.serverTimestamp(),
+            });
+            if (mounted) showSnack(context, 'Merci pour votre avis ! ⭐');
+          },
+          child: _loading ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2) : const Text('Soumettre mon avis'),
+        )),
+      ]),
+    );
+  }
 }
