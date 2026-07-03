@@ -20,7 +20,6 @@ class FavoritesScreen extends ConsumerWidget {
         stream: FirebaseFirestore.instance
             .collection('favorites')
             .where('userId', isEqualTo: uid)
-            .orderBy('createdAt', descending: true)
             .snapshots(),
         builder: (ctx, snap) {
           if (!snap.hasData) return const Center(child: CircularProgressIndicator(color: EgcColors.primary));
