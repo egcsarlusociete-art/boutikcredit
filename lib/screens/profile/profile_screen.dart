@@ -96,6 +96,7 @@ class ProfileScreen extends ConsumerWidget {
                 launchUrl(Uri.parse('https://wa.me/2250152372300?text=Bonjour+EGC-SARLU'));
                 return;
               }
+              // ignore: unused_local_variable
               final cat = cc.kCategories.firstWhere((c) => c.id == user.creditCat, orElse: () => cc.kCategories.first);
               final msg = Uri.encodeComponent(
                 'Bonjour EGC-SARLU,\n\n'
