@@ -114,6 +114,49 @@ class VendorHomeScreen extends ConsumerWidget {
                     ]),
                   const SizedBox(height: 14),
 
+                  // Graphique ventes 6 derniers mois
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line)),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      const Text('📊 Ventes des 6 derniers mois', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: EgcColors.ink)),
+                      const SizedBox(height: 16),
+                      Builder(builder: (_) {
+                        final now = DateTime.now();
+                        final months = List.generate(6, (i) => DateTime(now.year, now.month - 5 + i));
+                        final labels = months.map((m) => ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'][m.month-1]).toList();
+                        final totals = months.map((m) => myOrders.where((doc) {
+                          final d = doc.data() as Map;
+                          final ts = d['createdAt'] as Timestamp?;
+                          if (ts == null) return false;
+                          final dt = ts.toDate();
+                          return dt.year == m.year && dt.month == m.month && d['status'] != 'cancelled';
+                        }).fold(0.0, (sum, doc) {
+                          final its = ((doc.data() as Map)['items'] as List?) ?? [];
+                          return sum + its.where((it) => myArticleIds.contains(it['articleId'])).fold(0.0, (s, it) => s + ((it['price']??0)*(it['qty']??1)).toDouble());
+                        })).toList();
+                        final maxVal = totals.isEmpty ? 1.0 : totals.reduce((a,b) => a>b?a:b);
+                        return SizedBox(height: 100, child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: List.generate(6, (i) {
+                            final ratio = maxVal > 0 ? totals[i]/maxVal : 0.0;
+                            final isCurrent = months[i].month == now.month;
+                            return Expanded(child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 3),
+                              child: Column(mainAxisAlignment: MainAxisAlignment.end, children: [
+                                if (totals[i] > 0) Text(totals[i]>=1000 ? '${(totals[i]/1000).toStringAsFixed(0)}k' : totals[i].toStringAsFixed(0), style: const TextStyle(fontSize: 8, color: EgcColors.ink3)),
+                                const SizedBox(height: 2),
+                                Container(height: 70*ratio+4, decoration: BoxDecoration(color: isCurrent?EgcColors.primary:EgcColors.primaryMid, borderRadius: BorderRadius.circular(4))),
+                                const SizedBox(height: 4),
+                                Text(labels[i], style: TextStyle(fontSize: 9, color: isCurrent?EgcColors.primary:EgcColors.ink3, fontWeight: isCurrent?FontWeight.w800:FontWeight.w400)),
+                              ]),
+                            ));
+                          }),
+                        ));
+                      }),
+                    ]),
+                  ),
+                  const SizedBox(height: 14),
                   // Liste commandes récentes (sans infos client)
                   if (myOrders.isNotEmpty) Container(
                     padding: const EdgeInsets.all(14),
