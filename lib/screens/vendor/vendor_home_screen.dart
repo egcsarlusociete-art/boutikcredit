@@ -1,4 +1,6 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../services/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -80,6 +82,81 @@ class VendorHomeScreen extends ConsumerWidget {
                     StatusPill(a.status, labels: kArticleStatus),
                   ]))),
               ])),
+            const SizedBox(height: 16),
+
+            // Commandes concernant mes articles
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('orders').snapshots(),
+              builder: (ctx, snap) {
+                if (!snap.hasData) return const SizedBox.shrink();
+                final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+                final myArticleIds = arts.map((a) => a.id).toSet();
+                // Filtrer commandes contenant mes articles
+                final myOrders = snap.data!.docs.where((doc) {
+                  final data = doc.data() as Map<String, dynamic>;
+                  final items = (data['items'] as List?) ?? [];
+                  return items.any((item) => myArticleIds.contains(item['articleId']));
+                }).toList();
+                final pending = myOrders.where((d) => (d.data() as Map)['status'] == 'confirmed').length;
+                final processing = myOrders.where((d) => (d.data() as Map)['status'] == 'processing').length;
+                final delivered = myOrders.where((d) => (d.data() as Map)['status'] == 'delivered').length;
+                final cancelled = myOrders.where((d) => (d.data() as Map)['status'] == 'cancelled').length;
+
+                return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  // KPIs commandes
+                  GridView.count(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
+                    crossAxisCount: 2, crossAxisSpacing: 10, mainAxisSpacing: 10, childAspectRatio: 2.2,
+                    children: [
+                      _kpi('🛍️', '${myOrders.length}', 'Total commandes'),
+                      _kpi('⏳', '$pending', 'En attente'),
+                      _kpi('📦', '$processing', 'En préparation'),
+                      _kpi('✅', '$delivered', 'Livrées'),
+                    ]),
+                  const SizedBox(height: 14),
+
+                  // Liste commandes récentes (sans infos client)
+                  if (myOrders.isNotEmpty) Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line, width: 1.5)),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      const Text('Commandes récentes', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: EgcColors.ink)),
+                      const SizedBox(height: 10),
+                      ...myOrders.take(5).map((doc) {
+                        final data = doc.data() as Map<String, dynamic>;
+                        final items = (data['items'] as List?) ?? [];
+                        final myItems = items.where((item) => myArticleIds.contains(item['articleId'])).toList();
+                        final status = data['status'] ?? '';
+                        final city = (data['delivery'] as Map?)?['city'] ?? 'N/A';
+                        final createdAt = (data['createdAt'] as Timestamp?)?.toDate();
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(color: EgcColors.bg, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line)),
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Row(children: [
+                              Expanded(child: Text('${myItems.length} article(s) commandé(s)',
+                                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: EgcColors.ink))),
+                              StatusPill(status, labels: kOrderStatus),
+                            ]),
+                            const SizedBox(height: 4),
+                            ...myItems.take(3).map((item) => Text('• ${item['name'] ?? ''} × ${item['qty'] ?? 1}',
+                              style: const TextStyle(fontSize: 12, color: EgcColors.ink2))),
+                            const SizedBox(height: 4),
+                            Row(children: [
+                              const Icon(Icons.location_on_outlined, size: 12, color: EgcColors.ink3),
+                              const SizedBox(width: 4),
+                              Text('Livraison vers : $city', style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                              const Spacer(),
+                              if (createdAt != null) Text(fmtDate(createdAt), style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                            ]),
+                          ]),
+                        );
+                      }),
+                    ]),
+                  ),
+                ]);
+              },
+            ),
             const SizedBox(height: 24),
           ]);
         },
