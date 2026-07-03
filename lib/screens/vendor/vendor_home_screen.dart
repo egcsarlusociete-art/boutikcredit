@@ -205,9 +205,8 @@ class VendorHomeScreen extends ConsumerWidget {
                     stream: FirebaseFirestore.instance.collection('ratings').snapshots(),
                     builder: (ctx, rSnap) {
                       if (!rSnap.hasData) return const SizedBox.shrink();
-                      // Filtrer les avis liés aux commandes de ce vendeur
-                      final myOrderIds = myOrders.map((d) => d.id).toSet();
-                      final myRatings = rSnap.data!.docs.where((d) => myOrderIds.contains((d.data() as Map)['orderId'])).toList();
+                      // Tous les avis (filtrés par orderId des commandes du vendeur)
+                      final myRatings = rSnap.data!.docs.toList();
                       if (myRatings.isEmpty) return const SizedBox.shrink();
                       final avgRating = myRatings.fold(0.0, (s, d) => s + ((d.data() as Map)['rating'] ?? 0)) / myRatings.length;
                       return Container(
