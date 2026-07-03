@@ -14,7 +14,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     signingConfigs {
         release {
-            storeFile keystoreProperties['storeFile'] ? file("app/" + keystoreProperties['storeFile']) : file('boutikcredit-release.jks')
+            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : file('boutikcredit-release.jks')
             storePassword keystoreProperties['storePassword'] ?: 'EgcSarlu2026'
             keyAlias keystoreProperties['keyAlias'] ?: 'boutikcredit'
             keyPassword keystoreProperties['keyPassword'] ?: 'EgcSarlu2026'
