@@ -42,6 +42,7 @@ class OrderModel {
   final String? estimatedDelivery;
   final bool? modified;
   final Map<String, dynamic>? modificationRequest;
+  final Map<String, dynamic>? modificationRequest;
   final DateTime? createdAt;
   final DateTime? processingAt;
   final DateTime? shippedAt;
@@ -53,7 +54,7 @@ class OrderModel {
     required this.paymentPlan, required this.paymentAmount,
     required this.paymentMethod, required this.paymentPhone,
     required this.delivery, required this.status,
-    this.estimatedDelivery, this.modified, this.createdAt,
+    this.estimatedDelivery, this.modified, this.modificationRequest, this.createdAt,
     this.processingAt, this.shippedAt, this.deliveredAt,
   });
 
