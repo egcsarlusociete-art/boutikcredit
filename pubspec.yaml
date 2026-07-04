@@ -29,6 +29,7 @@ dependencies:
   uuid: ^4.2.2
   youtube_player_flutter: ^9.0.4
   qr_flutter: ^4.1.0
+  image_picker: ^1.1.2
 
 flutter_icons:
   android: true
