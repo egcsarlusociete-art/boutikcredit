@@ -184,6 +184,23 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                         color: v.cgvAccepted ? EgcColors.ok : EgcColors.err)),
                   ]),
                 ),
+                const SizedBox(height: 4),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: v.cniComplete ? EgcColors.okBg : const Color(0xFFFEE2E2),
+                    borderRadius: EgcRadius.pill,
+                    border: Border.all(color: v.cniComplete ? EgcColors.ok : EgcColors.err),
+                  ),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(v.cniComplete ? Icons.credit_card : Icons.credit_card_off_outlined,
+                      size: 12, color: v.cniComplete ? EgcColors.ok : EgcColors.err),
+                    const SizedBox(width: 4),
+                    Text(v.cniComplete ? 'CNI vérifiée ✓' : 'CNI manquante ⚠️',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
+                        color: v.cniComplete ? EgcColors.ok : EgcColors.err)),
+                  ]),
+                ),
               ])),
               Column(crossAxisAlignment: CrossAxisAlignment.end, children: [
                 if (v.planStatus != 'active')
@@ -232,6 +249,9 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
           final referredBy = d['referredBy'] ?? '';
           final createdAt = (d['createdAt'] as Timestamp?)?.toDate();
           final cgvAccepted = d['cgvAccepted'] ?? false;
+          final cniRecto = d['cniRecto'] ?? false;
+          final cniVerso = d['cniVerso'] ?? false;
+          final cniComplete = cniRecto && cniVerso;
           return Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line, width: 1.5)),
@@ -262,6 +282,23 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                     Text(cgvAccepted ? 'CGV signées ✓' : 'CGV non signées ⚠️',
                       style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
                         color: cgvAccepted ? EgcColors.ok : EgcColors.err)),
+                  ]),
+                ),
+                const SizedBox(width: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  decoration: BoxDecoration(
+                    color: cniComplete ? EgcColors.okBg : const Color(0xFFFEE2E2),
+                    borderRadius: EgcRadius.pill,
+                    border: Border.all(color: cniComplete ? EgcColors.ok : EgcColors.err),
+                  ),
+                  child: Row(mainAxisSize: MainAxisSize.min, children: [
+                    Icon(cniComplete ? Icons.credit_card : Icons.credit_card_off_outlined,
+                      size: 12, color: cniComplete ? EgcColors.ok : EgcColors.err),
+                    const SizedBox(width: 4),
+                    Text(cniComplete ? 'CNI vérifiée ✓' : 'CNI manquante ⚠️',
+                      style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
+                        color: cniComplete ? EgcColors.ok : EgcColors.err)),
                   ]),
                 ),
               ]),
