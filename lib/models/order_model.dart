@@ -42,6 +42,7 @@ class OrderModel {
   final String? estimatedDelivery;
   final bool? modified;
   final Map<String, dynamic>? modificationRequest;
+  final bool? modificationValidated;
   final DateTime? createdAt;
   final DateTime? processingAt;
   final DateTime? shippedAt;
@@ -74,6 +75,7 @@ class OrderModel {
       estimatedDelivery: d['estimatedDelivery'],
       modified: d['modified'] as bool?,
       modificationRequest: d['modificationRequest'] != null ? Map<String, dynamic>.from(d['modificationRequest']) : null,
+      modificationValidated: d['modificationValidated'] as bool?,
       createdAt: (d['createdAt'] as Timestamp?)?.toDate(),
       processingAt: (d['processingAt'] as Timestamp?)?.toDate(),
       shippedAt: (d['shippedAt'] as Timestamp?)?.toDate(),
