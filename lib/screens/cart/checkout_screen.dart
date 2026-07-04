@@ -1,6 +1,6 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../../models/credit_category.dart';
+import '../../models/credit_category.dart' as cc;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -47,7 +47,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final creditCatId = userData['creditCat'] ?? 'A';
 
       // Récupérer la catégorie
-      final cat = kCategories.firstWhere((c) => c.id == creditCatId, orElse: () => kCategories.first);
+      final cat = cc.kCategories.firstWhere((c) => c.id == creditCatId, orElse: () => cc.kCategories.first);
 
       // Calculer le total des commandes actives
       final activeOrders = await FirebaseFirestore.instance.collection('orders')
