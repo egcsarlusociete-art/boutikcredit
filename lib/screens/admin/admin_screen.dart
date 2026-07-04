@@ -415,6 +415,62 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                 _clientInfoBtn(context, o.userId, o.orderId, o.subtotal, o.status),
                 const SizedBox(height: 8),
                 _buildOrderActions(o),
+                // Demande de modification
+                if (o.modified == true && o.modificationRequest != null) Container(
+                  margin: const EdgeInsets.only(top: 8),
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(color: EgcColors.goldBg, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.gold)),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    const Row(children: [
+                      Icon(Icons.swap_horiz, size: 16, color: EgcColors.gold),
+                      SizedBox(width: 6),
+                      Text('Demande de modification', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: EgcColors.gold)),
+                    ]),
+                    const SizedBox(height: 6),
+                    Text('Nouvel article : ' + (o.modificationRequest?['newItemName'] ?? ''), style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: EgcColors.ink)),
+                    Text('Prix : ' + fmtPrice((o.modificationRequest?['newItemPrice'] ?? 0).toDouble()), style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                    const SizedBox(height: 8),
+                    Row(children: [
+                      Expanded(child: _aBtn('Valider', EgcColors.ok, () async {
+                        // Mettre à jour les articles de la commande
+                        final orderDoc = await FirebaseFirestore.instance.collection('orders').doc(o.id).get();
+                        final items = ((orderDoc.data() as Map?)?['items'] as List?) ?? [];
+                        if (items.isNotEmpty) {
+                          items[0] = {
+                            ...Map<String, dynamic>.from(items[0]),
+                            'name': o.modificationRequest?['newItemName'] ?? '',
+                            'price': o.modificationRequest?['newItemPrice'] ?? 0,
+                            'articleId': o.modificationRequest?['newItemId'] ?? '',
+                          };
+                          await FirebaseFirestore.instance.collection('orders').doc(o.id).update({
+                            'items': items,
+                            'modificationValidated': true,
+                          });
+                          await FirebaseFirestore.instance.collection('notifications').add({
+                            'userId': o.userId, 'type': 'order', 'read': false,
+                            'title': 'Modification acceptée ✅',
+                            'message': 'Votre demande de remplacement a été acceptée !',
+                            'createdAt': FieldValue.serverTimestamp(),
+                          });
+                          if (context.mounted) showSnack(context, 'Modification validée');
+                        }
+                      })),
+                      const SizedBox(width: 8),
+                      Expanded(child: _aBtn('Refuser', EgcColors.err, () async {
+                        await FirebaseFirestore.instance.collection('orders').doc(o.id).update({
+                          'modificationValidated': false,
+                        });
+                        await FirebaseFirestore.instance.collection('notifications').add({
+                          'userId': o.userId, 'type': 'order', 'read': false,
+                          'title': 'Modification refusée ❌',
+                          'message': 'Votre demande de remplacement a été refusée.',
+                          'createdAt': FieldValue.serverTimestamp(),
+                        });
+                        if (context.mounted) showSnack(context, 'Modification refusée');
+                      })),
+                    ]),
+                  ]),
+                ),
               const SizedBox(height: 4),
               Align(alignment: Alignment.centerRight,
                 child: _deleteBtn(() async {
