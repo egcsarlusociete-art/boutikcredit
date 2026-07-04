@@ -1,5 +1,6 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../services/providers.dart';
 import '../../models/credit_category.dart' as cc;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -92,8 +93,15 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   Widget build(BuildContext context) {
     final cart = ref.watch(cartProvider);
     final total = cart.fold(0.0, (s, i) => s + i.total);
-    final daily = (total / 100).ceil();
-    final weekly = (total / 15).ceil();
+    // Récupérer la catégorie de l'utilisateur
+    final userAsync = ref.watch(userDataProvider);
+    final creditCatId = userAsync.valueOrNull?.creditCat ?? 'A';
+    final cat = cc.kCategories.firstWhere((c) => c.id == creditCatId, orElse: () => cc.kCategories.first);
+    // Durée selon catégorie
+    final dureeJours = cat.dureeJours;
+    final dureeWeeks = (cat.dureeJours / 7).ceil();
+    final daily = (cat.total / cat.dureeJours).ceil();
+    final weekly = (cat.total / dureeWeeks).ceil();
 
     return Scaffold(
       backgroundColor: EgcColors.bg,
