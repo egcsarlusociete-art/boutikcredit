@@ -2,6 +2,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -119,21 +120,64 @@ class ProductDetailScreen extends ConsumerWidget {
           ]),
           bottomNavigationBar: SafeArea(child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-            child: Row(children: [
-              Expanded(child: OutlinedButton.icon(
-                onPressed: () { ref.read(cartProvider.notifier).add(a); context.pop(); showSnack(context, 'Ajouté au panier ✓'); },
-                icon: const Icon(Icons.add_shopping_cart_outlined, size: 18),
-                label: const Text('Panier'),
-                style: OutlinedButton.styleFrom(minimumSize: const Size(0, 50)),
-              )),
-              const SizedBox(width: 10),
-              Expanded(child: ElevatedButton.icon(
-                onPressed: () { ref.read(cartProvider.notifier).add(a); context.go('/cart'); },
-                icon: const Icon(Icons.flash_on, size: 18),
-                label: const Text('Acheter'),
-                style: ElevatedButton.styleFrom(minimumSize: const Size(0, 50)),
-              )),
-            ]),
+            child: FutureBuilder<SharedPreferences>(
+              future: SharedPreferences.getInstance(),
+              builder: (ctx, snap) {
+                final isModifyMode = snap.hasData && snap.data!.getString('modifyOrderId') != null;
+                final orderId = snap.data?.getString('modifyOrderId') ?? '';
+                final orderRef = snap.data?.getString('modifyOrderRef') ?? '';
+                if (isModifyMode) {
+                  return ElevatedButton.icon(
+                    onPressed: () async {
+                      // Remplacer l'article dans la commande
+                      await FirebaseFirestore.instance.collection('orders').doc(orderId).update({
+                        'modified': true,
+                        'modificationRequest': {
+                          'newItemId': a.id,
+                          'newItemName': a.name,
+                          'newItemPrice': a.price,
+                          'newItemShop': a.shopName,
+                          'requestedAt': FieldValue.serverTimestamp(),
+                        }
+                      });
+                      // Notifier l'admin
+                      await FirebaseFirestore.instance.collection('notifications').add({
+                        'userId': '9D76f2HLPrNODPN8HtPDbzwG4wA3',
+                        'type': 'order', 'read': false,
+                        'title': 'Demande de modification commande',
+                        'message': 'Commande #$orderRef : remplacement demandé par "${a.name}"',
+                        'createdAt': FieldValue.serverTimestamp(),
+                      });
+                      // Effacer le mode modification
+                      await snap.data!.remove('modifyOrderId');
+                      await snap.data!.remove('modifyOrderRef');
+                      if (context.mounted) {
+                        context.go('/orders');
+                        showSnack(context, 'Demande de remplacement envoyée ✅');
+                      }
+                    },
+                    icon: const Icon(Icons.swap_horiz, size: 18),
+                    label: const Text('Remplacer cet article'),
+                    style: ElevatedButton.styleFrom(minimumSize: const Size(double.infinity, 50), backgroundColor: EgcColors.primary),
+                  );
+                }
+                return Row(children: [
+                  Expanded(child: OutlinedButton.icon(
+                    onPressed: () { ref.read(cartProvider.notifier).add(a); context.pop(); showSnack(context, 'Ajouté au panier ✓'); },
+                    icon: const Icon(Icons.add_shopping_cart_outlined, size: 18),
+                    label: const Text('Panier'),
+                    style: OutlinedButton.styleFrom(minimumSize: const Size(0, 50)),
+                  )),
+                  const SizedBox(width: 10),
+                  Expanded(child: ElevatedButton.icon(
+                    onPressed: () { ref.read(cartProvider.notifier).add(a); context.go('/cart'); },
+                    icon: const Icon(Icons.flash_on, size: 18),
+                    label: const Text('Acheter'),
+                    style: ElevatedButton.styleFrom(minimumSize: const Size(0, 50)),
+                  )),
+                ]);
+              },
+            ),
           )),
         );
       },
