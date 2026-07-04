@@ -1,9 +1,10 @@
 import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../utils/theme.dart';
-import '../../widgets/common.dart';
 
 class CniScreen extends StatefulWidget {
   const CniScreen({super.key});
@@ -12,40 +13,70 @@ class CniScreen extends StatefulWidget {
 }
 
 class _CniScreenState extends State<CniScreen> {
-  String? _rectoPath;
-  String? _versoPath;
+  String? _rectoUrl;
+  String? _versoUrl;
+  bool _loadingRecto = false;
+  bool _loadingVerso = false;
   final _picker = ImagePicker();
 
   @override
   void initState() {
     super.initState();
-    _loadSaved();
+    _loadFromFirestore();
   }
 
-  Future<void> _loadSaved() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _rectoPath = prefs.getString('cni_recto');
-      _versoPath = prefs.getString('cni_verso');
-    });
+  Future<void> _loadFromFirestore() async {
+    final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+    final uSnap = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+    if (uSnap.exists) {
+      final d = uSnap.data() as Map<String, dynamic>;
+      setState(() {
+        _rectoUrl = d['cniRectoUrl'];
+        _versoUrl = d['cniVersoUrl'];
+      });
+      return;
+    }
+    final vSnap = await FirebaseFirestore.instance.collection('vendeurs').doc(uid).get();
+    if (vSnap.exists) {
+      final d = vSnap.data() as Map<String, dynamic>;
+      setState(() {
+        _rectoUrl = d['cniRectoUrl'];
+        _versoUrl = d['cniVersoUrl'];
+      });
+    }
   }
 
   Future<void> _takePicture(bool isRecto) async {
-    final picked = await _picker.pickImage(
-      source: ImageSource.camera,
-      imageQuality: 80,
-    );
+    final picked = await _picker.pickImage(source: ImageSource.camera, imageQuality: 70);
     if (picked == null) return;
-    final prefs = await SharedPreferences.getInstance();
-    if (isRecto) {
-      await prefs.setString('cni_recto', picked.path);
-      setState(() => _rectoPath = picked.path);
-    } else {
-      await prefs.setString('cni_verso', picked.path);
-      setState(() => _versoPath = picked.path);
-    }
-    if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+
+    setState(() => isRecto ? _loadingRecto = true : _loadingVerso = true);
+
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+      final fileName = isRecto ? 'cni_recto_$uid.jpg' : 'cni_verso_$uid.jpg';
+      final ref = FirebaseStorage.instance.ref().child('cni/$uid/$fileName');
+      await ref.putFile(File(picked.path));
+      final url = await ref.getDownloadURL();
+
+      // Mettre à jour Firestore
+      final uSnap = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      final coll = uSnap.exists ? 'users' : 'vendeurs';
+      await FirebaseFirestore.instance.collection(coll).doc(uid).update({
+        isRecto ? 'cniRectoUrl' : 'cniVersoUrl': url,
+        isRecto ? 'cniRecto' : 'cniVerso': true,
+        'cniUpdatedAt': FieldValue.serverTimestamp(),
+      });
+
+      setState(() => isRecto ? _rectoUrl = url : _versoUrl = url);
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(isRecto ? 'Recto enregistré ✅' : 'Verso enregistré ✅'), backgroundColor: EgcColors.ok));
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Erreur: $e'), backgroundColor: EgcColors.err));
+    } finally {
+      setState(() => isRecto ? _loadingRecto = false : _loadingVerso = false);
+    }
   }
 
   @override
@@ -54,7 +85,6 @@ class _CniScreenState extends State<CniScreen> {
       backgroundColor: EgcColors.bg,
       appBar: AppBar(title: const Text('Vérification CNI')),
       body: ListView(padding: const EdgeInsets.all(16), children: [
-        // Info banner
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(color: EgcColors.primaryBg, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.primaryMid)),
@@ -65,53 +95,31 @@ class _CniScreenState extends State<CniScreen> {
               Text('Article 15 — Vérification d\'identité', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.primary)),
             ]),
             SizedBox(height: 6),
-            Text('Prenez en photo le recto et le verso de votre CNI. Les photos sont stockées uniquement sur votre téléphone.', style: TextStyle(fontSize: 12, color: EgcColors.ink3)),
+            Text('Prenez en photo le recto et le verso de votre CNI. Les photos sont sécurisées et accessibles uniquement par l\'administration.', style: TextStyle(fontSize: 12, color: EgcColors.ink3)),
           ]),
         ),
         const SizedBox(height: 20),
-
-        // Recto
-        _CniCard(
-          label: 'Recto de la CNI',
-          icon: Icons.credit_card,
-          imagePath: _rectoPath,
-          onTake: () => _takePicture(true),
-          onRetake: () => _takePicture(true),
-        ),
+        _CniCard(label: 'Recto de la CNI', icon: Icons.credit_card, imageUrl: _rectoUrl, loading: _loadingRecto, onTake: () => _takePicture(true)),
         const SizedBox(height: 16),
-
-        // Verso
-        _CniCard(
-          label: 'Verso de la CNI',
-          icon: Icons.credit_card_outlined,
-          imagePath: _versoPath,
-          onTake: () => _takePicture(false),
-          onRetake: () => _takePicture(false),
-        ),
+        _CniCard(label: 'Verso de la CNI', icon: Icons.credit_card_outlined, imageUrl: _versoUrl, loading: _loadingVerso, onTake: () => _takePicture(false)),
         const SizedBox(height: 24),
-
-        // Statut
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
-            color: (_rectoPath != null && _versoPath != null) ? EgcColors.okBg : EgcColors.goldBg,
+            color: (_rectoUrl != null && _versoUrl != null) ? EgcColors.okBg : EgcColors.goldBg,
             borderRadius: EgcRadius.mdBorder,
-            border: Border.all(color: (_rectoPath != null && _versoPath != null) ? EgcColors.ok : EgcColors.gold),
+            border: Border.all(color: (_rectoUrl != null && _versoUrl != null) ? EgcColors.ok : EgcColors.gold),
           ),
           child: Row(children: [
-            Icon(
-              (_rectoPath != null && _versoPath != null) ? Icons.check_circle_outline : Icons.hourglass_empty,
-              color: (_rectoPath != null && _versoPath != null) ? EgcColors.ok : EgcColors.gold,
-            ),
+            Icon((_rectoUrl != null && _versoUrl != null) ? Icons.check_circle_outline : Icons.hourglass_empty,
+              color: (_rectoUrl != null && _versoUrl != null) ? EgcColors.ok : EgcColors.gold),
             const SizedBox(width: 10),
             Expanded(child: Text(
-              (_rectoPath != null && _versoPath != null)
-                  ? 'CNI complète — Vérification effectuée ✅'
-                  : 'En attente — Veuillez photographier les deux faces de votre CNI',
-              style: TextStyle(
-                fontSize: 13, fontWeight: FontWeight.w700,
-                color: (_rectoPath != null && _versoPath != null) ? EgcColors.ok : EgcColors.gold,
-              ),
+              (_rectoUrl != null && _versoUrl != null)
+                ? 'CNI complète — Vérification effectuée ✅'
+                : 'En attente — Veuillez photographier les deux faces de votre CNI',
+              style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700,
+                color: (_rectoUrl != null && _versoUrl != null) ? EgcColors.ok : EgcColors.gold),
             )),
           ]),
         ),
@@ -123,11 +131,11 @@ class _CniScreenState extends State<CniScreen> {
 class _CniCard extends StatelessWidget {
   final String label;
   final IconData icon;
-  final String? imagePath;
+  final String? imageUrl;
+  final bool loading;
   final VoidCallback onTake;
-  final VoidCallback onRetake;
 
-  const _CniCard({required this.label, required this.icon, this.imagePath, required this.onTake, required this.onRetake});
+  const _CniCard({required this.label, required this.icon, this.imageUrl, required this.loading, required this.onTake});
 
   @override
   Widget build(BuildContext context) {
@@ -141,21 +149,19 @@ class _CniCard extends StatelessWidget {
             const SizedBox(width: 8),
             Text(label, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: EgcColors.ink)),
             const Spacer(),
-            if (imagePath != null) const Icon(Icons.check_circle, color: EgcColors.ok, size: 20),
+            if (imageUrl != null) const Icon(Icons.check_circle, color: EgcColors.ok, size: 20),
           ]),
         ),
-        if (imagePath != null) ...[
+        if (loading) const Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator(color: EgcColors.primary))
+        else if (imageUrl != null) ...[
           ClipRRect(
             borderRadius: const BorderRadius.only(bottomLeft: Radius.circular(12), bottomRight: Radius.circular(12)),
-            child: Image.file(File(imagePath!), width: double.infinity, height: 180, fit: BoxFit.cover),
+            child: Image.network(imageUrl!, width: double.infinity, height: 180, fit: BoxFit.cover,
+              loadingBuilder: (_, child, progress) => progress == null ? child : const Center(child: CircularProgressIndicator(color: EgcColors.primary))),
           ),
           Padding(
             padding: const EdgeInsets.all(10),
-            child: TextButton.icon(
-              onPressed: onRetake,
-              icon: const Icon(Icons.camera_alt_outlined, size: 16),
-              label: const Text('Reprendre la photo'),
-            ),
+            child: TextButton.icon(onPressed: onTake, icon: const Icon(Icons.camera_alt_outlined, size: 16), label: const Text('Reprendre la photo')),
           ),
         ] else
           Padding(
