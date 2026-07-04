@@ -97,11 +97,13 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final userAsync = ref.watch(userDataProvider);
     final creditCatId = userAsync.valueOrNull?.creditCat ?? 'A';
     final cat = cc.kCategories.firstWhere((c) => c.id == creditCatId, orElse: () => cc.kCategories.first);
-    // Durée selon catégorie
+    // Durée selon catégorie - calculée sur le total du panier
     final dureeJours = cat.dureeJours;
     final dureeWeeks = (cat.dureeJours / 7).ceil();
-    final daily = (cat.total / cat.dureeJours).ceil();
-    final weekly = (cat.total / dureeWeeks).ceil();
+    // Total avec intérêts (15%)
+    final totalAvecInterets = total * 1.15;
+    final daily = (totalAvecInterets / dureeJours).ceil();
+    final weekly = (totalAvecInterets / dureeWeeks).ceil();
 
     return Scaffold(
       backgroundColor: EgcColors.bg,
@@ -111,7 +113,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
         Padding(padding: const EdgeInsets.all(16), child: Row(children: [
           _stepDot(0, 'Livraison'), _stepLine(0), _stepDot(1, 'Paiement'), _stepLine(1), _stepDot(2, 'Confirmation'),
         ])),
-        Expanded(child: SingleChildScrollView(padding: const EdgeInsets.symmetric(horizontal: 16), child: _stepContent(total, daily, weekly))),
+        Expanded(child: SingleChildScrollView(padding: const EdgeInsets.symmetric(horizontal: 16), child: _stepContent(total, daily, weekly, dureeJours, dureeWeeks))),
         // Bottom actions
         Container(padding: const EdgeInsets.fromLTRB(16, 12, 16, 0), decoration: const BoxDecoration(color: EgcColors.bg2, border: Border(top: BorderSide(color: EgcColors.line))),
           child: SafeArea(child: Column(children: [
@@ -143,7 +145,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     );
   }
 
-  Widget _stepContent(double total, int daily, int weekly) {
+  Widget _stepContent(double total, int daily, int weekly, int dureeJours, int dureeWeeks) {
     if (_step == 0) return Column(children: [
       EgcTextField(label: 'Nom complet', controller: _nameC, validator: (v) => validateRequired(v, 'Le nom'), textInputAction: TextInputAction.next),
       const SizedBox(height: 14),
