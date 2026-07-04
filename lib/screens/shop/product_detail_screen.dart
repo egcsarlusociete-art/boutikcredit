@@ -129,6 +129,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 if (isModifyMode) {
                   return ElevatedButton.icon(
                     onPressed: () async {
+                      try {
                       // Remplacer l'article dans la commande
                       await FirebaseFirestore.instance.collection('orders').doc(orderId).update({
                         'modified': true,
@@ -154,6 +155,9 @@ class ProductDetailScreen extends ConsumerWidget {
                       if (context.mounted) {
                         context.go('/orders');
                         showSnack(context, 'Demande de remplacement envoyée ✅');
+                      }
+                      } catch (e) {
+                        if (context.mounted) showSnack(context, 'Erreur: \$e', isError: true);
                       }
                     },
                     icon: const Icon(Icons.swap_horiz, size: 18),
