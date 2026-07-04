@@ -133,6 +133,40 @@ class OrderDetailScreen extends ConsumerWidget {
                   ])),
                   Text(fmtPrice(i.total), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                 ]))),
+              // Bouton modification article
+              if (order.status == 'confirmed' && !(order.modified ?? false)) ...[
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(color: EgcColors.primaryBg, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.primaryMid)),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    const Row(children: [
+                      Icon(Icons.swap_horiz, size: 16, color: EgcColors.primary),
+                      SizedBox(width: 6),
+                      Text('Modification possible', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: EgcColors.primary)),
+                    ]),
+                    const SizedBox(height: 4),
+                    const Text('Vous pouvez remplacer un article une seule fois avant traitement.', style: TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                    const SizedBox(height: 8),
+                    SizedBox(width: double.infinity, child: OutlinedButton.icon(
+                      onPressed: () => _showModifyDialog(context, order),
+                      icon: const Icon(Icons.edit_outlined, size: 16),
+                      label: const Text('Modifier ma commande'),
+                      style: OutlinedButton.styleFrom(foregroundColor: EgcColors.primary, side: const BorderSide(color: EgcColors.primary)),
+                    )),
+                  ]),
+                ),
+              ],
+              if (order.modified ?? false) Container(
+                margin: const EdgeInsets.only(top: 8),
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: EgcColors.goldBg, borderRadius: EgcRadius.mdBorder),
+                child: const Row(children: [
+                  Icon(Icons.info_outline, size: 14, color: EgcColors.gold),
+                  SizedBox(width: 6),
+                  Expanded(child: Text('Commande déjà modifiée — aucune autre modification possible.', style: TextStyle(fontSize: 11, color: EgcColors.gold))),
+                ]),
+              ),
               const Divider(),
               Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
                 const Text('Total', style: TextStyle(fontWeight: FontWeight.w800)),
