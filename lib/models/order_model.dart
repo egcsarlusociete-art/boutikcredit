@@ -42,7 +42,6 @@ class OrderModel {
   final String? estimatedDelivery;
   final bool? modified;
   final Map<String, dynamic>? modificationRequest;
-  final Map<String, dynamic>? modificationRequest;
   final DateTime? createdAt;
   final DateTime? processingAt;
   final DateTime? shippedAt;
