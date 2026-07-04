@@ -416,7 +416,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                 const SizedBox(height: 8),
                 _buildOrderActions(o),
                 // Demande de modification
-                if (o.modified == true && o.modificationRequest != null) Container(
+                if (o.modified == true && o.modificationRequest != null && o.modificationValidated == null) Container(
                   margin: const EdgeInsets.only(top: 8),
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(color: EgcColors.goldBg, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.gold)),
