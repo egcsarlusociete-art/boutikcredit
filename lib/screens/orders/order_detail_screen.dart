@@ -2,6 +2,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../models/order_model.dart';
 import '../../services/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -280,6 +281,104 @@ class _RatingWidgetState extends State<_RatingWidget> {
             if (mounted) showSnack(context, 'Merci pour votre avis ! ⭐');
           },
           child: _loading ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2) : const Text('Soumettre mon avis'),
+        )),
+      ]),
+    );
+  }
+}
+
+void _showModifyDialog(BuildContext context, OrderModel order) {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: EgcColors.bg,
+    shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+    builder: (_) => DraggableScrollableSheet(
+      initialChildSize: 0.6,
+      maxChildSize: 0.9,
+      minChildSize: 0.4,
+      expand: false,
+      builder: (ctx, ctrl) => Column(children: [
+        Container(margin: const EdgeInsets.symmetric(vertical: 10), width: 40, height: 4, decoration: BoxDecoration(color: EgcColors.line, borderRadius: EgcRadius.pill)),
+        const Padding(
+          padding: EdgeInsets.all(16),
+          child: Text('Modifier ma commande', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800)),
+        ),
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16),
+          child: Text('Sélectionnez l\'article à remplacer et indiquez le nouvel article souhaité. Cette modification est définitive et ne peut être faite qu\'une seule fois.', style: TextStyle(fontSize: 13, color: EgcColors.ink3), textAlign: TextAlign.center),
+        ),
+        const SizedBox(height: 16),
+        Expanded(child: ListView(controller: ctrl, padding: const EdgeInsets.all(16), children: [
+          // Liste des articles à remplacer
+          ...order.items.map((item) => _ModifyItemCard(order: order, item: item)),
+        ])),
+      ]),
+    ),
+  );
+}
+
+class _ModifyItemCard extends StatefulWidget {
+  final OrderModel order;
+  final OrderItem item;
+  const _ModifyItemCard({required this.order, required this.item});
+  @override
+  State<_ModifyItemCard> createState() => _ModifyItemCardState();
+}
+
+class _ModifyItemCardState extends State<_ModifyItemCard> {
+  final _newItemC = TextEditingController();
+  bool _loading = false;
+
+  @override
+  void dispose() { _newItemC.dispose(); super.dispose(); }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line)),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text('Article actuel : \${widget.item.name}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: EgcColors.ink)),
+        Text(fmtPrice(widget.item.price), style: const TextStyle(fontSize: 12, color: EgcColors.primary)),
+        const SizedBox(height: 10),
+        TextField(
+          controller: _newItemC,
+          decoration: InputDecoration(
+            hintText: 'Nom du nouvel article souhaité',
+            border: OutlineInputBorder(borderRadius: EgcRadius.mdBorder),
+            contentPadding: const EdgeInsets.all(12),
+          ),
+        ),
+        const SizedBox(height: 10),
+        SizedBox(width: double.infinity, child: ElevatedButton(
+          onPressed: _loading ? null : () async {
+            if (_newItemC.text.trim().isEmpty) return;
+            setState(() => _loading = true);
+            await FirebaseFirestore.instance.collection('orders').doc(widget.order.id).update({
+              'modified': true,
+              'modificationRequest': {
+                'oldItem': widget.item.name,
+                'newItem': _newItemC.text.trim(),
+                'requestedAt': FieldValue.serverTimestamp(),
+              }
+            });
+            // Notifier l'admin
+            await FirebaseFirestore.instance.collection('notifications').add({
+              'userId': '9D76f2HLPrNODPN8HtPDbzwG4wA3',
+              'type': 'order',
+              'title': '🔄 Demande de modification',
+              'message': 'Commande #\${widget.order.orderId.substring(0,10)} : remplacer "\${widget.item.name}" par "\${_newItemC.text.trim()}"',
+              'read': false,
+              'createdAt': FieldValue.serverTimestamp(),
+            });
+            if (context.mounted) {
+              Navigator.pop(context);
+              showSnack(context, 'Demande de modification envoyée à l\'admin ✅');
+            }
+          },
+          child: _loading ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2) : const Text('Demander le remplacement'),
         )),
       ]),
     );

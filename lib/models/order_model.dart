@@ -40,6 +40,7 @@ class OrderModel {
   final DeliveryInfo delivery;
   final String status;
   final String? estimatedDelivery;
+  final bool? modified;
   final DateTime? createdAt;
   final DateTime? processingAt;
   final DateTime? shippedAt;
@@ -51,7 +52,7 @@ class OrderModel {
     required this.paymentPlan, required this.paymentAmount,
     required this.paymentMethod, required this.paymentPhone,
     required this.delivery, required this.status,
-    this.estimatedDelivery, this.createdAt,
+    this.estimatedDelivery, this.modified, this.createdAt,
     this.processingAt, this.shippedAt, this.deliveredAt,
   });
 
@@ -70,6 +71,7 @@ class OrderModel {
       delivery: DeliveryInfo.fromMap(Map<String, dynamic>.from(d['delivery'] ?? {})),
       status: d['status'] ?? 'confirmed',
       estimatedDelivery: d['estimatedDelivery'],
+      modified: d['modified'] as bool?,
       createdAt: (d['createdAt'] as Timestamp?)?.toDate(),
       processingAt: (d['processingAt'] as Timestamp?)?.toDate(),
       shippedAt: (d['shippedAt'] as Timestamp?)?.toDate(),
