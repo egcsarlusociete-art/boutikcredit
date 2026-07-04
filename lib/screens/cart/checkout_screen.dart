@@ -1,4 +1,6 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../../models/credit_category.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -38,6 +40,36 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
     final cart = ref.read(cartProvider);
     final uid = FirebaseAuth.instance.currentUser!.uid;
     try {
+      // Vérifier le plafond de catégorie
+      final userSnap = await FirebaseFirestore.instance.collection('users').doc(uid).get();
+      if (!userSnap.exists) throw Exception('Compte introuvable');
+      final userData = userSnap.data() as Map<String, dynamic>;
+      final creditCatId = userData['creditCat'] ?? 'A';
+
+      // Récupérer la catégorie
+      final cat = kCategories.firstWhere((c) => c.id == creditCatId, orElse: () => kCategories.first);
+
+      // Calculer le total des commandes actives
+      final activeOrders = await FirebaseFirestore.instance.collection('orders')
+          .where('userId', isEqualTo: uid)
+          .where('status', whereIn: ['confirmed', 'processing', 'shipped'])
+          .get();
+      final totalActif = activeOrders.docs.fold(0.0, (s, d) => s + ((d.data()['subtotal'] ?? 0).toDouble()));
+
+      // Total du panier actuel
+      final cartTotal = cart.fold(0.0, (s, i) => s + i.total);
+
+      // Vérifier si le plafond est respecté
+      if (totalActif + cartTotal > cat.plafond) {
+        final reste = cat.plafond - totalActif;
+        throw Exception(
+          'Plafond Catégorie $creditCatId dépassé !\n'
+          'Plafond : ${fmtPrice(cat.plafond)}\n'
+          'Déjà utilisé : ${fmtPrice(totalActif)}\n'
+          'Budget restant : ${fmtPrice(reste < 0 ? 0 : reste)}'
+        );
+      }
+
       // ignore: unused_local_variable
     final orderId = await FirestoreService().placeOrder(
         userId: uid,
