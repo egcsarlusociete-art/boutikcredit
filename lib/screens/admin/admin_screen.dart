@@ -436,11 +436,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                         final orderDoc = await FirebaseFirestore.instance.collection('orders').doc(o.id).get();
                         final items = ((orderDoc.data() as Map?)!['items'] as List?) ?? [];
                         if (items.isNotEmpty) {
-                          final oldPrice = (items[0]['price'] ?? 0).toDouble();
-                          final oldQty = (items[0]['qty'] ?? 1).toInt();
                           final newPrice = (o.modificationRequest?['newItemPrice'] ?? 0).toDouble();
-                          final priceDiff = (newPrice - oldPrice) * oldQty;
-                          final newSubtotal = o.subtotal + priceDiff;
                           items[0] = {
                             ...Map<String, dynamic>.from(items[0]),
                             'name': o.modificationRequest?['newItemName'] ?? '',
@@ -448,9 +444,16 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                             'articleId': o.modificationRequest?['newItemId'] ?? '',
                             'id': o.modificationRequest?['newItemId'] ?? '',
                           };
+                          // Recalcul direct a partir des articles a jour (au lieu d'un differentiel
+                          // fragile) pour eviter tout desync entre le prix affiche et le Total/cashback.
+                          final newSubtotal = items.fold<double>(
+                            0.0, (s, it) => s + ((it['price'] ?? 0).toDouble() * (it['qty'] ?? 1).toInt()));
+                          final newCashback = items.fold<double>(
+                            0.0, (s, it) => s + ((it['price'] ?? 0).toDouble() * (it['qty'] ?? 1).toInt() * (it['cb'] ?? 3).toDouble() / 100));
                           await FirebaseFirestore.instance.collection('orders').doc(o.id).update({
                             'items': items,
                             'subtotal': newSubtotal,
+                            'cashbackEarned': newCashback,
                             'modificationValidated': true,
                           });
                           await FirebaseFirestore.instance.collection('notifications').add({
