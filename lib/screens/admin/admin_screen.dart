@@ -442,14 +442,15 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                             final r = snap.docs[i].data();
                             final name = r['name'] ?? 'Inconnu';
                             final date = (r['createdAt'] as Timestamp?)?.toDate();
-                            return FutureBuilder<DocumentSnapshot>(
-                              future: FirebaseFirestore.instance.collection('users').doc(r['referredId'] ?? '').get(),
+                            return FutureBuilder<String>(
+                              future: FirebaseFirestore.instance.collection('users').doc(r['referredId'] ?? '').get().then((s) async {
+                                if (s.exists) return (s.data() as Map?)?['planStatus'] ?? 'pending';
+                                final v = await FirebaseFirestore.instance.collection('vendeurs').doc(r['referredId'] ?? '').get();
+                                return (v.data() as Map?)?['planStatus'] ?? 'pending';
+                              }),
                               builder: (_, userSnap) {
-                                String statut = 'En attente';
-                                if (userSnap.hasData && userSnap.data!.exists) {
-                                  final d = userSnap.data!.data() as Map<String, dynamic>?;
-                                  statut = d?['planStatus'] == 'active' ? 'Actif' : 'En attente';
-                                }
+                                final ps = userSnap.data ?? 'pending';
+                                String statut = ps == 'active' ? 'Actif' : 'En attente';
                                 return ListTile(
                                   dense: true,
                                   leading: CircleAvatar(radius: 16, backgroundColor: EgcColors.primaryBg,
