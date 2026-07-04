@@ -47,12 +47,13 @@ class OrderDetailScreen extends ConsumerWidget {
                 ]),
               ),
               // Notation
-              FutureBuilder<QuerySnapshot>(
-                future: FirebaseFirestore.instance.collection('ratings')
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance.collection('ratings')
                     .where('orderId', isEqualTo: order.id)
                     .where('userId', isEqualTo: FirebaseAuth.instance.currentUser?.uid ?? '')
-                    .get(),
+                    .snapshots(),
                 builder: (ctx, ratingSnap) {
+                  if (!ratingSnap.hasData) return const SizedBox.shrink();
                   final alreadyRated = (ratingSnap.data?.docs.length ?? 0) > 0;
                   if (alreadyRated) return Container(
                     margin: const EdgeInsets.only(bottom: 12),
