@@ -434,16 +434,23 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                       Expanded(child: _aBtn('Valider', EgcColors.ok, () async {
                         // Mettre à jour les articles de la commande
                         final orderDoc = await FirebaseFirestore.instance.collection('orders').doc(o.id).get();
-                        final items = ((orderDoc.data() as Map?)?['items'] as List?) ?? [];
+                        final items = ((orderDoc.data() as Map?)!['items'] as List?) ?? [];
                         if (items.isNotEmpty) {
+                          final oldPrice = (items[0]['price'] ?? 0).toDouble();
+                          final oldQty = (items[0]['qty'] ?? 1).toInt();
+                          final newPrice = (o.modificationRequest?['newItemPrice'] ?? 0).toDouble();
+                          final priceDiff = (newPrice - oldPrice) * oldQty;
+                          final newSubtotal = o.subtotal + priceDiff;
                           items[0] = {
                             ...Map<String, dynamic>.from(items[0]),
                             'name': o.modificationRequest?['newItemName'] ?? '',
-                            'price': o.modificationRequest?['newItemPrice'] ?? 0,
+                            'price': newPrice,
                             'articleId': o.modificationRequest?['newItemId'] ?? '',
+                            'id': o.modificationRequest?['newItemId'] ?? '',
                           };
                           await FirebaseFirestore.instance.collection('orders').doc(o.id).update({
                             'items': items,
+                            'subtotal': newSubtotal,
                             'modificationValidated': true,
                           });
                           await FirebaseFirestore.instance.collection('notifications').add({
