@@ -64,7 +64,7 @@ class FavoritesScreen extends ConsumerWidget {
                           },
                         ),
                         TextButton(
-                          onPressed: () => context.push('/article/${a.id}'),
+                          onPressed: () => context.push('/product/${a.id}'),
                           child: const Text('Voir', style: TextStyle(fontSize: 12)),
                         ),
                       ]),
