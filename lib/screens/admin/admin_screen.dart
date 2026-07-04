@@ -455,6 +455,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                             'subtotal': newSubtotal,
                             'cashbackEarned': newCashback,
                             'modificationValidated': true,
+                            'modificationRequest': FieldValue.delete(),
                           });
                           await FirebaseFirestore.instance.collection('notifications').add({
                             'userId': o.userId, 'type': 'order', 'read': false,
@@ -469,6 +470,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                       Expanded(child: _aBtn('Refuser', EgcColors.err, () async {
                         await FirebaseFirestore.instance.collection('orders').doc(o.id).update({
                           'modificationValidated': false,
+                          'modificationRequest': FieldValue.delete(),
                         });
                         await FirebaseFirestore.instance.collection('notifications').add({
                           'userId': o.userId, 'type': 'order', 'read': false,
