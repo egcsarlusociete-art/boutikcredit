@@ -1,5 +1,6 @@
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import '../../services/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -205,8 +206,13 @@ class VendorHomeScreen extends ConsumerWidget {
                     stream: FirebaseFirestore.instance.collection('ratings').snapshots(),
                     builder: (ctx, rSnap) {
                       if (!rSnap.hasData) return const SizedBox.shrink();
-                      // Tous les avis (filtrés par orderId des commandes du vendeur)
-                      final myRatings = rSnap.data!.docs.toList();
+                      // Filtrer les avis par vendeurId
+                      final vendeurUid = FirebaseAuth.instance.currentUser?.uid ?? '';
+                      final myRatings = rSnap.data!.docs.where((d) {
+                        final data = d.data() as Map<String, dynamic>;
+                        final vendeurIds = (data['vendeurIds'] as List?) ?? [];
+                        return vendeurIds.contains(vendeurUid);
+                      }).toList();
                       if (myRatings.isEmpty) return const SizedBox.shrink();
                       final avgRating = myRatings.fold(0.0, (s, d) => s + ((d.data() as Map)['rating'] ?? 0)) / myRatings.length;
                       return Container(

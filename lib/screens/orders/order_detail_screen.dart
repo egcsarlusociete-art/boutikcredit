@@ -265,11 +265,16 @@ class _RatingWidgetState extends State<_RatingWidget> {
           onPressed: (_rating == 0 || _loading) ? null : () async {
             setState(() => _loading = true);
             final uid = FirebaseAuth.instance.currentUser?.uid ?? '';
+            // Récupérer les vendeurIds de la commande
+            final orderDoc = await FirebaseFirestore.instance.collection('orders').doc(widget.orderId).get();
+            final items = ((orderDoc.data() as Map?)?['items'] as List?) ?? [];
+            final vendeurIds = items.map((i) => i['vendeurId'] ?? '').toSet().toList();
             await FirebaseFirestore.instance.collection('ratings').add({
               'orderId': widget.orderId,
               'userId': uid,
               'rating': _rating,
               'comment': _commentC.text.trim(),
+              'vendeurIds': vendeurIds,
               'createdAt': FieldValue.serverTimestamp(),
             });
             if (mounted) showSnack(context, 'Merci pour votre avis ! ⭐');
