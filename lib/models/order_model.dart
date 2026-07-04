@@ -54,7 +54,7 @@ class OrderModel {
     required this.paymentPlan, required this.paymentAmount,
     required this.paymentMethod, required this.paymentPhone,
     required this.delivery, required this.status,
-    this.estimatedDelivery, this.modified, this.modificationRequest, this.createdAt,
+    this.estimatedDelivery, this.modified, this.modificationRequest, this.modificationValidated, this.createdAt,
     this.processingAt, this.shippedAt, this.deliveredAt,
   });
 
