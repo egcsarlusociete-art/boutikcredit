@@ -44,7 +44,8 @@ class _CniScreenState extends State<CniScreen> {
       await prefs.setString('cni_verso', picked.path);
       setState(() => _versoPath = picked.path);
     }
-    if (mounted) showSnack(context, isRecto ? 'Recto enregistré ✅' : 'Verso enregistré ✅');
+    if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(isRecto ? 'Recto enregistré ✅' : 'Verso enregistré ✅'), backgroundColor: EgcColors.ok));
   }
 
   @override
