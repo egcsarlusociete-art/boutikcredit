@@ -129,6 +129,38 @@ class _ShopScreenState extends ConsumerState<ShopScreen> {
         ),
 
         // Hero
+        // Bannière modification commande
+        SliverToBoxAdapter(child: FutureBuilder<SharedPreferences>(
+          future: SharedPreferences.getInstance(),
+          builder: (ctx, snap) {
+            if (!snap.hasData) return const SizedBox.shrink();
+            final orderId = snap.data!.getString('modifyOrderId');
+            final orderRef = snap.data!.getString('modifyOrderRef');
+            if (orderId == null) return const SizedBox.shrink();
+            return Container(
+              margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(color: EgcColors.primaryBg, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.primary, width: 1.5)),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Row(children: [
+                  const Icon(Icons.swap_horiz, color: EgcColors.primary, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(child: Text('Mode modification — Commande #\${orderRef ?? ''}'.substring(0, (orderRef?.length ?? 0) > 10 ? 10 : (orderRef?.length ?? 0)), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.primary))),
+                  GestureDetector(
+                    onTap: () async {
+                      await snap.data!.remove('modifyOrderId');
+                      await snap.data!.remove('modifyOrderRef');
+                      setState(() {});
+                    },
+                    child: const Icon(Icons.close, size: 18, color: EgcColors.ink3),
+                  ),
+                ]),
+                const SizedBox(height: 4),
+                const Text('Sélectionnez un article pour remplacer celui de votre commande.', style: TextStyle(fontSize: 11, color: EgcColors.ink3)),
+              ]),
+            );
+          },
+        )),
         SliverToBoxAdapter(child: _hero(articlesAsync)),
         // Plafond credit
         SliverToBoxAdapter(child: _PlafondWidget()),

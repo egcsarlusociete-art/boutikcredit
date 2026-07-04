@@ -2,6 +2,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../models/order_model.dart';
 import '../../services/providers.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -149,9 +150,17 @@ class OrderDetailScreen extends ConsumerWidget {
                     const Text('Vous pouvez remplacer un article une seule fois avant traitement.', style: TextStyle(fontSize: 11, color: EgcColors.ink3)),
                     const SizedBox(height: 8),
                     SizedBox(width: double.infinity, child: OutlinedButton.icon(
-                      onPressed: () => _showModifyDialog(context, order),
-                      icon: const Icon(Icons.edit_outlined, size: 16),
-                      label: const Text('Modifier ma commande'),
+                      onPressed: () async {
+                        // Sauvegarder la commande à modifier localement
+                        final prefs = await SharedPreferences.getInstance();
+                        await prefs.setString('modifyOrderId', order.id);
+                        await prefs.setString('modifyOrderRef', order.orderId);
+                        if (context.mounted) {
+                          context.go('/');
+                        }
+                      },
+                      icon: const Icon(Icons.storefront_outlined, size: 16),
+                      label: const Text('Choisir un article de remplacement'),
                       style: OutlinedButton.styleFrom(foregroundColor: EgcColors.primary, side: const BorderSide(color: EgcColors.primary)),
                     )),
                   ]),
