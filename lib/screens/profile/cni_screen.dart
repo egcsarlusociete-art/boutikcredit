@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:permission_handler/permission_handler.dart';
 import '../../utils/theme.dart';
 
 class CniScreen extends StatefulWidget {
@@ -39,6 +40,17 @@ class _CniScreenState extends State<CniScreen> {
   }
 
   Future<void> _takePicture(bool isRecto) async {
+    final status = await Permission.camera.request();
+    if (status.isDenied || status.isPermanentlyDenied) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Permission caméra refusée. Activez-la dans les paramètres.'),
+          backgroundColor: EgcColors.err,
+          action: SnackBarAction(label: 'Paramètres', onPressed: () => openAppSettings()),
+        ),
+      );
+      return;
+    }
     final picked = await _picker.pickImage(source: ImageSource.camera, imageQuality: 40, maxWidth: 800);
     if (picked == null) return;
     setState(() => isRecto ? _loadingRecto = true : _loadingVerso = true);
@@ -58,7 +70,7 @@ class _CniScreenState extends State<CniScreen> {
         SnackBar(content: Text(isRecto ? 'Recto enregistré ✅' : 'Verso enregistré ✅'), backgroundColor: EgcColors.ok));
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Erreur: $e'), backgroundColor: EgcColors.err));
+        SnackBar(content: Text('Erreur: ' + e.toString()), backgroundColor: EgcColors.err));
     } finally {
       setState(() => isRecto ? _loadingRecto = false : _loadingVerso = false);
     }
