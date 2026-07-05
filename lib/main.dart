@@ -59,7 +59,7 @@ Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
         notification.body,
         const NotificationDetails(
           android: AndroidNotificationDetails('boutikcredit_channel', 'BoutikCredit',
-            importance: Importance.high, priority: Priority.high, icon: '@mipmap/ic_launcher'),
+            importance: Importance.high, priority: Priority.high, icon: '@mipmap/ic_launcher', enableVibration: true, playSound: true),
         ),
       );
     }
@@ -123,7 +123,7 @@ void main() async {
         notification.body,
         const NotificationDetails(
           android: AndroidNotificationDetails('boutikcredit_channel', 'BoutikCredit',
-            importance: Importance.high, priority: Priority.high, icon: '@mipmap/ic_launcher'),
+            importance: Importance.high, priority: Priority.high, icon: '@mipmap/ic_launcher', enableVibration: true, playSound: true),
         ),
       );
     }
