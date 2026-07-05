@@ -107,7 +107,7 @@ class ProfileScreen extends ConsumerWidget {
                 '• Téléphone : ${user.phone}\n'
                 '• Ville : ${user.city}\n\n'
                 '💳 *COMPTE*\n'
-                '• Catégorie : Cat. \${user.creditCat} — Plafond \${fmtPrice(cat.plafond)}\n'
+                '• Catégorie : Cat. ${user.creditCat} — Plafond ${fmtPrice(cat.plafond)}\n'
                 '• Plan : ${user.plan == 'seller' ? 'Vendeur' : 'Client'}\n'
                 '• Statut : ${user.planStatus == 'active' ? 'Actif' : user.planStatus == 'pending' ? 'En attente' : 'Inactif'}\n'
                 '• Code parrainage : ${user.referralCode}\n'
