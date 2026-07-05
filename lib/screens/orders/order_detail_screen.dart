@@ -245,7 +245,21 @@ class OrderDetailScreen extends ConsumerWidget {
             })),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () => launchUrl(Uri.parse('https://wa.me/2250152372300?text=Support+commande+%23${order.orderId}')),
+              onPressed: () {
+                final items = order.items.map((it) => '• ' + it.name + ' × ' + it.qty.toString() + ' — ' + fmtPrice(it.total)).join('\n');
+                final msg = Uri.encodeComponent(
+                  'Bonjour EGC-SARLU,\n\n'
+                  '📦 *SUPPORT COMMANDE*\n'
+                  '• Référence : #' + order.orderId + '\n'
+                  '• Statut : ' + order.status + '\n'
+                  '• Total : ' + fmtPrice(order.subtotal) + '\n'
+                  '• Date : ' + fmtDate(order.createdAt) + '\n\n'
+                  '*Articles commandés :*\n' + items + '\n\n'
+                  '📋 *MON PROBLÈME*\n'
+                  '[Décrivez votre problème ici]'
+                );
+                launchUrl(Uri.parse('https://wa.me/2250152372300?text=' + msg));
+              },
               icon: const Icon(Icons.support_agent_outlined, size: 18),
               label: const Text('Contacter le support'),
               style: ElevatedButton.styleFrom(backgroundColor: EgcColors.ok, minimumSize: const Size(double.infinity, 50)),
