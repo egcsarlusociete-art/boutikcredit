@@ -139,7 +139,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
                     if (_operator == null) { showSnack(context, 'Choisissez un opérateur', isError: true); return; }
                     if (_form.currentState!.validate()) setState(() => _step = 2);
                   } else {
-                    _placeOrder();
+                    if (!_loading) _placeOrder();
                   }
                 },
               )),
