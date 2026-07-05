@@ -2,6 +2,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import '../../models/credit_category.dart' as cc;
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../services/providers.dart';
@@ -196,8 +197,14 @@ class OrderDetailScreen extends ConsumerWidget {
             _section('📅 Suivi des paiements', Builder(builder: (_) {
               final isDaily = order.paymentPlan == 'daily';
               final total = order.subtotal * 1.15; // avec 15% intérêts
-              final paiement = isDaily ? total / 100 : total / 15;
-              final duree = isDaily ? 100 : 15;
+              // Durée selon catégorie utilisateur
+              final userAsync = ref.watch(userDataProvider);
+              final creditCatId = userAsync.valueOrNull?.creditCat ?? 'A';
+              final cat = cc.kCategories.firstWhere((c) => c.id == creditCatId, orElse: () => cc.kCategories.first);
+              final dureeJours = cat.dureeJours;
+              final dureeWeeks = (cat.dureeJours / 7).ceil();
+              final paiement = isDaily ? total / dureeJours : total / dureeWeeks;
+              final duree = isDaily ? dureeJours : dureeWeeks;
               final unite = isDaily ? 'jours' : 'semaines';
               return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [

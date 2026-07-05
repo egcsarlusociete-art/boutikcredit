@@ -489,6 +489,15 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                   final ok = await _confirmDelete(context, '#' + o.orderId);
                   if (ok == true) {
                     await FirebaseFirestore.instance.collection('orders').doc(o.id).delete();
+                    // Notifier l'utilisateur
+                    await FirebaseFirestore.instance.collection('notifications').add({
+                      'userId': o.userId,
+                      'type': 'order',
+                      'title': 'Commande annulée ❌',
+                      'message': 'Votre commande #' + o.orderId + ' a été annulée par l\'administration.',
+                      'read': false,
+                      'createdAt': FieldValue.serverTimestamp(),
+                    });
                     if (context.mounted) showSnack(context, 'Commande supprimee');
                   }
                 })),
