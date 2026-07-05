@@ -50,12 +50,17 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       // Récupérer la catégorie
       final cat = cc.kCategories.firstWhere((c) => c.id == creditCatId, orElse: () => cc.kCategories.first);
 
-      // Calculer le total des commandes actives
+      // Calculer le total des commandes actives via le bonus déjà dépensé
+      // On utilise totalOrders depuis userData pour éviter requête supplémentaire
       final activeOrders = await FirebaseFirestore.instance.collection('orders')
           .where('userId', isEqualTo: uid)
-          .where('status', whereIn: ['confirmed', 'processing', 'shipped'])
           .get();
-      final totalActif = activeOrders.docs.fold(0.0, (s, d) => s + ((d.data()['subtotal'] ?? 0).toDouble()));
+      final totalActif = activeOrders.docs
+          .where((d) {
+            final s = (d.data()['status'] ?? '');
+            return s == 'confirmed' || s == 'processing' || s == 'shipped';
+          })
+          .fold(0.0, (s, d) => s + ((d.data()['subtotal'] ?? 0).toDouble()));
 
       // Total du panier actuel
       final cartTotal = cart.fold(0.0, (s, i) => s + i.total);
