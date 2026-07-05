@@ -83,7 +83,7 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       ref.read(cartProvider.notifier).clear();
       if (mounted) context.go('/order-success?id=\$orderId');
     } catch (e) {
-      if (mounted) showSnack(context, 'Erreur : \$e', isError: true);
+      if (mounted) showSnack(context, e.toString().replaceAll('Exception: ', ''), isError: true);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -167,9 +167,9 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       const SizedBox(height: 16),
       const Text('Plan de remboursement', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: EgcColors.ink)),
       const SizedBox(height: 10),
-      _planOpt('daily', 'Quotidien — \$dureeJours jours', '${fmtPrice(daily)} / jour'),
+      _planOpt('daily', 'Quotidien — $dureeJours jours', '${fmtPrice(daily)} / jour'),
       const SizedBox(height: 8),
-      _planOpt('weekly', 'Hebdomadaire — \$dureeWeeks semaines', '${fmtPrice(weekly)} / semaine'),
+      _planOpt('weekly', 'Hebdomadaire — $dureeWeeks semaines', '${fmtPrice(weekly)} / semaine'),
       const SizedBox(height: 16),
       const Text('Opérateur de paiement', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: EgcColors.ink)),
       const SizedBox(height: 10),
