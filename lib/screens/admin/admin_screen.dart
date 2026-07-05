@@ -500,10 +500,11 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                     });
                     // Supprimer bonusHistory lié
                     final bonusSnap = await FirebaseFirestore.instance.collection('bonusHistory')
-                        .where('userId', isEqualTo: o.userId)
-                        .where('label', isEqualTo: 'Cashback commande ' + o.orderId.substring(0, 12))
-                        .get();
-                    for (final b in bonusSnap.docs) { await b.reference.delete(); }
+                        .where('userId', isEqualTo: o.userId).get();
+                    final targetLabel = 'Cashback commande ' + o.orderId.substring(0, 12);
+                    for (final b in bonusSnap.docs) {
+                      if ((b.data() as Map)['label'] == targetLabel) await b.reference.delete();
+                    }
                     // Supprimer la commande
                     await FirebaseFirestore.instance.collection('orders').doc(o.id).delete();
                     // Notifier l'utilisateur
