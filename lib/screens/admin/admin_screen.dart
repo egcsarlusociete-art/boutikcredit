@@ -488,13 +488,30 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                 child: _deleteBtn(() async {
                   final ok = await _confirmDelete(context, '#' + o.orderId);
                   if (ok == true) {
+                    // Déduire le cashback avant suppression
+                    final cashback = o.cashbackEarned;
+                    final uSnap = await FirebaseFirestore.instance.collection('users').doc(o.userId).get();
+                    final coll = uSnap.exists ? 'users' : 'vendeurs';
+                    await FirebaseFirestore.instance.collection(coll).doc(o.userId).update({
+                      'bonus': FieldValue.increment(-cashback),
+                      'totalEarnings': FieldValue.increment(-cashback),
+                      'cashbacks': FieldValue.increment(-cashback),
+                      'totalOrders': FieldValue.increment(-1),
+                    });
+                    // Supprimer bonusHistory lié
+                    final bonusSnap = await FirebaseFirestore.instance.collection('bonusHistory')
+                        .where('userId', isEqualTo: o.userId)
+                        .where('label', isEqualTo: 'Cashback commande ' + o.orderId.substring(0, 12))
+                        .get();
+                    for (final b in bonusSnap.docs) { await b.reference.delete(); }
+                    // Supprimer la commande
                     await FirebaseFirestore.instance.collection('orders').doc(o.id).delete();
                     // Notifier l'utilisateur
                     await FirebaseFirestore.instance.collection('notifications').add({
                       'userId': o.userId,
                       'type': 'order',
                       'title': 'Commande annulée ❌',
-                      'message': 'Votre commande #' + o.orderId + ' a été annulée par l\'administration.',
+                      'message': 'Votre commande #' + o.orderId + ' a été annulée. Le cashback de ' + fmtPrice(cashback) + ' a été retiré de votre bonus.',
                       'read': false,
                       'createdAt': FieldValue.serverTimestamp(),
                     });
