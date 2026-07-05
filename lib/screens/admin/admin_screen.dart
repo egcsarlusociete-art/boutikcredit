@@ -781,7 +781,10 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
   ]));
 
   Widget _aBtn(String label, Color color, VoidCallback onTap) => ElevatedButton(
-    onPressed: onTap,
+    onPressed: () async {
+      try { await Future.microtask(onTap); }
+      catch (e) { if (context.mounted) showSnack(context, 'Erreur: ' + e.toString(), isError: true); }
+    },
     style: ElevatedButton.styleFrom(backgroundColor: color, padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       minimumSize: Size.zero, tapTargetSize: MaterialTapTargetSize.shrinkWrap,
       shape: RoundedRectangleBorder(borderRadius: EgcRadius.smBorder)),
