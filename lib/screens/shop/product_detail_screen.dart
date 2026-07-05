@@ -273,6 +273,7 @@ Widget _vendeurLogo(String vendeurId) {
   // Map des logos par vendeurId
   const logos = {
     'impactveroty_vendor': 'https://impactveroty.com/logoIMPACT.jpg',
+    'Xa0dgDhehnbmLpbgKpBEPB9ygD73': 'https://impactveroty.com/logoIMPACT.jpg',
   };
   final url = logos[vendeurId];
   if (url != null) {
