@@ -15,6 +15,7 @@ class ArticleModel {
   final String? imageUrl;
   final String? imageUrl2;
   final String? imageUrl3;
+  final String? imageUrl4;
   final String status;
   final int views;
   final double cashback;
@@ -39,6 +40,7 @@ class ArticleModel {
     this.imageUrl,
     this.imageUrl2,
     this.imageUrl3,
+    this.imageUrl4,
     this.status = 'pending',
     this.views = 0,
     this.cashback = 3,
@@ -66,6 +68,7 @@ class ArticleModel {
       imageUrl: d['imageUrl'],
       imageUrl2: d['imageUrl2'],
       imageUrl3: d['imageUrl3'],
+      imageUrl4: d['imageUrl4'],
       status: d['status'] ?? 'pending',
       views: (d['views'] ?? 0).toInt(),
       cashback: (d['cashback'] ?? 3).toDouble(),

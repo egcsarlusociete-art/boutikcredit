@@ -220,6 +220,7 @@ class _ImageCarouselState extends State<_ImageCarousel> {
       if (widget.article.imageUrl != null) widget.article.imageUrl!,
       if (widget.article.imageUrl2 != null) widget.article.imageUrl2!,
       if (widget.article.imageUrl3 != null) widget.article.imageUrl3!,
+      if (widget.article.imageUrl4 != null) widget.article.imageUrl4!,
     ];
 
     if (images.isEmpty) {
