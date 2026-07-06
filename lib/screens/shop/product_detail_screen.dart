@@ -113,7 +113,7 @@ class ProductDetailScreen extends ConsumerWidget {
                 const SizedBox(width: 10),
                 _feature('📅', 'Paiement', 'Étalé · Dès réception'),
                 const SizedBox(width: 10),
-                _feature('✅', 'En stock', 'Qté : ${a.qty}'),
+                _feature('✅', 'En stock', '${a.stock > 0 ? a.stock.toString() + " pièces" : "Disponible"}'),
               ]),
               const SizedBox(height: 100),
             ]))),

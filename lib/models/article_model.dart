@@ -11,6 +11,7 @@ class ArticleModel {
   final String description;
   final String state;
   final double price;
+  final int stock;
   final int qty;
   final String? imageUrl;
   final String? imageUrl2;
@@ -36,6 +37,7 @@ class ArticleModel {
     this.description = '',
     this.state = 'new',
     required this.price,
+    this.stock = 0,
     this.qty = 1,
     this.imageUrl,
     this.imageUrl2,
@@ -64,6 +66,7 @@ class ArticleModel {
       description: d['description'] ?? '',
       state: d['state'] ?? 'new',
       price: (d['price'] ?? 0).toDouble(),
+      stock: (d['stock'] ?? 0).toInt(),
       qty: (d['qty'] ?? 1).toInt(),
       imageUrl: d['imageUrl'],
       imageUrl2: d['imageUrl2'],
@@ -104,6 +107,7 @@ class CartItem {
     this.imageUrl,
     required this.shopName,
     this.vendeurId = '',
+    this.stock = 0,
     this.qty = 1,
   });
 
