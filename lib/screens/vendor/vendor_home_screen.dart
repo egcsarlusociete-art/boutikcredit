@@ -51,6 +51,7 @@ class VendorHomeScreen extends ConsumerWidget {
                 _kpi('⏳', '$pending', 'En attente'),
                 _kpi('🛒', '${arts.length}', 'Total articles'),
                 _kpi('👁', '${arts.fold(0, (s, a) => s + a.views)}', 'Vues totales'),
+                _kpi('❌', '${arts.where((a) => a.stock == 0).length}', 'Rupture stock'),
               ]),
             const SizedBox(height: 14),
             // Actions

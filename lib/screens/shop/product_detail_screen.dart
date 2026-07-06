@@ -14,18 +14,33 @@ import '../../utils/theme.dart';
 import '../../utils/helpers.dart';
 
 
-class ProductDetailScreen extends ConsumerWidget {
+class ProductDetailScreen extends ConsumerStatefulWidget {
   final String id;
   const ProductDetailScreen({super.key, required this.id});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<ProductDetailScreen> createState() => _ProductDetailScreenState();
+}
+
+class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      FirebaseFirestore.instance.collection('articles').doc(widget.id).update({
+        'views': FieldValue.increment(1),
+      }).catchError((_) {});
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final artAsync = ref.watch(publishedArticlesProvider);
     return artAsync.when(
       loading: () => const Scaffold(body: Center(child: CircularProgressIndicator(color: EgcColors.primary))),
       error: (e, _) => Scaffold(body: Center(child: Text('Erreur'))),
       data: (list) {
-        final a = list.where((x) => x.id == id).firstOrNull;
+        final a = list.where((x) => x.id == widget.id).firstOrNull;
         if (a == null) return Scaffold(appBar: AppBar(), body: const Center(child: Text('Article introuvable')));
         return Scaffold(
           backgroundColor: EgcColors.bg2,
