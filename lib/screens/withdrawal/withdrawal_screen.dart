@@ -27,6 +27,18 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
   bool _loading = false;
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = ref.read(userDataProvider).valueOrNull;
+      if (user != null) {
+        _nameC.text = user.name;
+        _accC.text = user.phone;
+      }
+    });
+  }
+
+  @override
   void dispose() { _amtC.dispose(); _accC.dispose(); _nameC.dispose(); super.dispose(); }
 
   Future<void> _submit(UserModel? user) async {

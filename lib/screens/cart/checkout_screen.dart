@@ -33,6 +33,20 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
   bool _loading = false;
 
   @override
+  void initState() {
+    super.initState();
+    // Pré-remplir depuis le compte utilisateur
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final user = ref.read(userDataProvider).valueOrNull;
+      if (user != null) {
+        _nameC.text = user.name;
+        _phoneC.text = user.phone;
+        setState(() => _city = user.city.isNotEmpty ? user.city : null);
+      }
+    });
+  }
+
+  @override
   void dispose() { _nameC.dispose(); _phoneC.dispose(); _addrC.dispose(); _payNumC.dispose(); super.dispose(); }
 
   Future<void> _placeOrder() async {
