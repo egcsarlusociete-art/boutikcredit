@@ -13,8 +13,9 @@ class FirestoreService {
       .orderBy('createdAt', descending: true)
       .snapshots()
       .map((s) {
-        print('DEBUG articles: \${s.docs.length} documents trouvés');
-        return s.docs.map(ArticleModel.fromFirestore).toList();
+        final all = s.docs.map(ArticleModel.fromFirestore).toList();
+        // Masquer les articles sans stock
+        return all.where((a) => a.stock > 0).toList();
       });
 
   Stream<List<ArticleModel>> vendeurArticles(String uid) => _db
@@ -22,10 +23,7 @@ class FirestoreService {
       .where('vendeurId', isEqualTo: uid)
       .orderBy('createdAt', descending: true)
       .snapshots()
-      .map((s) {
-        print('DEBUG articles: \${s.docs.length} documents trouvés');
-        return s.docs.map(ArticleModel.fromFirestore).toList();
-      });
+      .map((s) => s.docs.map(ArticleModel.fromFirestore).toList());
 
   Future<void> submitArticle(Map<String, dynamic> data) =>
       _db.collection('articles').add({

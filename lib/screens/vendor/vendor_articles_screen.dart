@@ -44,6 +44,8 @@ class VendorArticlesScreen extends ConsumerWidget {
                       StatusPill(a.status, labels: kArticleStatus),
                       const SizedBox(width: 8),
                       Text('👁 ${a.views}', style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                      const SizedBox(width: 8),
+                      Text('📦 ${a.stock}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: a.stock > 5 ? EgcColors.ok : a.stock > 0 ? EgcColors.gold : EgcColors.err)),
                     ]),
                   ])),
                   if (!a.hasImage)
