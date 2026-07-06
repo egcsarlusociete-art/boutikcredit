@@ -627,7 +627,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
               Row(children: [
                 if (w.status == 'pending') ...[
                   _aBtn('Approuver', EgcColors.ok, () async {
-                    await _fs.adminApproveWithdrawal(w.id);
+                    await _fs.adminApproveWithdrawal(w.id, w.userId, w.amount);
                     await FirebaseFirestore.instance.collection('notifications').add({
                       'userId': w.userId, 'type': 'withdrawal', 'read': false,
                       'title': 'Retrait approuvé ✅',
@@ -695,6 +695,18 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
               'userId': o.userId, 'type': 'order', 'read': false,
               'title': 'Commande mise à jour',
               'message': msgs[s],
+              'createdAt': FieldValue.serverTimestamp(),
+            });
+          }
+          // Notification cashback à la livraison
+          if (s == 'delivered' && o.cashbackEarned > 0) {
+            await FirebaseFirestore.instance.collection('notifications').add({
+              'userId': o.userId, 'type': 'cashback', 'read': false,
+              'title': 'Votre Cashback est disponible ! 💰',
+              'message': 'Dès la réception de votre article à votre lieu de livraison, '
+                  'rendez-vous dans votre espace pour effectuer une demande de retrait '
+                  'de votre Cashback de \${fmtPrice(o.cashbackEarned)} F CFA. '
+                  'Le livreur vous remettra la somme en main propre.',
               'createdAt': FieldValue.serverTimestamp(),
             });
           }

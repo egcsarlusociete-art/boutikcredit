@@ -222,8 +222,49 @@ class FirestoreService {
     return _db.collection('orders').doc(id).update(updates);
   }
 
-  Future<void> adminApproveWithdrawal(String id) =>
-      _db.collection('withdrawals').doc(id).update({'status': 'approved', 'approvedAt': FieldValue.serverTimestamp()});
+  Future<void> adminApproveWithdrawal(String id, String userId, double amount) async {
+    // Approuver le retrait
+    await _db.collection('withdrawals').doc(id).update({'status': 'approved', 'approvedAt': FieldValue.serverTimestamp()});
+    
+    // Calculer le nombre de filleuls à supprimer (1 filleul = 500 F)
+    final nbFilleuls = (amount / 500).floor();
+    if (nbFilleuls <= 0) return;
+    
+    // Récupérer les filleuls actifs du plus ancien au plus récent
+    final allRefs = await _db.collection('referrals')
+        .where('referrerId', isEqualTo: userId)
+        .orderBy('createdAt', descending: false).get();
+    
+    final activeRefs = <dynamic>[];
+    for (final ref in allRefs.docs) {
+      final referredId = (ref.data()['referredId'] ?? '') as String;
+      if (referredId.isEmpty) continue;
+      final uSnap = await _db.collection('users').doc(referredId).get();
+      final vSnap = await _db.collection('vendeurs').doc(referredId).get();
+      final status = uSnap.exists ? (uSnap.data()?['planStatus'] ?? '') : (vSnap.data()?['planStatus'] ?? '');
+      if (status == 'active') activeRefs.add(ref);
+      if (activeRefs.length >= nbFilleuls) break;
+    }
+    
+    if (activeRefs.length < nbFilleuls) {
+      throw Exception('Pas assez de filleuls actifs (\${activeRefs.length}/\$nbFilleuls requis)');
+    }
+    
+    // Supprimer les filleuls et leur bonusHistory
+    for (final ref in activeRefs) {
+      await _db.collection('referrals').doc(ref.id).delete();
+      final bonusSnap = await _db.collection('bonusHistory')
+          .where('userId', isEqualTo: userId)
+          .where('type', isEqualTo: 'referral').get();
+      if (bonusSnap.docs.isNotEmpty) await bonusSnap.docs.first.reference.delete();
+    }
+    
+    // Mettre à jour totalReferrals
+    final coll = await _getUserColl(userId);
+    await _db.collection(coll).doc(userId).update({
+      'totalReferrals': FieldValue.increment(-nbFilleuls),
+    });
+  }
 
   Future<void> adminRejectWithdrawal(String id, String userId, double amount) async {
     await _db.collection('withdrawals').doc(id).update({'status': 'rejected', 'rejectedAt': FieldValue.serverTimestamp()});
