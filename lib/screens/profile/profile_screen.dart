@@ -64,26 +64,32 @@ class ProfileScreen extends ConsumerWidget {
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line, width: 1.5)),
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                    const Text('📦 Articles publiés', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: EgcColors.ink)),
-                    Text('${user!.articlesCount}/1000', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.primary)),
-                  ]),
-                  const SizedBox(height: 8),
-                  ClipRRect(
-                    borderRadius: EgcRadius.pill,
-                    child: LinearProgressIndicator(
-                      value: (user.articlesCount / 1000).clamp(0.0, 1.0),
-                      minHeight: 8,
-                      backgroundColor: EgcColors.bg3,
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        user.articlesCount >= 1000 ? EgcColors.err : EgcColors.primary),
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  if (user.articlesCount >= 1000)
-                    const Text('⚠️ Plafond atteint — contactez EGC-SARLU pour publier plus', style: TextStyle(fontSize: 11, color: EgcColors.err, fontWeight: FontWeight.w600))
-                  else
-                    Text('${1000 - user.articlesCount} articles restants disponibles', style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                  Consumer(builder: (ctx2, ref2, _) {
+                    final artsAsync = ref2.watch(vendorArticlesProvider);
+                    final count = artsAsync.valueOrNull?.where((a) => a.status == 'published').length ?? 0;
+                    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                        const Text('📦 Articles publiés', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: EgcColors.ink)),
+                        Text('$count/1000', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.primary)),
+                      ]),
+                      const SizedBox(height: 8),
+                      ClipRRect(
+                        borderRadius: EgcRadius.pill,
+                        child: LinearProgressIndicator(
+                          value: (count / 1000).clamp(0.0, 1.0),
+                          minHeight: 8,
+                          backgroundColor: EgcColors.bg3,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            count >= 1000 ? EgcColors.err : EgcColors.primary),
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      if (count >= 1000)
+                        const Text('⚠️ Plafond atteint — contactez EGC-SARLU pour publier plus', style: TextStyle(fontSize: 11, color: EgcColors.err, fontWeight: FontWeight.w600))
+                      else
+                        Text('${1000 - count} articles restants disponibles', style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                    ]);
+                  }),
                 ]),
               ),
               _menuItem(Icons.store_outlined, 'Espace Vendeur', 'Gérer mes articles', () => context.push('/vendor'), highlight: true),
