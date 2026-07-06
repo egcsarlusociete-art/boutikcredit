@@ -107,7 +107,6 @@ class CartItem {
     this.imageUrl,
     required this.shopName,
     this.vendeurId = '',
-    this.stock = 0,
     this.qty = 1,
   });
 

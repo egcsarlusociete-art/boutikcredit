@@ -88,6 +88,12 @@ class FirestoreService {
       'label': 'Cashback commande ${orderId.substring(0, 12)}',
       'createdAt': FieldValue.serverTimestamp(),
     });
+    // Deduire le stock de chaque article commande
+    for (final item in items) {
+      await _db.collection('articles').doc(item.articleId).update({
+        'stock': FieldValue.increment(-item.qty),
+      });
+    }
     // Notifier chaque vendeur
     final vendeurIds = items.map((i) => i.vendeurId).toSet();
     for (final vendeurId in vendeurIds) {

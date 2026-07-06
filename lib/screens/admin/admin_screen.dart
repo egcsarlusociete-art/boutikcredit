@@ -505,6 +505,12 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                     for (final b in bonusSnap.docs) {
                       if ((b.data() as Map)['label'] == targetLabel) await b.reference.delete();
                     }
+                    // Réajouter le stock des articles annulés
+                    for (final item in o.items) {
+                      await FirebaseFirestore.instance.collection('articles').doc(item.id).update({
+                        'stock': FieldValue.increment(item.qty),
+                      });
+                    }
                     // Supprimer la commande
                     await FirebaseFirestore.instance.collection('orders').doc(o.id).delete();
                     // Notifier l'utilisateur
