@@ -226,7 +226,7 @@ class VendorHomeScreen extends ConsumerWidget {
                             Text(avgRating.toStringAsFixed(1), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: Colors.amber)),
                             const Text('/5', style: TextStyle(fontSize: 12, color: EgcColors.ink3)),
                             const SizedBox(width: 4),
-                            Text('(\${myRatings.length} avis)', style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                            Text('(${myRatings.length} avis)', style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
                           ]),
                           const SizedBox(height: 10),
                           ...myRatings.take(3).map((d) {
