@@ -138,13 +138,6 @@ class FirestoreService {
       'method': method, 'account': account, 'name': holderName,
       'status': 'pending', 'createdAt': FieldValue.serverTimestamp(),
     });
-    final coll = await _getUserColl(userId);
-    await _db.collection(coll).doc(userId).update({'bonus': FieldValue.increment(-amount)});
-    await _db.collection('bonusHistory').add({
-      'userId': userId, 'type': 'withdrawal', 'amount': -amount,
-      'label': 'Retrait ${method.toUpperCase()} — $account',
-      'createdAt': FieldValue.serverTimestamp(),
-    });
   }
 
   // PARRAINAGE
