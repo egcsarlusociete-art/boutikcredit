@@ -371,6 +371,30 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                   }
                   final ok = await _confirmDelete(context, name);
                   if (ok == true) {
+                    // Trouver si ce client est un filleul
+                    final refSnap = await FirebaseFirestore.instance.collection('referrals')
+                        .where('referredId', isEqualTo: uid).get();
+                    for (final ref in refSnap.docs) {
+                      final referrerId = ref.data()['referrerId'] ?? '';
+                      await ref.reference.delete();
+                      // Supprimer bonusHistory parrain lié
+                      final bonusSnap = await FirebaseFirestore.instance.collection('bonusHistory')
+                          .where('userId', isEqualTo: referrerId)
+                          .where('type', isEqualTo: 'referral').get();
+                      for (final b in bonusSnap.docs) {
+                        if ((b.data()['label'] ?? '').toString().contains(name)) {
+                          await b.reference.delete(); break;
+                        }
+                      }
+                      // Décrémenter parrain
+                      final parrainSnap = await FirebaseFirestore.instance.collection('users').doc(referrerId).get();
+                      final parrainColl = parrainSnap.exists ? 'users' : 'vendeurs';
+                      await FirebaseFirestore.instance.collection(parrainColl).doc(referrerId).update({
+                        'totalReferrals': FieldValue.increment(-1),
+                        'bonus': FieldValue.increment(-500),
+                        'totalEarnings': FieldValue.increment(-500),
+                      });
+                    }
                     await FirebaseFirestore.instance.collection('users').doc(uid).delete();
                     if (context.mounted) showSnack(context, 'Client supprime');
                   }
