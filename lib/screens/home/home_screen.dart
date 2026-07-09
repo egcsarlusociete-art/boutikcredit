@@ -1,22 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../utils/theme.dart';
 import '../video/video_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   final Widget child;
   const HomeScreen({super.key, required this.child});
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProviderStateMixin {
   late AnimationController _animCtrl;
   late Animation<double> _scaleAnim;
+  int _newVideosCount = 0;
 
   @override
   void initState() {
     super.initState();
+    _loadNewVideos();
     _animCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 800))..repeat(reverse: true);
     _scaleAnim = Tween<double>(begin: 1.0, end: 1.12).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeInOut));
   }
@@ -30,6 +34,18 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
     if (location.startsWith('/bonus'))   return 3;
     if (location.startsWith('/profile')) return 4;
     return 0;
+  }
+
+  Future<void> _loadNewVideos() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastSeen = prefs.getInt('lastSeenVideos') ?? 0;
+    final videos = await ref.read(bcVideosProvider.future);
+    final newCount = videos.where((v) {
+      final pub = v.publishedAt;
+      if (pub == null) return false;
+      return pub.millisecondsSinceEpoch > lastSeen;
+    }).length;
+    if (mounted) setState(() => _newVideosCount = newCount);
   }
 
   void _openVideos() {
@@ -70,10 +86,10 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
             ),
             child: Stack(alignment: Alignment.center, children: [
               const Icon(Icons.play_circle_fill, color: Colors.white, size: 28),
-              Positioned(top: 6, right: 6, child: Container(
-                width: 10, height: 10,
+              if (_newVideosCount > 0) Positioned(top: 4, right: 4, child: Container(
+                padding: const EdgeInsets.all(3),
                 decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle),
-                child: const Center(child: Text('▶', style: TextStyle(fontSize: 6, color: EgcColors.err))),
+                child: Text('$_newVideosCount', style: const TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: EgcColors.err)),
               )),
             ]),
           ),
