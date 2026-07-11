@@ -21,6 +21,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
   void initState() {
     super.initState();
     _loadNewVideos();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _updateBadge());
     _animCtrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 800))..repeat(reverse: true);
     _scaleAnim = Tween<double>(begin: 1.0, end: 1.12).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeInOut));
   }
@@ -46,6 +47,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> with SingleTickerProvid
       return pub.millisecondsSinceEpoch > lastSeen;
     }).length;
     if (mounted) setState(() => _newVideosCount = newCount);
+  }
+
+  Future<void> _updateBadge() async {
+    final prefs = await SharedPreferences.getInstance();
+    final lastSeen = prefs.getInt('lastSeenVideos') ?? 0;
+    ref.listen(bcVideosProvider, (_, next) {
+      next.whenData((videos) {
+        final newCount = videos.where((v) {
+          final pub = v.publishedAt;
+          if (pub == null) return false;
+          return pub.millisecondsSinceEpoch > lastSeen;
+        }).length;
+        if (mounted) setState(() => _newVideosCount = newCount);
+      });
+    });
   }
 
   void _openVideos() {
