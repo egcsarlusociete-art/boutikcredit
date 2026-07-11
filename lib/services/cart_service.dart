@@ -1,9 +1,16 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/article_model.dart';
 
 class CartService {
-  static String get _key => 'egc_cart_\${FirebaseAuth.instance.currentUser?.uid ?? "guest"}';
+  // ignore: unused_field
+  static String _savedUid = '';
+  static String get _key {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid != null) _savedUid = uid;
+    return 'egc_cart_\${_savedUid.isNotEmpty ? _savedUid : "guest"}';
+  }
   final List<CartItem> _items = [];
 
   List<CartItem> get items => List.unmodifiable(_items);
