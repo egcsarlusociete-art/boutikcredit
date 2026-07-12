@@ -72,8 +72,14 @@ class _VideoScreenState extends ConsumerState<VideoScreen> {
               return Column(children: [
                 // Lecteur YouTube si actif
                 if (isActive && _controller != null)
-                  YoutubePlayer(controller: _controller!, showVideoProgressIndicator: true,
-                    progressIndicatorColor: EgcColors.primary),
+                  YoutubePlayerBuilder(
+                    player: YoutubePlayer(
+                      controller: _controller!,
+                      showVideoProgressIndicator: true,
+                      progressIndicatorColor: EgcColors.primary,
+                    ),
+                    builder: (ctx, player) => player,
+                  ),
                 // Carte vidéo
                 GestureDetector(
                   onTap: () => _playVideo(v),
