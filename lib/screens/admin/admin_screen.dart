@@ -792,7 +792,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
               'title': 'Votre Cashback est disponible ! 💰',
               'message': 'Dès la réception de votre article à votre lieu de livraison, '
                   'rendez-vous dans votre espace pour effectuer une demande de retrait '
-                  'de votre Cashback de \${fmtPrice(o.cashbackEarned)} F CFA. '
+                  'de votre Cashback de ${fmtPrice(o.cashbackEarned)} F CFA. '
                   'Le livreur vous remettra la somme en main propre.',
               'createdAt': FieldValue.serverTimestamp(),
             });
