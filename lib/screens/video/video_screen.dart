@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:video_player/video_player.dart';
+import 'package:chewie/chewie.dart';
 import '../../models/video_model.dart';
 import '../../utils/theme.dart';
 import '../../utils/helpers.dart';
@@ -24,25 +26,46 @@ class VideoScreen extends ConsumerStatefulWidget {
 
 class _VideoScreenState extends ConsumerState<VideoScreen> {
   YoutubePlayerController? _controller;
+  VideoPlayerController? _videoController;
+  ChewieController? _chewieController;
   // ignore: unused_field
   String? _activeVideoId;
   String? _activeDocId;
+  bool _isMp4 = false;
 
-  void _playVideo(VideoModel v) {
+  Future<void> _playVideo(VideoModel v) async {
     _controller?.dispose();
-    setState(() {
-      _activeVideoId = v.youtubeId;
-      _activeDocId = v.id;
-      _controller = YoutubePlayerController(
-        initialVideoId: v.youtubeId,
-        flags: const YoutubePlayerFlags(autoPlay: true, mute: false, disableDragSeek: false, loop: false, isLive: false, forceHD: false, enableCaption: false),
-      );
-    });
+    _chewieController?.dispose();
+    _videoController?.dispose();
+    final mp4Url = v.mp4Url;
+    if (mp4Url != null && mp4Url.isNotEmpty) {
+      // Lire en MP4
+      final vc = VideoPlayerController.networkUrl(Uri.parse(mp4Url));
+      await vc.initialize();
+      final cc = ChewieController(videoPlayerController: vc, autoPlay: true, looping: false, allowFullScreen: true, allowMuting: true);
+      setState(() { _isMp4 = true; _activeDocId = v.id; _videoController = vc; _chewieController = cc; });
+    } else {
+      // Lire en YouTube
+      setState(() {
+        _isMp4 = false;
+        _activeVideoId = v.youtubeId;
+        _activeDocId = v.id;
+        _controller = YoutubePlayerController(
+          initialVideoId: v.youtubeId,
+          flags: const YoutubePlayerFlags(autoPlay: true, mute: false, disableDragSeek: false, loop: false, isLive: false, forceHD: false, enableCaption: false),
+        );
+      });
+    }
     FirebaseFirestore.instance.collection('bc_videos').doc(v.id).update({'views': FieldValue.increment(1)});
   }
 
   @override
-  void dispose() { _controller?.dispose(); super.dispose(); }
+  void dispose() {
+    _controller?.dispose();
+    _chewieController?.dispose();
+    _videoController?.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -71,15 +94,17 @@ class _VideoScreenState extends ConsumerState<VideoScreen> {
               final isActive = _activeDocId == v.id;
               return Column(children: [
                 // Lecteur YouTube si actif
-                if (isActive && _controller != null)
-                  YoutubePlayerBuilder(
-                    player: YoutubePlayer(
-                      controller: _controller!,
-                      showVideoProgressIndicator: true,
-                      progressIndicatorColor: EgcColors.primary,
-                    ),
-                    builder: (ctx, player) => player,
-                  ),
+                if (isActive)
+                  _isMp4 && _chewieController != null
+                    ? SizedBox(height: 220, child: Chewie(controller: _chewieController!))
+                    : _controller != null ? YoutubePlayerBuilder(
+                        player: YoutubePlayer(
+                          controller: _controller!,
+                          showVideoProgressIndicator: true,
+                          progressIndicatorColor: EgcColors.primary,
+                        ),
+                        builder: (ctx, player) => player,
+                      ) : const SizedBox.shrink(),
                 // Carte vidéo
                 GestureDetector(
                   onTap: () => _playVideo(v),

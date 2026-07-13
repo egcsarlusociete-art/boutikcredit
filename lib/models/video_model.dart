@@ -11,6 +11,7 @@ class VideoModel {
   final int comments;
   final bool isNew;
   final DateTime? publishedAt;
+  final String? mp4Url;
 
   const VideoModel({
     required this.id,
@@ -23,6 +24,7 @@ class VideoModel {
     this.comments = 0,
     this.isNew = false,
     this.publishedAt,
+    this.mp4Url,
   });
 
   factory VideoModel.fromFirestore(DocumentSnapshot doc) {
@@ -38,6 +40,7 @@ class VideoModel {
       comments: (d['comments'] ?? 0).toInt(),
       isNew: d['isNew'] ?? false,
       publishedAt: (d['publishedAt'] as Timestamp?)?.toDate(),
+      mp4Url: d['mp4Url'],
     );
   }
 }

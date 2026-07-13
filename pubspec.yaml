@@ -28,6 +28,8 @@ dependencies:
   package_info_plus: ^5.0.1
   uuid: ^4.2.2
   youtube_player_flutter: ^9.0.4
+  video_player: ^2.8.3
+  chewie: ^1.7.4
   qr_flutter: ^4.1.0
   image_picker: ^1.1.2
   firebase_storage: ^11.6.9
