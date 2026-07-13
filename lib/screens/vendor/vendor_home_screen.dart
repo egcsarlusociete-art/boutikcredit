@@ -27,6 +27,7 @@ class VendorHomeScreen extends ConsumerWidget {
           final arts = artsAsync.valueOrNull ?? [];
           final published = arts.where((a) => a.status == 'published').length;
           final pending   = arts.where((a) => a.status == 'pending').length;
+          final totalPieces = arts.fold(0, (s, a) => s + a.stock);
           return ListView(padding: const EdgeInsets.all(16), children: [
             // Statut abonnement
             Container(padding: const EdgeInsets.all(16), decoration: BoxDecoration(
@@ -48,9 +49,9 @@ class VendorHomeScreen extends ConsumerWidget {
             GridView.count(shrinkWrap: true, physics: const NeverScrollableScrollPhysics(),
               crossAxisCount: 2, crossAxisSpacing: 10, mainAxisSpacing: 10, childAspectRatio: 2.2,
               children: [
-                _kpi('📦', '$published', 'Articles publiés'),
+                _kpi('📦', '$published', 'Références publiées'),
                 _kpi('⏳', '$pending', 'En attente'),
-                _kpi('🛒', '${arts.length}', 'Total articles'),
+                _kpi('🔢', '$totalPieces', 'Total pièces'),
                 _kpi('👁', '${arts.fold(0, (s, a) => s + a.views)}', 'Vues totales'),
                 _kpi('❌', '${arts.where((a) => a.stock == 0).length}', 'Rupture stock'),
               ]),

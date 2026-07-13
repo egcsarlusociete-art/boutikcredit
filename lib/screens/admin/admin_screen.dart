@@ -780,7 +780,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
               await FirebaseFirestore.instance.collection('notifications').add({
                 'userId': vendeurId, 'type': 'payment', 'read': false,
                 'title': 'Confirmation de paiement requise ✍️',
-                'message': 'EGC-SARLU vous a payé \${fmtPrice(montant)} pour la commande #\${o.orderId.substring(0,8)}. Veuillez confirmer la réception dans votre espace vendeur.',
+                'message': 'EGC-SARLU vous a payé ${fmtPrice(montant)} pour la commande #${o.orderId.substring(0,8)}. Veuillez confirmer la réception dans votre espace vendeur.',
                 'createdAt': FieldValue.serverTimestamp(),
               });
             }
