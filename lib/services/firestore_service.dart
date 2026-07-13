@@ -157,12 +157,12 @@ class FirestoreService {
     });
     final coll = await _getUserColl(referrerId);
     await _db.collection(coll).doc(referrerId).update({
-      'bonus': FieldValue.increment(1000),
-      'totalEarnings': FieldValue.increment(1000),
+      'bonus': FieldValue.increment(500),
+      'totalEarnings': FieldValue.increment(500),
       'totalReferrals': FieldValue.increment(1),
     });
     await _db.collection('bonusHistory').add({
-      'userId': referrerId, 'type': 'referral', 'amount': 1000,
+      'userId': referrerId, 'type': 'referral', 'amount': 500,
       'label': 'Parrainage de $refereeName',
       'createdAt': FieldValue.serverTimestamp(),
     });
@@ -252,10 +252,12 @@ class FirestoreService {
       if (bonusSnap.docs.isNotEmpty) await bonusSnap.docs.first.reference.delete();
     }
     
-    // Mettre à jour totalReferrals
+    // Mettre à jour totalReferrals et déduire le bonus
     final coll = await _getUserColl(userId);
     await _db.collection(coll).doc(userId).update({
       'totalReferrals': FieldValue.increment(-nbFilleuls),
+      'bonus': FieldValue.increment(-(nbFilleuls * 500).toDouble()),
+      'totalEarnings': FieldValue.increment(-(nbFilleuls * 500).toDouble()),
     });
   }
 

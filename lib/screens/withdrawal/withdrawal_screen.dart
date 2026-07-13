@@ -43,7 +43,8 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
 
   Future<void> _submit(UserModel? user) async {
     final amt = double.tryParse(_amtC.text.replaceAll(' ', '')) ?? 0;
-    if (amt < 1000) { showSnack(context, 'Montant minimum : 1 000 F CFA', isError: true); return; }
+    if (amt < 500) { showSnack(context, 'Montant minimum : 500 F CFA (1 filleul)', isError: true); return; }
+    if (amt % 500 != 0) { showSnack(context, 'Le montant doit être un multiple de 500 F CFA', isError: true); return; }
     if (amt > (user?.bonus ?? 0)) { showSnack(context, 'Solde insuffisant', isError: true); return; }
     if (_operator == null) { showSnack(context, 'Choisissez un opérateur', isError: true); return; }
     if (_accC.text.isEmpty) { showSnack(context, 'Entrez votre numéro', isError: true); return; }

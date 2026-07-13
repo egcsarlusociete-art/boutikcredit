@@ -542,14 +542,18 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                 child: _deleteBtn(() async {
                   final ok = await _confirmDelete(context, '#' + o.orderId);
                   if (ok == true) {
-                    // Déduire le cashback avant suppression
+                    // Déduire le cashback seulement si commande livrée
                     final cashback = o.cashbackEarned;
                     final uSnap = await FirebaseFirestore.instance.collection('users').doc(o.userId).get();
                     final coll = uSnap.exists ? 'users' : 'vendeurs';
+                    if (o.status == 'delivered' && cashback > 0) {
+                      await FirebaseFirestore.instance.collection(coll).doc(o.userId).update({
+                        'bonus': FieldValue.increment(-cashback),
+                        'totalEarnings': FieldValue.increment(-cashback),
+                        'cashbacks': FieldValue.increment(-cashback),
+                      });
+                    }
                     await FirebaseFirestore.instance.collection(coll).doc(o.userId).update({
-                      'bonus': FieldValue.increment(-cashback),
-                      'totalEarnings': FieldValue.increment(-cashback),
-                      'cashbacks': FieldValue.increment(-cashback),
                       'totalOrders': FieldValue.increment(-1),
                     });
                     // Supprimer bonusHistory lié
@@ -572,7 +576,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                       'userId': o.userId,
                       'type': 'order',
                       'title': 'Commande annulée ❌',
-                      'message': 'Votre commande #' + o.orderId + ' a été annulée. Le cashback de ' + fmtPrice(cashback) + ' a été retiré de votre bonus.',
+                      'message': 'Votre commande #' + o.orderId + ' a été annulée.' + (o.status == 'delivered' && cashback > 0 ? ' Le cashback de ' + fmtPrice(cashback) + ' a été retiré de votre bonus.' : ''),
                       'read': false,
                       'createdAt': FieldValue.serverTimestamp(),
                     });
@@ -696,7 +700,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                     await FirebaseFirestore.instance.collection('notifications').add({
                       'userId': w.userId, 'type': 'withdrawal', 'read': false,
                       'title': 'Retrait refusé ❌',
-                      'message': 'Votre retrait de ${w.amount.toInt()} F CFA via ${w.method.toUpperCase()} a été refusé. Le montant a été recrédité.',
+                      'message': 'Votre retrait de ${w.amount.toInt()} F CFA via ${w.method.toUpperCase()} a été refusé. Contactez l\'admin pour plus d\'informations.',
                       'createdAt': FieldValue.serverTimestamp(),
                     });
                     if (context.mounted) showSnack(context, 'Retrait refuse');
