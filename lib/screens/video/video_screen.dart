@@ -35,7 +35,7 @@ class _VideoScreenState extends ConsumerState<VideoScreen> {
       _activeDocId = v.id;
       _controller = YoutubePlayerController(
         initialVideoId: v.youtubeId,
-        flags: const YoutubePlayerFlags(autoPlay: true, mute: false),
+        flags: const YoutubePlayerFlags(autoPlay: true, mute: false, disableDragSeek: false, loop: false, isLive: false, forceHD: false, enableCaption: false),
       );
     });
     FirebaseFirestore.instance.collection('bc_videos').doc(v.id).update({'views': FieldValue.increment(1)});
