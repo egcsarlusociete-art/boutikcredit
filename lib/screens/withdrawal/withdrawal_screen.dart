@@ -84,7 +84,21 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
               const Text('Solde disponible', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: EgcColors.ink3, letterSpacing: 0.4)),
               const SizedBox(height: 6),
               Text(fmtPrice(user?.bonus ?? 0), style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: EgcColors.ink, letterSpacing: -0.5)),
-              const Text('Retrait minimum : 1 000 F CFA', style: TextStyle(fontSize: 12, color: EgcColors.ink3)),
+              const SizedBox(height: 8),
+              Row(children: [
+                Expanded(child: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: EgcColors.primaryBg, borderRadius: EgcRadius.smBorder),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    const Text('👥 Bonus parrainage', style: TextStyle(fontSize: 10, color: EgcColors.primary, fontWeight: FontWeight.w600)),
+                    Text(fmtPrice((user?.bonus ?? 0) - (user?.cashbacks ?? 0)), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.primary)),
+                  ]))),
+                const SizedBox(width: 8),
+                Expanded(child: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: EgcColors.okBg, borderRadius: EgcRadius.smBorder),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    const Text('🎁 Cashback', style: TextStyle(fontSize: 10, color: EgcColors.ok, fontWeight: FontWeight.w600)),
+                    Text(fmtPrice(user?.cashbacks ?? 0), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.ok)),
+                  ]))),
+              ]),
+              const Text('Retrait minimum : 500 F CFA (1 filleul = 500 F)', style: TextStyle(fontSize: 12, color: EgcColors.ink3)),
             ])),
           const SizedBox(height: 16),
           // Form
