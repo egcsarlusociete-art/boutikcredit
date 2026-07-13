@@ -261,8 +261,6 @@ class FirestoreService {
 
   Future<void> adminRejectWithdrawal(String id, String userId, double amount) async {
     await _db.collection('withdrawals').doc(id).update({'status': 'rejected', 'rejectedAt': FieldValue.serverTimestamp()});
-    final coll = await _getUserColl(userId);
-    await _db.collection(coll).doc(userId).update({'bonus': FieldValue.increment(amount)});
   }
 
   Future<void> adminActivateUser(String id, String coll) async {
