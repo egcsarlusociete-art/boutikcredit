@@ -247,6 +247,86 @@ class OrderDetailScreen extends ConsumerWidget {
                     const Text('✅ Orange Money · MTN MoMo · Moov · Wave', style: TextStyle(fontSize: 11, color: EgcColors.ink3, height: 1.5)),
                   ]),
                 ),
+                const SizedBox(height: 16),
+                // Montant restant + historique paiements
+                StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance.collection('payments')
+                      .where('orderId', isEqualTo: order.id)
+                      .orderBy('createdAt', descending: false)
+                      .snapshots(),
+                  builder: (ctx, snap) {
+                    final payments = snap.data?.docs ?? [];
+                    final totalPaid = payments.fold(0.0, (s, d) => s + ((d.data() as Map)['amount'] ?? 0).toDouble());
+                    final totalWithInterest = order.subtotal * 1.15;
+                    final remaining = (totalWithInterest - totalPaid).clamp(0.0, double.infinity);
+                    final progress = totalPaid / totalWithInterest;
+                    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      // Barre progression
+                      Container(
+                        padding: const EdgeInsets.all(14),
+                        decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line)),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                            const Text('💰 Montant payé', style: TextStyle(fontSize: 12, color: EgcColors.ink3)),
+                            Text(fmtPrice(totalPaid), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.ok)),
+                          ]),
+                          const SizedBox(height: 6),
+                          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                            const Text('⏳ Montant restant', style: TextStyle(fontSize: 12, color: EgcColors.ink3)),
+                            Text(fmtPrice(remaining), style: TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: remaining > 0 ? EgcColors.err : EgcColors.ok)),
+                          ]),
+                          const SizedBox(height: 10),
+                          ClipRRect(
+                            borderRadius: EgcRadius.pill,
+                            child: LinearProgressIndicator(
+                              value: progress.clamp(0.0, 1.0),
+                              minHeight: 8,
+                              backgroundColor: EgcColors.bg3,
+                              valueColor: AlwaysStoppedAnimation<Color>(progress >= 1.0 ? EgcColors.ok : EgcColors.primary),
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Text('\${(progress * 100).toStringAsFixed(0)}% remboursé', style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                        ]),
+                      ),
+                      const SizedBox(height: 12),
+                      // Historique paiements
+                      if (payments.isNotEmpty) ...[
+                        const Text('📋 Historique des paiements', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: EgcColors.ink)),
+                        const SizedBox(height: 8),
+                        ...payments.map((p) {
+                          final d = p.data() as Map<String, dynamic>;
+                          final amount = (d['amount'] ?? 0).toDouble();
+                          final method = (d['method'] ?? '').toString().toUpperCase();
+                          final date = (d['createdAt'] as Timestamp?)?.toDate();
+                          return Container(
+                            margin: const EdgeInsets.only(bottom: 8),
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                            decoration: BoxDecoration(color: EgcColors.okBg, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.ok.withOpacity(0.3))),
+                            child: Row(children: [
+                              const Icon(Icons.check_circle, color: EgcColors.ok, size: 16),
+                              const SizedBox(width: 8),
+                              Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                Text(fmtPrice(amount), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.ok)),
+                                Text(method, style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                              ])),
+                              if (date != null) Text(fmtDate(date), style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                            ]),
+                          );
+                        }),
+                      ] else
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line)),
+                          child: const Row(children: [
+                            Icon(Icons.info_outline, size: 16, color: EgcColors.ink3),
+                            SizedBox(width: 8),
+                            Text('Aucun paiement enregistré', style: TextStyle(fontSize: 12, color: EgcColors.ink3)),
+                          ]),
+                        ),
+                    ]);
+                  },
+                ),
               ]);
             })),
             const SizedBox(height: 16),

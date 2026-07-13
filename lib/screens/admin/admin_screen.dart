@@ -722,6 +722,39 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
               'createdAt': FieldValue.serverTimestamp(),
             });
           }
+          // Notification au vendeur pour confirmation paiement
+          if (s == 'processing') {
+            // Récupérer vendeurIds depuis les articles
+            final shopNames = o.items.map((i) => i.shop).toSet();
+            for (final shopName in shopNames) {
+              final vendeurItems = o.items.where((i) => i.shop == shopName).toList();
+              // Trouver vendeurId via l'article
+              final articleSnap = await FirebaseFirestore.instance.collection('articles')
+                  .where('shopName', isEqualTo: shopName).limit(1).get();
+              if (articleSnap.docs.isEmpty) continue;
+              final vendeurId = articleSnap.docs.first.data()['vendeurId'] ?? '';
+              if (vendeurId.isEmpty) continue;
+              final montant = vendeurItems.fold(0.0, (s, i) => s + i.total);
+              final itemNames = vendeurItems.map((i) => i.name).take(2).join(', ');
+              // Créer demande de confirmation dans vendor_receipts
+              await FirebaseFirestore.instance.collection('vendor_receipts').add({
+                'orderId': o.id,
+                'orderRef': o.orderId,
+                'vendeurId': vendeurId,
+                'montant': montant,
+                'items': itemNames,
+                'status': 'pending',
+                'createdAt': FieldValue.serverTimestamp(),
+              });
+              // Notifier le vendeur
+              await FirebaseFirestore.instance.collection('notifications').add({
+                'userId': vendeurId, 'type': 'payment', 'read': false,
+                'title': 'Confirmation de paiement requise ✍️',
+                'message': 'EGC-SARLU vous a payé \${fmtPrice(montant)} pour la commande #\${o.orderId.substring(0,8)}. Veuillez confirmer la réception dans votre espace vendeur.',
+                'createdAt': FieldValue.serverTimestamp(),
+              });
+            }
+          }
           // Notification cashback à la livraison
           if (s == 'delivered' && o.cashbackEarned > 0) {
             await FirebaseFirestore.instance.collection('notifications').add({

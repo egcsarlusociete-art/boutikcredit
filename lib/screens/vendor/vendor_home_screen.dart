@@ -16,6 +16,7 @@ class VendorHomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userAsync = ref.watch(userDataProvider);
     final artsAsync = ref.watch(vendorArticlesProvider);
+    final vendeurUid = FirebaseAuth.instance.currentUser?.uid ?? '';
     return Scaffold(
       backgroundColor: EgcColors.bg,
       appBar: AppBar(title: const Text('Espace Vendeur'), leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new, size: 18), onPressed: () => Navigator.pop(context))),
@@ -64,6 +65,76 @@ class VendorHomeScreen extends ConsumerWidget {
                 icon: const Icon(Icons.list_alt, size: 18), label: const Text('Mes articles'),
                 style: OutlinedButton.styleFrom(minimumSize: const Size(0, 48)))),
             ]),
+            const SizedBox(height: 16),
+            // Confirmations de paiement en attente
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('vendor_receipts')
+                  .where('vendeurId', isEqualTo: vendeurUid)
+                  .where('status', isEqualTo: 'pending')
+                  .snapshots(),
+              builder: (ctx, snap) {
+                if (!snap.hasData || snap.data!.docs.isEmpty) return const SizedBox.shrink();
+                final receipts = snap.data!.docs;
+                return Container(
+                  padding: const EdgeInsets.all(14),
+                  decoration: BoxDecoration(color: const Color(0xFFFFFBEB), borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.gold, width: 1.5)),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Row(children: [
+                      const Text('✍️', style: TextStyle(fontSize: 20)),
+                      const SizedBox(width: 8),
+                      Text('Confirmation requise (\${receipts.length})', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: EgcColors.gold)),
+                    ]),
+                    const SizedBox(height: 10),
+                    ...receipts.map((r) {
+                      final d = r.data() as Map<String, dynamic>;
+                      final montant = (d['montant'] ?? 0).toDouble();
+                      // ignore: unused_local_variable
+                      final orderRef = d['orderRef'] ?? '';
+                      final items = d['items'] ?? '';
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(color: Colors.white, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line)),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text('Commande #\${orderRef.length > 12 ? orderRef.substring(0,12) : orderRef}',
+                            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: EgcColors.ink)),
+                          const SizedBox(height: 4),
+                          Text(items, style: const TextStyle(fontSize: 12, color: EgcColors.ink3), overflow: TextOverflow.ellipsis),
+                          const SizedBox(height: 8),
+                          Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                            Text(fmtPrice(montant), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: EgcColors.ok)),
+                            ElevatedButton(
+                              onPressed: () async {
+                                final ok = await showDialog<bool>(
+                                  context: ctx,
+                                  builder: (_) => AlertDialog(
+                                    title: const Text('Confirmer la réception'),
+                                    content: Text('Confirmez-vous avoir reçu \${fmtPrice(montant)} de EGC-SARLU pour la commande #\${orderRef.substring(0,8)} ?'),
+                                    actions: [
+                                      TextButton(onPressed: () => Navigator.pop(_, false), child: const Text('Annuler')),
+                                      ElevatedButton(onPressed: () => Navigator.pop(_, true), child: const Text('Je confirme')),
+                                    ],
+                                  ),
+                                );
+                                if (ok == true) {
+                                  await FirebaseFirestore.instance.collection('vendor_receipts').doc(r.id).update({
+                                    'status': 'confirmed',
+                                    'confirmedAt': FieldValue.serverTimestamp(),
+                                  });
+                                  if (ctx.mounted) showSnack(ctx, 'Réception confirmée ✅');
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(backgroundColor: EgcColors.ok, padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
+                              child: const Text('Je confirme', style: TextStyle(fontSize: 12)),
+                            ),
+                          ]),
+                        ]),
+                      );
+                    }),
+                  ]),
+                );
+              },
+            ),
             const SizedBox(height: 16),
             // Derniers articles
             Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line, width: 1.5)),
