@@ -437,6 +437,36 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                 Text(fmtDate(o.createdAt), style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
                 const SizedBox(height: 6),
                 _clientInfoBtn(context, o.userId, o.orderId, o.subtotal, o.status),
+                const SizedBox(height: 6),
+                // Badge encaissement vendeur
+                StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance.collection('vendor_receipts')
+                      .where('orderId', isEqualTo: o.id)
+                      .snapshots(),
+                  builder: (ctx2, rSnap) {
+                    if (!rSnap.hasData || rSnap.data!.docs.isEmpty) return const SizedBox.shrink();
+                    final receipts = rSnap.data!.docs;
+                    final confirmed = receipts.where((r) => (r.data() as Map)['status'] == 'confirmed').length;
+                    final total = receipts.length;
+                    if (total == 0) return const SizedBox.shrink();
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: confirmed == total ? EgcColors.okBg : EgcColors.goldBg,
+                        borderRadius: EgcRadius.pill,
+                        border: Border.all(color: confirmed == total ? EgcColors.ok : EgcColors.gold),
+                      ),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: [
+                        Icon(confirmed == total ? Icons.check_circle : Icons.pending,
+                          size: 14, color: confirmed == total ? EgcColors.ok : EgcColors.gold),
+                        const SizedBox(width: 4),
+                        Text(confirmed == total ? '✅ Encaissé par le vendeur' : '⏳ En attente confirmation vendeur',
+                          style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700,
+                            color: confirmed == total ? EgcColors.ok : EgcColors.gold)),
+                      ]),
+                    );
+                  },
+                ),
                 const SizedBox(height: 8),
                 _buildOrderActions(o),
                 // Demande de modification
