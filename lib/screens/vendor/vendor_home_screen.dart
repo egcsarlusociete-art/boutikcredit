@@ -275,6 +275,30 @@ class VendorHomeScreen extends ConsumerWidget {
                               const Spacer(),
                               if (createdAt != null) Text(fmtDate(createdAt), style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
                             ]),
+                            const SizedBox(height: 6),
+                            StreamBuilder<QuerySnapshot>(
+                              stream: FirebaseFirestore.instance.collection('vendor_receipts')
+                                  .where('orderId', isEqualTo: doc.id)
+                                  .where('vendeurId', isEqualTo: vendeurUid)
+                                  .snapshots(),
+                              builder: (ctx3, rSnap) {
+                                if (!rSnap.hasData || rSnap.data!.docs.isEmpty) return const SizedBox.shrink();
+                                final isConfirmed = rSnap.data!.docs.any((r) => (r.data() as Map)['status'] == 'confirmed');
+                                return Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: isConfirmed ? EgcColors.okBg : EgcColors.goldBg,
+                                    borderRadius: EgcRadius.pill,
+                                    border: Border.all(color: isConfirmed ? EgcColors.ok : EgcColors.gold),
+                                  ),
+                                  child: Text(
+                                    isConfirmed ? '✅ Paiement encaissé' : '⏳ En attente confirmation',
+                                    style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700,
+                                      color: isConfirmed ? EgcColors.ok : EgcColors.gold),
+                                  ),
+                                );
+                              },
+                            ),
                           ]),
                         );
                       }),
