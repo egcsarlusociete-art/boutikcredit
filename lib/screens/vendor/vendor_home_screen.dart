@@ -109,8 +109,12 @@ class VendorHomeScreen extends ConsumerWidget {
                               const Text('Montant reçu', style: TextStyle(fontSize: 11, color: EgcColors.ink3)),
                               Text(fmtPrice(montant), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: EgcColors.ok)),
                             ]),
-                            ElevatedButton.icon(
-                              icon: const Icon(Icons.check_circle_outline, size: 16),
+                          ]),
+                          const SizedBox(height: 10),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton.icon(
+                              icon: const Icon(Icons.check_circle_outline, size: 18),
                               onPressed: () async {
                                 final ok = await showDialog<bool>(
                                   context: ctx,
@@ -132,9 +136,9 @@ class VendorHomeScreen extends ConsumerWidget {
                                 }
                               },
                               style: ElevatedButton.styleFrom(backgroundColor: EgcColors.ok, padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10)),
-                              label: const Text('Je confirme', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
+                              label: const Text('Je confirme avoir reçu le paiement', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                             ),
-                          ]),
+                          ),
                         ]),
                       );
                     }),
