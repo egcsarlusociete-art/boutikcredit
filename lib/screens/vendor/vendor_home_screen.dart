@@ -101,9 +101,16 @@ class VendorHomeScreen extends ConsumerWidget {
                           const SizedBox(height: 4),
                           Text(items, style: const TextStyle(fontSize: 12, color: EgcColors.ink3), overflow: TextOverflow.ellipsis),
                           const SizedBox(height: 8),
+                          const SizedBox(height: 8),
+                          const Divider(),
+                          const SizedBox(height: 8),
                           Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                            Text(fmtPrice(montant), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: EgcColors.ok)),
-                            ElevatedButton(
+                            Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                              const Text('Montant reçu', style: TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                              Text(fmtPrice(montant), style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: EgcColors.ok)),
+                            ]),
+                            ElevatedButton.icon(
+                              icon: const Icon(Icons.check_circle_outline, size: 16),
                               onPressed: () async {
                                 final ok = await showDialog<bool>(
                                   context: ctx,
@@ -124,8 +131,8 @@ class VendorHomeScreen extends ConsumerWidget {
                                   if (ctx.mounted) showSnack(ctx, 'Réception confirmée ✅');
                                 }
                               },
-                              style: ElevatedButton.styleFrom(backgroundColor: EgcColors.ok, padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8)),
-                              child: const Text('Je confirme', style: TextStyle(fontSize: 12)),
+                              style: ElevatedButton.styleFrom(backgroundColor: EgcColors.ok, padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10)),
+                              label: const Text('Je confirme', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                             ),
                           ]),
                         ]),

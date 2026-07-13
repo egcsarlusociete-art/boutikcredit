@@ -286,7 +286,7 @@ class OrderDetailScreen extends ConsumerWidget {
                             ),
                           ),
                           const SizedBox(height: 6),
-                          Text('\${(progress * 100).toStringAsFixed(0)}% remboursé', style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                          Text('${(progress * 100).toStringAsFixed(0)}% remboursé', style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
                         ]),
                       ),
                       const SizedBox(height: 12),
