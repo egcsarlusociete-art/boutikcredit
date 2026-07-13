@@ -70,7 +70,7 @@ class CartScreen extends ConsumerWidget {
               child: SafeArea(child: Column(children: [
                 _sumRow('Sous-total', fmtPrice(total)),
                 _sumRow('Livraison', 'Gratuite', valueColor: EgcColors.ok),
-                _sumRow('Cashback estimé', '+${fmtPrice(cashback)}', valueColor: EgcColors.ok),
+                _sumRow('Cashback à la livraison 🎁', '+${fmtPrice(cashback)}', valueColor: EgcColors.ok),
                 const Divider(),
                 _sumRow('Total', fmtPrice(total), bold: true),
                 const SizedBox(height: 12),

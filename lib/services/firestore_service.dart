@@ -76,15 +76,7 @@ class FirestoreService {
     });
     final coll = await _getUserColl(userId);
     await _db.collection(coll).doc(userId).update({
-      'bonus': FieldValue.increment(cashback),
-      'totalEarnings': FieldValue.increment(cashback),
-      'cashbacks': FieldValue.increment(cashback),
       'totalOrders': FieldValue.increment(1),
-    });
-    await _db.collection('bonusHistory').add({
-      'userId': userId, 'type': 'cashback', 'amount': cashback,
-      'label': 'Cashback commande ${orderId.substring(0, 12)}',
-      'createdAt': FieldValue.serverTimestamp(),
     });
     // Deduire le stock de chaque article commande
     for (final item in items) {
