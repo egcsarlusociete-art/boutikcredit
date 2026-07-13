@@ -12,6 +12,8 @@ class UserModel {
   final double bonus;
   final double totalEarnings;
   final double cashbacks;
+  final double bonusReferral;
+  final double bonusCashback;
   final int totalOrders;
   final int totalReferrals;
   final String referralCode;
@@ -33,6 +35,8 @@ class UserModel {
     this.bonus = 0,
     this.totalEarnings = 0,
     this.cashbacks = 0,
+    this.bonusReferral = 0,
+    this.bonusCashback = 0,
     this.totalOrders = 0,
     this.totalReferrals = 0,
     this.referralCode = '',
@@ -57,6 +61,8 @@ class UserModel {
       bonus: (d['bonus'] ?? 0).toDouble(),
       totalEarnings: (d['totalEarnings'] ?? 0).toDouble(),
       cashbacks: (d['cashbacks'] ?? 0).toDouble(),
+      bonusReferral: (d['bonusReferral'] ?? 0).toDouble(),
+      bonusCashback: (d['bonusCashback'] ?? 0).toDouble(),
       totalOrders: (d['totalOrders'] ?? 0).toInt(),
       totalReferrals: (d['totalReferrals'] ?? 0).toInt(),
       referralCode: d['referralCode'] ?? '',

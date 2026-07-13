@@ -89,13 +89,13 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
                 Expanded(child: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: EgcColors.primaryBg, borderRadius: EgcRadius.smBorder),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     const Text('👥 Bonus parrainage', style: TextStyle(fontSize: 10, color: EgcColors.primary, fontWeight: FontWeight.w600)),
-                    Text(fmtPrice((user?.bonus ?? 0) - (user?.cashbacks ?? 0)), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.primary)),
+                    Text(fmtPrice(user?.bonusReferral ?? 0), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.primary)),
                   ]))),
                 const SizedBox(width: 8),
                 Expanded(child: Container(padding: const EdgeInsets.all(8), decoration: BoxDecoration(color: EgcColors.okBg, borderRadius: EgcRadius.smBorder),
                   child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                     const Text('🎁 Cashback', style: TextStyle(fontSize: 10, color: EgcColors.ok, fontWeight: FontWeight.w600)),
-                    Text(fmtPrice(user?.cashbacks ?? 0), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.ok)),
+                    Text(fmtPrice(user?.bonusCashback ?? 0), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.ok)),
                   ]))),
               ]),
               const Text('Retrait minimum : 500 F CFA (1 filleul = 500 F)', style: TextStyle(fontSize: 12, color: EgcColors.ink3)),

@@ -151,6 +151,7 @@ class FirestoreService {
     await _db.collection(coll).doc(referrerId).update({
       'bonus': FieldValue.increment(500),
       'totalEarnings': FieldValue.increment(500),
+      'bonusReferral': FieldValue.increment(500),
       'totalReferrals': FieldValue.increment(1),
     });
     await _db.collection('bonusHistory').add({
@@ -250,6 +251,7 @@ class FirestoreService {
       'totalReferrals': FieldValue.increment(-nbFilleuls),
       'bonus': FieldValue.increment(-(nbFilleuls * 500).toDouble()),
       'totalEarnings': FieldValue.increment(-(nbFilleuls * 500).toDouble()),
+      'bonusReferral': FieldValue.increment(-(nbFilleuls * 500).toDouble()),
     });
   }
 

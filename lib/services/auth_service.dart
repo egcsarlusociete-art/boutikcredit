@@ -37,6 +37,7 @@ class AuthService {
       'phone': phone.trim(), 'city': city, 'plan': plan,
       'planStatus': 'pending', 'planExpiry': expiry.toIso8601String(),
       'bonus': 500.0, 'totalEarnings': 500.0, 'cashbacks': 0.0,
+      'bonusReferral': 500.0, 'bonusCashback': 0.0,
       'totalOrders': 0, 'totalReferrals': 0,
       'referralCode': generateReferralCode(),
       'creditCat': creditCat,
@@ -82,6 +83,7 @@ class AuthService {
           await _db.collection(parrainCollection).doc(parrainId).update({
             'bonus': FieldValue.increment(500),
             'totalEarnings': FieldValue.increment(500),
+            'bonusReferral': FieldValue.increment(500),
             'totalReferrals': FieldValue.increment(1),
           });
           // Historique bonus parrain

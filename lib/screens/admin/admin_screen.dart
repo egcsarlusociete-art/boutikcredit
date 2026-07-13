@@ -789,6 +789,22 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
               });
             }
           }
+          // Cashback crédité à la livraison
+          if (s == 'delivered' && o.cashbackEarned > 0) {
+            final userSnap = await FirebaseFirestore.instance.collection('users').doc(o.userId).get();
+            final userColl = userSnap.exists ? 'users' : 'vendeurs';
+            await FirebaseFirestore.instance.collection(userColl).doc(o.userId).update({
+              'bonus': FieldValue.increment(o.cashbackEarned),
+              'totalEarnings': FieldValue.increment(o.cashbackEarned),
+              'cashbacks': FieldValue.increment(o.cashbackEarned),
+              'bonusCashback': FieldValue.increment(o.cashbackEarned),
+            });
+            await FirebaseFirestore.instance.collection('bonusHistory').add({
+              'userId': o.userId, 'type': 'cashback', 'amount': o.cashbackEarned,
+              'label': 'Cashback commande \${o.orderId.substring(0, 12)}',
+              'createdAt': FieldValue.serverTimestamp(),
+            });
+          }
           // Notification cashback à la livraison
           if (s == 'delivered' && o.cashbackEarned > 0) {
             await FirebaseFirestore.instance.collection('notifications').add({
