@@ -82,7 +82,7 @@ class VendorHomeScreen extends ConsumerWidget {
                     Row(children: [
                       const Text('✍️', style: TextStyle(fontSize: 20)),
                       const SizedBox(width: 8),
-                      Text('Confirmation requise (\${receipts.length})', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: EgcColors.gold)),
+                      Text('Confirmation requise (${receipts.length})', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800, color: EgcColors.gold)),
                     ]),
                     const SizedBox(height: 10),
                     ...receipts.map((r) {
@@ -96,7 +96,7 @@ class VendorHomeScreen extends ConsumerWidget {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(color: Colors.white, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line)),
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                          Text('Commande #\${orderRef.length > 12 ? orderRef.substring(0,12) : orderRef}',
+                          Text('Commande #${orderRef.length > 12 ? orderRef.substring(0,12) : orderRef}',
                             style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: EgcColors.ink)),
                           const SizedBox(height: 4),
                           Text(items, style: const TextStyle(fontSize: 12, color: EgcColors.ink3), overflow: TextOverflow.ellipsis),
@@ -109,7 +109,7 @@ class VendorHomeScreen extends ConsumerWidget {
                                   context: ctx,
                                   builder: (_) => AlertDialog(
                                     title: const Text('Confirmer la réception'),
-                                    content: Text('Confirmez-vous avoir reçu \${fmtPrice(montant)} de EGC-SARLU pour la commande #\${orderRef.substring(0,8)} ?'),
+                                    content: Text('Confirmez-vous avoir reçu ${fmtPrice(montant)} de EGC-SARLU pour la commande #${orderRef.substring(0,8)} ?'),
                                     actions: [
                                       TextButton(onPressed: () => Navigator.pop(_, false), child: const Text('Annuler')),
                                       ElevatedButton(onPressed: () => Navigator.pop(_, true), child: const Text('Je confirme')),
