@@ -72,7 +72,9 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection('orders').where('status', isEqualTo: 'delivered').snapshots(),
               builder: (ctx, s) => Tab(text: 'Remboursements (${s.data?.docs.length ?? 0})')),
-            const Tab(text: 'Changement Statut'),
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('cat_change_requests').where('status', isEqualTo: 'pending').snapshots(),
+              builder: (ctx, s) => Tab(text: 'Changement Statut (${s.data?.docs.length ?? 0})')),
           ]),
       ),
       body: TabBarView(controller: _tabs, children: [
@@ -994,7 +996,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
               child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 const Icon(Icons.calendar_today, size: 16, color: EgcColors.primary),
                 const SizedBox(width: 6),
-                Text('Journalier (\${daily.length})', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.primary)),
+                Text('Journalier (${daily.length})', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.primary)),
               ])),
             Expanded(child: ListView.builder(
               padding: const EdgeInsets.all(8),
@@ -1009,7 +1011,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
               child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 const Icon(Icons.date_range, size: 16, color: EgcColors.gold),
                 const SizedBox(width: 6),
-                Text('Hebdomadaire (\${weekly.length})', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.gold)),
+                Text('Hebdomadaire (${weekly.length})', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.gold)),
               ])),
             Expanded(child: ListView.builder(
               padding: const EdgeInsets.all(8),
@@ -1049,11 +1051,11 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
               decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line)),
               child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                 Text(userName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: EgcColors.ink)),
-                Text('#\${orderId.length > 12 ? orderId.substring(0,12) : orderId}', style: const TextStyle(fontSize: 10, color: EgcColors.ink3)),
+                Text('#${orderId.length > 12 ? orderId.substring(0,12) : orderId}', style: const TextStyle(fontSize: 10, color: EgcColors.ink3)),
                 const SizedBox(height: 6),
                 Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
-                  Text('Total: \${fmtPrice(total)}', style: const TextStyle(fontSize: 11, color: EgcColors.ink2)),
-                  Text('Restant: \${fmtPrice(remaining)}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: remaining > 0 ? EgcColors.err : EgcColors.ok)),
+                  Text('Total: ${fmtPrice(total)}', style: const TextStyle(fontSize: 11, color: EgcColors.ink2)),
+                  Text('Restant: ${fmtPrice(remaining)}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: remaining > 0 ? EgcColors.err : EgcColors.ok)),
                 ]),
                 const SizedBox(height: 4),
                 ClipRRect(
@@ -1066,7 +1068,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                   ),
                 ),
                 const SizedBox(height: 2),
-                Text('\${(progress * 100).toStringAsFixed(0)}% remboursé', style: const TextStyle(fontSize: 9, color: EgcColors.ink3)),
+                Text('${(progress * 100).toStringAsFixed(0)}% remboursé', style: const TextStyle(fontSize: 9, color: EgcColors.ink3)),
               ]),
             );
           },
