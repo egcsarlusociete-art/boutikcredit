@@ -73,8 +73,12 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
               stream: FirebaseFirestore.instance.collection('orders').where('status', isEqualTo: 'delivered').snapshots(),
               builder: (ctx, s) => Tab(text: 'Remboursements (${s.data?.docs.length ?? 0})')),
             StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance.collection('cat_change_requests').where('status', isEqualTo: 'pending').snapshots(),
-              builder: (ctx, s) => Tab(text: 'Changement Statut (${s.data?.docs.length ?? 0})')),
+              stream: FirebaseFirestore.instance.collection('cat_change_requests').snapshots(),
+              builder: (ctx, s) {
+                final total = s.data?.docs.length ?? 0;
+                final pending = s.data?.docs.where((d) => (d.data() as Map)['status'] == 'pending').length ?? 0;
+                return Tab(text: 'Changement Statut ($pending/$total)');
+              }),
           ]),
       ),
       body: TabBarView(controller: _tabs, children: [
