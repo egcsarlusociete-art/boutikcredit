@@ -21,7 +21,7 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
   final _fs = FirestoreService();
 
   @override
-  void initState() { super.initState(); _tabs = TabController(length: 7, vsync: this); }
+  void initState() { super.initState(); _tabs = TabController(length: 8, vsync: this); }
   @override
   void dispose() { _tabs.dispose(); super.dispose(); }
 
@@ -36,13 +36,47 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
           labelColor: EgcColors.primary, unselectedLabelColor: EgcColors.ink3,
           indicatorColor: EgcColors.primary,
           labelStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
-          tabs: const [
-            Tab(text: 'Articles'), Tab(text: 'Images'),
-            Tab(text: 'Vendeurs'), Tab(text: 'Clients'), Tab(text: 'Commandes'), Tab(text: 'Retraits'), Tab(text: 'Changement Statut')
+          tabs: [
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('articles').snapshots(),
+              builder: (ctx, s) => Tab(text: 'Articles (${s.data?.docs.length ?? 0})')),
+            const Tab(text: 'Images'),
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('vendeurs').snapshots(),
+              builder: (ctx, s) {
+                final total = s.data?.docs.length ?? 0;
+                final actifs = s.data?.docs.where((d) => (d.data() as Map)['planStatus'] == 'active').length ?? 0;
+                return Tab(text: 'Vendeurs ($actifs/$total)');
+              }),
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('users').snapshots(),
+              builder: (ctx, s) {
+                final total = s.data?.docs.length ?? 0;
+                final actifs = s.data?.docs.where((d) => (d.data() as Map)['planStatus'] == 'active').length ?? 0;
+                return Tab(text: 'Clients ($actifs/$total)');
+              }),
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('orders').snapshots(),
+              builder: (ctx, s) {
+                final total = s.data?.docs.length ?? 0;
+                final actifs = s.data?.docs.where((d) => ['confirmed','processing','shipped'].contains((d.data() as Map)['status'])).length ?? 0;
+                return Tab(text: 'Commandes ($actifs/$total)');
+              }),
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('withdrawals').snapshots(),
+              builder: (ctx, s) {
+                final total = s.data?.docs.length ?? 0;
+                final actifs = s.data?.docs.where((d) => (d.data() as Map)['status'] == 'pending').length ?? 0;
+                return Tab(text: 'Retraits ($actifs/$total)');
+              }),
+            StreamBuilder<QuerySnapshot>(
+              stream: FirebaseFirestore.instance.collection('orders').where('status', isEqualTo: 'delivered').snapshots(),
+              builder: (ctx, s) => Tab(text: 'Remboursements (${s.data?.docs.length ?? 0})')),
+            const Tab(text: 'Changement Statut'),
           ]),
       ),
       body: TabBarView(controller: _tabs, children: [
-        _articlesTab(), _imagesTab(), _vendeursTab(), _clientsTab(), _ordersTab(), _withdrawalsTab(), _catRequestsTab()
+        _articlesTab(), _imagesTab(), _vendeursTab(), _clientsTab(), _ordersTab(), _withdrawalsTab(), _remboursementsTab(), _catRequestsTab()
       ]),
     );
   }
@@ -944,6 +978,103 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
   );
 
   // ── DEMANDES CHANGEMENT CATEGORIE ────────────────────────────────
+  Widget _remboursementsTab() {
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('orders')
+          .where('status', isEqualTo: 'delivered').snapshots(),
+      builder: (ctx, snap) {
+        if (!snap.hasData) return const Center(child: CircularProgressIndicator(color: EgcColors.primary));
+        final docs = snap.data!.docs;
+        final daily = docs.where((d) => (d.data() as Map)['paymentPlan'] == 'daily').toList();
+        final weekly = docs.where((d) => (d.data() as Map)['paymentPlan'] == 'weekly').toList();
+        return Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          // Colonne Journalier
+          Expanded(child: Column(children: [
+            Container(padding: const EdgeInsets.all(12), color: EgcColors.primaryBg,
+              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                const Icon(Icons.calendar_today, size: 16, color: EgcColors.primary),
+                const SizedBox(width: 6),
+                Text('Journalier (\${daily.length})', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.primary)),
+              ])),
+            Expanded(child: ListView.builder(
+              padding: const EdgeInsets.all(8),
+              itemCount: daily.length,
+              itemBuilder: (ctx, i) => _remboursementCard(daily[i]),
+            )),
+          ])),
+          const VerticalDivider(width: 1),
+          // Colonne Hebdomadaire
+          Expanded(child: Column(children: [
+            Container(padding: const EdgeInsets.all(12), color: EgcColors.goldBg,
+              child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
+                const Icon(Icons.date_range, size: 16, color: EgcColors.gold),
+                const SizedBox(width: 6),
+                Text('Hebdomadaire (\${weekly.length})', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.gold)),
+              ])),
+            Expanded(child: ListView.builder(
+              padding: const EdgeInsets.all(8),
+              itemCount: weekly.length,
+              itemBuilder: (ctx, i) => _remboursementCard(weekly[i]),
+            )),
+          ])),
+        ]);
+      },
+    );
+  }
+
+  Widget _remboursementCard(DocumentSnapshot doc) {
+    final d = doc.data() as Map<String, dynamic>;
+    final subtotal = (d['subtotal'] ?? 0).toDouble();
+    final total = subtotal * 1.15;
+    final userId = d['userId'] ?? '';
+    // ignore: unused_local_variable
+    final orderId = d['orderId'] ?? '';
+    // ignore: unused_local_variable
+    final plan = d['paymentPlan'] ?? 'daily';
+    return StreamBuilder<QuerySnapshot>(
+      stream: FirebaseFirestore.instance.collection('payments')
+          .where('orderId', isEqualTo: doc.id).snapshots(),
+      builder: (ctx, pSnap) {
+        final payments = pSnap.data?.docs ?? [];
+        final totalPaid = payments.fold(0.0, (s, p) => s + ((p.data() as Map)['amount'] ?? 0).toDouble());
+        final remaining = (total - totalPaid).clamp(0.0, double.infinity);
+        final progress = totalPaid / total;
+        return FutureBuilder<DocumentSnapshot>(
+          future: FirebaseFirestore.instance.collection('users').doc(userId).get(),
+          builder: (ctx, uSnap) {
+            final userName = uSnap.hasData && uSnap.data!.exists ? (uSnap.data!.data() as Map)['name'] ?? 'Client' : 'Client';
+            return Container(
+              margin: const EdgeInsets.only(bottom: 8),
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line)),
+              child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                Text(userName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: EgcColors.ink)),
+                Text('#\${orderId.length > 12 ? orderId.substring(0,12) : orderId}', style: const TextStyle(fontSize: 10, color: EgcColors.ink3)),
+                const SizedBox(height: 6),
+                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                  Text('Total: \${fmtPrice(total)}', style: const TextStyle(fontSize: 11, color: EgcColors.ink2)),
+                  Text('Restant: \${fmtPrice(remaining)}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: remaining > 0 ? EgcColors.err : EgcColors.ok)),
+                ]),
+                const SizedBox(height: 4),
+                ClipRRect(
+                  borderRadius: EgcRadius.pill,
+                  child: LinearProgressIndicator(
+                    value: progress.clamp(0.0, 1.0),
+                    minHeight: 6,
+                    backgroundColor: EgcColors.bg3,
+                    valueColor: AlwaysStoppedAnimation<Color>(progress >= 1.0 ? EgcColors.ok : EgcColors.primary),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text('\${(progress * 100).toStringAsFixed(0)}% remboursé', style: const TextStyle(fontSize: 9, color: EgcColors.ink3)),
+              ]),
+            );
+          },
+        );
+      },
+    );
+  }
+
   Widget _catRequestsTab() => StreamBuilder<QuerySnapshot>(
     stream: FirebaseFirestore.instance.collection('cat_change_requests')
         .orderBy('createdAt', descending: true).snapshots(),
