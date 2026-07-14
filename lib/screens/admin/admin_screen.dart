@@ -1053,11 +1053,11 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                 Text(userName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: EgcColors.ink)),
                 Text('#${orderId.length > 12 ? orderId.substring(0,12) : orderId}', style: const TextStyle(fontSize: 10, color: EgcColors.ink3)),
                 const SizedBox(height: 6),
-                Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text('Total: ${fmtPrice(total)}', style: const TextStyle(fontSize: 11, color: EgcColors.ink2)),
+                  const SizedBox(height: 2),
                   Text('Restant: ${fmtPrice(remaining)}', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: remaining > 0 ? EgcColors.err : EgcColors.ok)),
                 ]),
-                const SizedBox(height: 4),
                 ClipRRect(
                   borderRadius: EgcRadius.pill,
                   child: LinearProgressIndicator(
