@@ -43,9 +43,10 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
 
   Future<void> _submit(UserModel? user) async {
     final amt = double.tryParse(_amtC.text.replaceAll(' ', '')) ?? 0;
-    if (amt < 500) { showSnack(context, 'Montant minimum : 500 F CFA (1 filleul)', isError: true); return; }
+    if (amt < 1000) { showSnack(context, 'Montant minimum : 1 000 F CFA (2 filleuls)', isError: true); return; }
     if (amt % 500 != 0) { showSnack(context, 'Le montant doit être un multiple de 500 F CFA', isError: true); return; }
-    if (amt > (user?.bonus ?? 0)) { showSnack(context, 'Solde insuffisant', isError: true); return; }
+    final soldeRetirable = (user?.bonusReferral ?? 0) + (user?.bonusCashback ?? 0);
+    if (amt > soldeRetirable) { showSnack(context, 'Solde retirable insuffisant. Le bonus de bienvenue (500 F) n\'est pas retirable.', isError: true); return; }
     if (_operator == null) { showSnack(context, 'Choisissez un opérateur', isError: true); return; }
     if (_accC.text.isEmpty) { showSnack(context, 'Entrez votre numéro', isError: true); return; }
     if (_nameC.text.isEmpty) { showSnack(context, 'Entrez le nom du titulaire', isError: true); return; }
@@ -98,7 +99,7 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
                     Text(fmtPrice(user?.bonusCashback ?? 0), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800, color: EgcColors.ok)),
                   ]))),
               ]),
-              const Text('Retrait minimum : 500 F CFA (1 filleul = 500 F)', style: TextStyle(fontSize: 12, color: EgcColors.ink3)),
+              const Text('Retrait minimum : 1 000 F CFA (1 filleul = 500 F)', style: TextStyle(fontSize: 12, color: EgcColors.ink3)),
             ])),
           const SizedBox(height: 16),
           // Form
