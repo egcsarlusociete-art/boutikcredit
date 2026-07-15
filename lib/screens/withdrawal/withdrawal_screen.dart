@@ -24,6 +24,7 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
   final _accC  = TextEditingController();
   final _nameC = TextEditingController();
   String? _operator;
+  String _type = 'referral'; // 'referral' ou 'cashback'
   bool _loading = false;
 
   @override
@@ -43,10 +44,14 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
 
   Future<void> _submit(UserModel? user) async {
     final amt = double.tryParse(_amtC.text.replaceAll(' ', '')) ?? 0;
-    if (amt < 1000) { showSnack(context, 'Montant minimum : 1 000 F CFA (2 filleuls)', isError: true); return; }
-    if (amt % 500 != 0) { showSnack(context, 'Le montant doit être un multiple de 500 F CFA', isError: true); return; }
-    final soldeRetirable = (user?.bonusReferral ?? 0) + (user?.bonusCashback ?? 0);
-    if (amt > soldeRetirable) { showSnack(context, 'Solde retirable insuffisant. Le bonus de bienvenue (500 F) n\'est pas retirable.', isError: true); return; }
+    if (_type == 'referral') {
+      if (amt < 1000) { showSnack(context, 'Montant minimum : 1 000 F CFA (2 filleuls actifs)', isError: true); return; }
+      if (amt % 500 != 0) { showSnack(context, 'Le montant doit être un multiple de 500 F CFA', isError: true); return; }
+      if (amt > (user?.bonusReferral ?? 0)) { showSnack(context, 'Bonus parrainage insuffisant', isError: true); return; }
+    } else {
+      if (amt < 500) { showSnack(context, 'Montant minimum : 500 F CFA', isError: true); return; }
+      if (amt > (user?.bonusCashback ?? 0)) { showSnack(context, 'Cashback insuffisant', isError: true); return; }
+    }
     if (_operator == null) { showSnack(context, 'Choisissez un opérateur', isError: true); return; }
     if (_accC.text.isEmpty) { showSnack(context, 'Entrez votre numéro', isError: true); return; }
     if (_nameC.text.isEmpty) { showSnack(context, 'Entrez le nom du titulaire', isError: true); return; }
@@ -57,6 +62,7 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
         userName: user?.name ?? '',
         amount: amt, method: _operator!,
         account: _accC.text, holderName: _nameC.text,
+        type: _type,
       );
       _amtC.clear(); _accC.clear(); _nameC.clear();
       setState(() => _operator = null);
@@ -100,6 +106,44 @@ class _WithdrawalScreenState extends ConsumerState<WithdrawalScreen> {
                   ]))),
               ]),
               const Text('Retrait minimum : 1 000 F CFA (1 filleul = 500 F)', style: TextStyle(fontSize: 12, color: EgcColors.ink3)),
+            ])),
+          const SizedBox(height: 16),
+          // Type de retrait
+          Container(padding: const EdgeInsets.all(14), decoration: BoxDecoration(color: EgcColors.bg2, borderRadius: EgcRadius.mdBorder, border: Border.all(color: EgcColors.line, width: 1.5)),
+            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              const Text('Type de retrait', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: EgcColors.ink)),
+              const SizedBox(height: 10),
+              Row(children: [
+                Expanded(child: GestureDetector(
+                  onTap: () => setState(() => _type = 'referral'),
+                  child: Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(
+                    color: _type == 'referral' ? EgcColors.primaryBg : EgcColors.bg,
+                    borderRadius: EgcRadius.mdBorder,
+                    border: Border.all(color: _type == 'referral' ? EgcColors.primary : EgcColors.line, width: 1.5)),
+                    child: Column(children: [
+                      const Text('👥', style: TextStyle(fontSize: 24)),
+                      const SizedBox(height: 4),
+                      const Text('Bonus parrainage', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700), textAlign: TextAlign.center),
+                      const Text('Filleuls actifs × 500F', style: TextStyle(fontSize: 10, color: EgcColors.ink3), textAlign: TextAlign.center),
+                    ]),
+                  ),
+                )),
+                const SizedBox(width: 10),
+                Expanded(child: GestureDetector(
+                  onTap: () => setState(() => _type = 'cashback'),
+                  child: Container(padding: const EdgeInsets.all(12), decoration: BoxDecoration(
+                    color: _type == 'cashback' ? EgcColors.okBg : EgcColors.bg,
+                    borderRadius: EgcRadius.mdBorder,
+                    border: Border.all(color: _type == 'cashback' ? EgcColors.ok : EgcColors.line, width: 1.5)),
+                    child: Column(children: [
+                      const Text('🎁', style: TextStyle(fontSize: 24)),
+                      const SizedBox(height: 4),
+                      const Text('Cashback', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700), textAlign: TextAlign.center),
+                      const Text('3% sur vos achats livrés', style: TextStyle(fontSize: 10, color: EgcColors.ink3), textAlign: TextAlign.center),
+                    ]),
+                  ),
+                )),
+              ]),
             ])),
           const SizedBox(height: 16),
           // Form

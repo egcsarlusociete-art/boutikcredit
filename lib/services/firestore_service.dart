@@ -124,10 +124,12 @@ class FirestoreService {
     required String userId, required String userName,
     required double amount, required String method,
     required String account, required String holderName,
+    String type = 'referral',
   }) async {
     await _db.collection('withdrawals').add({
       'userId': userId, 'userName': userName, 'amount': amount,
       'method': method, 'account': account, 'name': holderName,
+      'type': type,
       'status': 'pending', 'createdAt': FieldValue.serverTimestamp(),
     });
   }
