@@ -7,6 +7,8 @@ import '../../utils/theme.dart';
 import '../../utils/helpers.dart';
 import '../../widgets/egc_button.dart';
 import '../../screens/shop/shop_screen.dart';
+import '../../services/providers.dart';
+import '../../models/credit_category.dart' as cc;
 
 class CartScreen extends ConsumerWidget {
   const CartScreen({super.key});
@@ -17,6 +19,13 @@ class CartScreen extends ConsumerWidget {
     final notifier = ref.read(cartProvider.notifier);
     final total = cart.fold(0.0, (s, i) => s + i.total);
     final cashback = cart.fold(0.0, (s, i) => s + i.cashbackTotal);
+    final user = ref.watch(userDataProvider).valueOrNull;
+    final creditCatId = user?.creditCat ?? 'A';
+    final cat = cc.kCategories.firstWhere((c) => c.id == creditCatId, orElse: () => cc.kCategories.first);
+    final plafondMin = cat.plafond * 0.75;
+    final progress = (total / plafondMin).clamp(0.0, 1.0);
+    final manque = plafondMin - total;
+    final canOrder = total >= plafondMin && total <= cat.plafond;
 
     return Scaffold(
       backgroundColor: EgcColors.bg,
@@ -74,7 +83,64 @@ class CartScreen extends ConsumerWidget {
                 const Divider(),
                 _sumRow('Total', fmtPrice(total), bold: true),
                 const SizedBox(height: 12),
-                EgcButton(label: 'Passer la commande', onTap: () => context.push('/checkout'), icon: Icons.lock_outline),
+                // Indicateur 75% plafond
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  margin: const EdgeInsets.only(bottom: 10),
+                  decoration: BoxDecoration(
+                    color: canOrder ? EgcColors.okBg : (manque > 0 ? EgcColors.primaryBg : EgcColors.errBg),
+                    borderRadius: EgcRadius.mdBorder,
+                    border: Border.all(
+                      color: canOrder ? EgcColors.ok : (manque > 0 ? EgcColors.primaryMid : EgcColors.err),
+                      width: 1.5,
+                    ),
+                  ),
+                  child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                      Text('Cat. $creditCatId — Plafond ${fmtPrice(cat.plafond)}',
+                        style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: EgcColors.ink2)),
+                      Text(canOrder ? '✅ Prêt' : (manque > 0 ? '⚠️ Incomplet' : '❌ Dépassé'),
+                        style: TextStyle(
+                          fontSize: 11, fontWeight: FontWeight.w700,
+                          color: canOrder ? EgcColors.ok : (manque > 0 ? EgcColors.primary : EgcColors.err))),
+                    ]),
+                    const SizedBox(height: 8),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(50),
+                      child: LinearProgressIndicator(
+                        value: progress,
+                        minHeight: 8,
+                        backgroundColor: EgcColors.line,
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          canOrder ? EgcColors.ok : (manque > 0 ? EgcColors.primary : EgcColors.err)),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Row(mainAxisAlignment: MainAxisAlignment.spaceBetween, children: [
+                      Text('Minimum 75% : ${fmtPrice(plafondMin.round())}',
+                        style: const TextStyle(fontSize: 11, color: EgcColors.ink3)),
+                      Text('${(progress * 100).toStringAsFixed(0)}%',
+                        style: TextStyle(
+                          fontSize: 12, fontWeight: FontWeight.w800,
+                          color: canOrder ? EgcColors.ok : (manque > 0 ? EgcColors.primary : EgcColors.err))),
+                    ]),
+                    if (manque > 0) ...[
+                      const SizedBox(height: 4),
+                      Text('Il vous manque ${fmtPrice(manque.round())} pour valider',
+                        style: const TextStyle(fontSize: 11, color: EgcColors.primary, fontWeight: FontWeight.w600)),
+                    ],
+                    if (total > cat.plafond) ...[
+                      const SizedBox(height: 4),
+                      Text('Panier dépasse le plafond de ${fmtPrice((total - cat.plafond).round())}',
+                        style: const TextStyle(fontSize: 11, color: EgcColors.err, fontWeight: FontWeight.w600)),
+                    ],
+                  ]),
+                ),
+                EgcButton(
+                  label: canOrder ? 'Passer la commande' : (manque > 0 ? 'Ajoutez ${fmtPrice(manque.round())} min.' : 'Panier dépasse le plafond'),
+                  onTap: canOrder ? () => context.push('/checkout') : null,
+                  icon: canOrder ? Icons.lock_outline : Icons.block_outlined,
+                ),
                 const SizedBox(height: 8),
               ]))),
           ]),

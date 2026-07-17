@@ -80,13 +80,32 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final cartTotal = cart.fold(0.0, (s, i) => s + i.total);
 
       // Vérifier si le plafond est respecté
-      if (totalActif + cartTotal > cat.plafond) {
+      final totalCommande = totalActif + cartTotal;
+      final plafondMin = cat.plafond * 0.75;
+
+      // Règle 1 : Ne pas dépasser le plafond
+      if (totalCommande > cat.plafond) {
+        // ignore: unused_local_variable
         final reste = cat.plafond - totalActif;
         throw Exception(
           'Plafond Catégorie $creditCatId dépassé !\n'
-          'Plafond : ${fmtPrice(cat.plafond)}\n'
-          'Déjà utilisé : ${fmtPrice(totalActif)}\n'
-          'Budget restant : ${fmtPrice(reste < 0 ? 0 : reste)}'
+          'Plafond : \${fmtPrice(cat.plafond)}\n'
+          'Déjà utilisé : \${fmtPrice(totalActif)}\n'
+          'Budget restant : \${fmtPrice(reste < 0 ? 0 : reste)}'
+        );
+      }
+
+      // Règle 2 : Le total doit atteindre au moins 75% du plafond
+      if (totalCommande < plafondMin) {
+        // ignore: unused_local_variable
+        final manque = plafondMin - totalCommande;
+        throw Exception(
+          'Total insuffisant pour la Catégorie $creditCatId.\n'
+          'Votre catégorie exige un total minimum de \${fmtPrice(plafondMin.round())} '
+          '(75% du plafond de \${fmtPrice(cat.plafond)}).\n'
+          'Total actuel : \${fmtPrice(totalCommande.round())}\n'
+          'Il vous manque : \${fmtPrice(manque.round())}\n\n'
+          'Ajoutez des articles ou changez de catégorie.'
         );
       }
 
