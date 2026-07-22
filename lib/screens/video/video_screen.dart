@@ -3,7 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:youtube_player_iframe/youtube_player_iframe.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
 import '../../models/video_model.dart';
@@ -34,7 +34,7 @@ class _VideoScreenState extends ConsumerState<VideoScreen> {
   bool _isMp4 = false;
 
   Future<void> _playVideo(VideoModel v) async {
-    _controller?.dispose();
+    _controller?.close();
     _chewieController?.dispose();
     _videoController?.dispose();
     final mp4Url = v.mp4Url;
@@ -46,14 +46,22 @@ class _VideoScreenState extends ConsumerState<VideoScreen> {
       setState(() { _isMp4 = true; _activeDocId = v.id; _videoController = vc; _chewieController = cc; });
     } else {
       // Lire en YouTube
+      final ytController = YoutubePlayerController.fromVideoId(
+        videoId: v.youtubeId,
+        autoPlay: true,
+        params: const YoutubePlayerParams(
+          showControls: true,
+          showFullscreenButton: true,
+          mute: false,
+          loop: false,
+          enableCaption: false,
+        ),
+      );
       setState(() {
         _isMp4 = false;
         _activeVideoId = v.youtubeId;
         _activeDocId = v.id;
-        _controller = YoutubePlayerController(
-          initialVideoId: v.youtubeId,
-          flags: const YoutubePlayerFlags(autoPlay: true, mute: false, disableDragSeek: false, loop: false, isLive: false, forceHD: false, enableCaption: false),
-        );
+        _controller = ytController;
       });
     }
     FirebaseFirestore.instance.collection('bc_videos').doc(v.id).update({'views': FieldValue.increment(1)});
@@ -61,7 +69,7 @@ class _VideoScreenState extends ConsumerState<VideoScreen> {
 
   @override
   void dispose() {
-    _controller?.dispose();
+    _controller?.close();
     _chewieController?.dispose();
     _videoController?.dispose();
     super.dispose();
@@ -97,13 +105,11 @@ class _VideoScreenState extends ConsumerState<VideoScreen> {
                 if (isActive)
                   _isMp4 && _chewieController != null
                     ? SizedBox(height: 220, child: Chewie(controller: _chewieController!))
-                    : _controller != null ? YoutubePlayerBuilder(
-                        player: YoutubePlayer(
+                    : _controller != null ? SizedBox(
+                        height: 220,
+                        child: YoutubePlayer(
                           controller: _controller!,
-                          showVideoProgressIndicator: true,
-                          progressIndicatorColor: EgcColors.primary,
                         ),
-                        builder: (ctx, player) => player,
                       ) : const SizedBox.shrink(),
                 // Carte vidéo
                 GestureDetector(
