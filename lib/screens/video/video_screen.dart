@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:boutikcredit/stubs/youtube_player_android.dart' if (dart.library.html) 'package:boutikcredit/stubs/youtube_player_web.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
 import '../../models/video_model.dart';
