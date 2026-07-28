@@ -44,14 +44,14 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection('vendeurs').snapshots(),
               builder: (ctx, s) {
-                final total = s.data?.docs.length ?? 0;
+                final total = s.data?.docs.where((d) => (d.data() as Map)['planStatus'] != null).length ?? 0;
                 final actifs = s.data?.docs.where((d) => (d.data() as Map)['planStatus'] == 'active').length ?? 0;
                 return Tab(text: 'Vendeurs ($actifs/$total)');
               }),
             StreamBuilder<QuerySnapshot>(
               stream: FirebaseFirestore.instance.collection('users').snapshots(),
               builder: (ctx, s) {
-                final total = s.data?.docs.length ?? 0;
+                final total = s.data?.docs.where((d) => (d.data() as Map)['planStatus'] != null).length ?? 0;
                 final actifs = s.data?.docs.where((d) => (d.data() as Map)['planStatus'] == 'active').length ?? 0;
                 return Tab(text: 'Clients ($actifs/$total)');
               }),
