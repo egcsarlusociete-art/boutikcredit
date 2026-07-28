@@ -69,6 +69,18 @@ class _CheckoutScreenState extends ConsumerState<CheckoutScreen> {
       final activeOrders = await FirebaseFirestore.instance.collection('orders')
           .where('userId', isEqualTo: uid)
           .get();
+      // Bloquer si une commande confirmee non livree existe deja
+      final hasActiveOrder = activeOrders.docs.any((d) {
+        final s = (d.data()['status'] ?? '');
+        return s == 'confirmed' || s == 'processing' || s == 'shipped';
+      });
+      if (hasActiveOrder) {
+        throw Exception(
+          'Commande en cours !\n'
+          'Vous avez déjà une commande en cours de traitement.\n'
+          'Vous ne pouvez passer une nouvelle commande qu\'après la livraison et le règlement de votre commande actuelle.'
+        );
+      }
       final totalActif = activeOrders.docs
           .where((d) {
             final s = (d.data()['status'] ?? '');
