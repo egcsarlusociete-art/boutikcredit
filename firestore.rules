@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Users
+    match /users/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read: if request.auth != null;
+    }
+
+    // Vendeurs
+    match /vendeurs/{uid} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read: if request.auth != null;
+    }
+
+    // Articles
+    match /articles/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Orders
+    match /orders/{id} {
+      allow read, write: if request.auth != null;
+    }
+
+    // OTP Codes — accessible sans authentification pour reset password
+    match /otp_codes/{email} {
+      allow read, write: if true;
+    }
+
+    // Notifications
+    match /notifications/{id} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Bonus History
+    match /bonusHistory/{id} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Withdrawals
+    match /withdrawals/{id} {
+      allow read, write: if request.auth != null;
+    }
+
+    // BC Videos
+    match /bc_videos/{id} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // Referrals
+    match /referrals/{id} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Ratings
+    match /ratings/{id} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Vendor receipts
+    match /vendor_receipts/{id} {
+      allow read, write: if request.auth != null;
+    }
+
+    // Default
+    match /{document=**} {
+      allow read, write: if request.auth != null;
+    }
+  }
+}

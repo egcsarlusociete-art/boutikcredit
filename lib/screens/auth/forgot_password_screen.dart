@@ -47,11 +47,9 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
     setState(() => _loading = true);
     try {
-      final usersSnap = await FirebaseFirestore.instance
-          .collection("users").where("email", isEqualTo: email).get();
-      final vendeursSnap = await FirebaseFirestore.instance
-          .collection("vendeurs").where("email", isEqualTo: email).get();
-      if (usersSnap.docs.isEmpty && vendeursSnap.docs.isEmpty) {
+      // Vérifier via Firebase Auth
+      final methods = await FirebaseAuth.instance.fetchSignInMethodsForEmail(email);
+      if (methods.isEmpty) {
         showSnack(context, "Aucun compte associé à cet email", isError: true);
         setState(() => _loading = false);
         return;
