@@ -130,31 +130,16 @@ class EgcApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
-    final app = MaterialApp.router(
+    return MaterialApp.router(
       title: 'EGC-SARLU',
       theme: EgcTheme.light,
       routerConfig: router,
       debugShowCheckedModeBanner: false,
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
-        child: kIsWeb
-          ? Container(
-              color: const Color(0xFF0F1117),
-              child: Center(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(0),
-                  child: SizedBox(
-                    width: 430,
-                    height: MediaQuery.of(context).size.height,
-                    child: child!,
-                  ),
-                ),
-              ),
-            )
-          : child!,
+        child: child!,
       ),
     );
-    return app;
   }
 }
 
