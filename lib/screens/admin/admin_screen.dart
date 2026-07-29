@@ -417,16 +417,21 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                     for (final ref in refSnap.docs) {
                       final referrerId = ref.data()['referrerId'] ?? '';
                       await ref.reference.delete();
-                      // Supprimer bonusHistory parrain lié
-                      final bonusSnap = await FirebaseFirestore.instance.collection('bonusHistory')
-                          .where('userId', isEqualTo: referrerId)
-                          .where('type', isEqualTo: 'referral').get();
-                      for (final b in bonusSnap.docs) {
+                      // Supprimer bonusHistory parrain lie par nom
+                      final bonusParrainSnap = await FirebaseFirestore.instance
+                          .collection('bonusHistory')
+                          .where('userId', isEqualTo: referrerId).get();
+                      for (final b in bonusParrainSnap.docs) {
                         if ((b.data()['label'] ?? '').toString().contains(name)) {
-                          await b.reference.delete(); break;
+                          await b.reference.delete();
                         }
                       }
-                      // Décrémenter parrain
+                      // Supprimer bonusHistory du filleul
+                      final bonusFilleulSnap = await FirebaseFirestore.instance
+                          .collection('bonusHistory')
+                          .where('userId', isEqualTo: uid).get();
+                      for (final b in bonusFilleulSnap.docs) await b.reference.delete();
+                      // Decrementer solde parrain
                       final parrainSnap = await FirebaseFirestore.instance.collection('users').doc(referrerId).get();
                       final parrainColl = parrainSnap.exists ? 'users' : 'vendeurs';
                       await FirebaseFirestore.instance.collection(parrainColl).doc(referrerId).update({
@@ -434,6 +439,29 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                         'bonus': FieldValue.increment(-500),
                         'totalEarnings': FieldValue.increment(-500),
                       });
+                    }
+                    // Nettoyage final — supprimer tout bonusHistory restant du client
+                    final remainingBonus = await FirebaseFirestore.instance
+                        .collection('bonusHistory').where('userId', isEqualTo: uid).get();
+                    for (final b in remainingBonus.docs) await b.reference.delete();
+                    // Supprimer bonusHistory parrain si referral non trouve (securite)
+                    final allParrainBonus = await FirebaseFirestore.instance
+                        .collection('bonusHistory').get();
+                    for (final b in allParrainBonus.docs) {
+                      if ((b.data()['label'] ?? '').toString().contains(name)) {
+                        final parrainId = b.data()['userId'] ?? '';
+                        await b.reference.delete();
+                        // Decrementer solde parrain
+                        if (parrainId.isNotEmpty) {
+                          final pSnap = await FirebaseFirestore.instance.collection('users').doc(parrainId).get();
+                          final pColl = pSnap.exists ? 'users' : 'vendeurs';
+                          await FirebaseFirestore.instance.collection(pColl).doc(parrainId).update({
+                            'totalReferrals': FieldValue.increment(-1),
+                            'bonus': FieldValue.increment(-500),
+                            'totalEarnings': FieldValue.increment(-500),
+                          });
+                        }
+                      }
                     }
                     await FirebaseFirestore.instance.collection('users').doc(uid).delete();
                     if (context.mounted) showSnack(context, 'Client supprime');
