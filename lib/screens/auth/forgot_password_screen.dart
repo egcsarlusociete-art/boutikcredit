@@ -134,6 +134,10 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         setState(() => _loading = false);
         return;
       }
+      // Envoyer lien Firebase reset directement
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: _email);
+      await FirebaseFirestore.instance
+          .collection("otp_codes").doc(_email).update({"used": true});
       setState(() { _step = 2; _loading = false; });
     } catch (e) {
       showSnack(context, "Erreur vérification", isError: true);
@@ -141,45 +145,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
   }
 
-  Future<void> _resetPassword() async {
-    final newPass = _newPassC.text.trim();
-    final confirm = _confirmPassC.text.trim();
-    if (newPass.length < 6) {
-      showSnack(context, "Le mot de passe doit contenir au moins 6 caractères", isError: true);
-      return;
-    }
-    if (newPass != confirm) {
-      showSnack(context, "Les mots de passe ne correspondent pas", isError: true);
-      return;
-    }
-    setState(() => _loading = true);
-    try {
-      await FirebaseAuth.instance.sendPasswordResetEmail(email: _email);
-      await FirebaseFirestore.instance
-          .collection("otp_codes").doc(_email).update({"used": true});
-      await http.post(
-        Uri.parse("https://api.emailjs.com/api/v1.0/email/send"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "service_id": _serviceId,
-          "template_id": _templateId,
-          "user_id": _publicKey,
-          "template_params": {
-            "user_name": _email,
-            "otp_code": "Votre mot de passe a été réinitialisé. Un lien vous a été envoyé pour finaliser.",
-            "to_email": _email,
-          },
-        }),
-      );
-      if (mounted) {
-        showSnack(context, "Un lien de réinitialisation a été envoyé à $_email");
-        Navigator.pop(context);
-      }
-    } catch (e) {
-      showSnack(context, "Erreur : ${e.toString()}", isError: true);
-      setState(() => _loading = false);
-    }
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -270,20 +236,31 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
               )),
             ],
             if (_step == 2) ...[
-              const Text("Nouveau mot de passe",
+              const Text("Code validé ! ✅",
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: EgcColors.ink)),
-              const SizedBox(height: 8),
-              const Text("Créez un nouveau mot de passe sécurisé pour votre compte.",
-                style: TextStyle(fontSize: 14, color: EgcColors.ink3)),
-              const SizedBox(height: 32),
-              EgcTextField(label: "Nouveau mot de passe", hint: "••••••••",
-                controller: _newPassC, obscure: true),
-              const SizedBox(height: 14),
-              EgcTextField(label: "Confirmer le mot de passe", hint: "••••••••",
-                controller: _confirmPassC, obscure: true),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: EgcColors.primaryBg,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: EgcColors.primary, width: 1.5),
+                ),
+                child: Column(children: [
+                  const Icon(Icons.mark_email_read_rounded, size: 56, color: EgcColors.primary),
+                  const SizedBox(height: 16),
+                  Text("Un email a été envoyé à $_email",
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: EgcColors.ink)),
+                  const SizedBox(height: 8),
+                  const Text("Cliquez sur le lien dans cet email pour créer votre nouveau mot de passe. Vérifiez aussi vos spams.",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 13, color: EgcColors.ink3)),
+                ]),
+              ),
               const SizedBox(height: 24),
-              EgcButton(label: "Réinitialiser le mot de passe", onTap: _resetPassword,
-                loading: _loading, icon: Icons.lock_reset_rounded),
+              EgcButton(label: "Retour à la connexion", onTap: () => Navigator.pop(context),
+                loading: false, icon: Icons.arrow_back_rounded),
             ],
           ]),
         ),
