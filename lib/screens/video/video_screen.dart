@@ -355,6 +355,12 @@ class _CommentsSheetState extends State<CommentsSheet> {
   }
 
   Future<void> _delete(VideoComment c) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    // Verifier que l utilisateur est bien l auteur du commentaire
+    if (uid == null || c.userId != uid) {
+      showSnack(context, 'Vous ne pouvez supprimer que vos propres commentaires', isError: true);
+      return;
+    }
     await FirebaseFirestore.instance.collection('bc_video_comments').doc(c.id).delete();
     await FirebaseFirestore.instance.collection('bc_videos').doc(widget.videoId)
         .update({'comments': FieldValue.increment(-1)});
