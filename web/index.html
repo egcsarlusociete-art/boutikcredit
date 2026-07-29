@@ -46,6 +46,16 @@
   
   
   
+  
+  
+  <script>
+    // Patch flutter_inappwebview pour le web
+    window.flutter_inappwebview = {
+      nativeCommunication: function() {},
+      callHandler: function() { return Promise.resolve(); },
+      onIframeLoaded: function() {}
+    };
+  </script>
   <style id="splash-screen-style">
     html {
       height: 100%
@@ -132,7 +142,16 @@
   
   
   
+  
   <script src="flutter_bootstrap.js" async=""></script>
 
 
+<script>
+// Patch nativeCommunication pour flutter_inappwebview
+window.flutter_inappwebview = window.flutter_inappwebview || {
+  nativeCommunication: function() {},
+  callHandler: function() {},
+  onIframeLoaded: function() {}
+};
+</script>
 </body></html>
