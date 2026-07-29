@@ -47,12 +47,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
     }
     setState(() => _loading = true);
     try {
-      // Vérifier via Firebase Auth
-      final methods = await FirebaseAuth.instance.fetchSignInMethodsForEmail(email);
-      if (methods.isEmpty) {
-        showSnack(context, "Aucun compte associé à cet email", isError: true);
-        setState(() => _loading = false);
-        return;
+      // Verification email via tentative de connexion
+      try {
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+          email: email, password: "CHECK_ONLY_FAKE_PASSWORD_123!");
+      } on FirebaseAuthException catch (e) {
+        if (e.code == "user-not-found") {
+          showSnack(context, "Aucun compte associé à cet email", isError: true);
+          setState(() => _loading = false);
+          return;
+        }
+        // wrong-password = email existe, on continue
       }
       final otp = (1000 + Random().nextInt(9000)).toString();
       final expiry = DateTime.now().add(const Duration(minutes: 10));
