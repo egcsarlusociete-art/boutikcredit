@@ -1,11 +1,11 @@
 {
-    "name": "boutikcredit",
-    "short_name": "boutikcredit",
+    "name": "BoutikCredit",
+    "short_name": "BoutikCredit",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#0F1117",
+    "theme_color": "#1B4FE8",
+    "description": "La Marketplace a Credit de Cote d'Ivoire - Commandez aujourd'hui, payez apres.",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

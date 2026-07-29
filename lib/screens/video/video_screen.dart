@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:boutikcredit/stubs/youtube_player_android.dart' if (dart.library.html) 'package:boutikcredit/stubs/youtube_player_web.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
@@ -70,6 +71,80 @@ class _VideoScreenState extends ConsumerState<VideoScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (kIsWeb) {
+      final videosAsync = ref.watch(bcVideosProvider);
+      return Scaffold(
+        backgroundColor: EgcColors.bg,
+        appBar: AppBar(
+          title: const Text('Vidéos EGC-SARLU'),
+          leading: IconButton(icon: const Icon(Icons.close), onPressed: () => Navigator.pop(context)),
+        ),
+        body: videosAsync.when(
+          loading: () => const Center(child: CircularProgressIndicator(color: EgcColors.primary)),
+          error: (e, _) => const Center(child: Text('Erreur de chargement')),
+          data: (videos) {
+            if (videos.isEmpty) return const Center(child: Text('Aucune vidéo disponible'));
+            return ListView.builder(
+              itemCount: videos.length,
+              itemBuilder: (ctx, i) {
+                final v = videos[i];
+                final youtubeId = v.youtubeId;
+                final mp4Url = v.mp4Url;
+                final thumbUrl = youtubeId.isNotEmpty
+                    ? 'https://img.youtube.com/vi/$youtubeId/hqdefault.jpg'
+                    : null;
+                return GestureDetector(
+                  onTap: () async {
+                    final url = youtubeId.isNotEmpty
+                        ? 'https://www.youtube.com/watch?v=$youtubeId'
+                        : mp4Url ?? '';
+                    if (url.isNotEmpty) await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                    decoration: BoxDecoration(
+                      color: EgcColors.bg2,
+                      borderRadius: EgcRadius.mdBorder,
+                      border: Border.all(color: EgcColors.line, width: 1.5),
+                    ),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      if (thumbUrl != null)
+                        ClipRRect(
+                          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                          child: Stack(alignment: Alignment.center, children: [
+                            Image.network(thumbUrl, height: 200, width: double.infinity, fit: BoxFit.cover),
+                            Container(
+                              width: 56, height: 56,
+                              decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(28)),
+                              child: const Icon(Icons.play_arrow, color: Colors.white, size: 36),
+                            ),
+                          ]),
+                        )
+                      else if (mp4Url != null && mp4Url.isNotEmpty)
+                        GestureDetector(
+                          onTap: () async => await launchUrl(Uri.parse(mp4Url), mode: LaunchMode.externalApplication),
+                          child: Stack(alignment: Alignment.center, children: [
+                            Container(height: 200, color: Colors.black),
+                            const Icon(Icons.play_circle_fill, color: Colors.white, size: 64),
+                          ]),
+                        ),
+                      Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          Text(v.title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                          const SizedBox(height: 4),
+                          const Text('Appuyez pour regarder sur YouTube', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                        ]),
+                      ),
+                    ]),
+                  ),
+                );
+              },
+            );
+          },
+        ),
+      );
+    }
     final videosAsync = ref.watch(bcVideosProvider);
     return Scaffold(
       backgroundColor: EgcColors.bg,

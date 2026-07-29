@@ -5,6 +5,7 @@ import '../../services/auth_service.dart';
 import '../shop/shop_screen.dart';
 import '../../utils/theme.dart';
 import '../../utils/helpers.dart';
+import 'forgot_password_screen.dart';
 import '../../widgets/egc_button.dart';
 import '../../widgets/egc_text_field.dart';
 
@@ -78,7 +79,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               const SizedBox(height: 16),
 
               Center(child: TextButton(
-                onPressed: () {},
+                onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ForgotPasswordScreen())),
                 child: const Text('Mot de passe oublié ?', style: TextStyle(color: EgcColors.primary, fontWeight: FontWeight.w600)),
               )),
               const SizedBox(height: 32),

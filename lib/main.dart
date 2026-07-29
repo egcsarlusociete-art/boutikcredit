@@ -137,7 +137,18 @@ class EgcApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       builder: (context, child) => MediaQuery(
         data: MediaQuery.of(context).copyWith(textScaler: TextScaler.noScaling),
-        child: child!,
+        child: kIsWeb
+          ? Container(
+              color: const Color(0xFF0F1117),
+              child: Center(
+                child: SizedBox(
+                  width: 430,
+                  height: MediaQuery.of(context).size.height,
+                  child: child!,
+                ),
+              ),
+            )
+          : child!,
       ),
     );
   }
