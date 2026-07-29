@@ -412,8 +412,17 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
                   final ok = await _confirmDelete(context, name);
                   if (ok == true) {
                     // Trouver si ce client est un filleul
+                    // Chercher referral par referredId OU referredId different
                     final refSnap = await FirebaseFirestore.instance.collection('referrals')
                         .where('referredId', isEqualTo: uid).get();
+                    // Chercher aussi par nom dans tous les referrals
+                    final allRefs = await FirebaseFirestore.instance.collection('referrals').get();
+                    for (final ref in allRefs.docs) {
+                      if ((ref.data()['name'] ?? '').toString() == name ||
+                          (ref.data()['referredId'] ?? '') == uid) {
+                        await ref.reference.delete();
+                      }
+                    }
                     for (final ref in refSnap.docs) {
                       final referrerId = ref.data()['referrerId'] ?? '';
                       await ref.reference.delete();
