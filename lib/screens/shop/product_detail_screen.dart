@@ -290,6 +290,8 @@ Widget _vendeurLogo(String vendeurId) {
   const logos = {
     'impactveroty_vendor': 'https://impactveroty.com/logoIMPACT.jpg',
     'Xa0dgDhehnbmLpbgKpBEPB9ygD73': 'https://impactveroty.com/logoIMPACT.jpg',
+    '9D76f2HLPrNODPN8HtPDbzwG4wA3': 'https://egcsarlu-app.web.app/assets/logo-C29VeLYe.png',
+    'pX5UMZ9OPGbkLtlEoWuOJlcLSY13': 'https://egc-sarlu.com/logo_boutikcredit_transparent.png',
   };
   final url = logos[vendeurId];
   if (url != null) {
