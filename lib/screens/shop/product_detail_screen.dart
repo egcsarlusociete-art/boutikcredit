@@ -295,14 +295,16 @@ Widget _vendeurLogo(String vendeurId) {
   };
   final url = logos[vendeurId];
   if (url != null) {
-    return CachedNetworkImage(
-      imageUrl: url,
-      width: 40, height: 40,
-      fit: BoxFit.cover,
-      errorWidget: (_, __, ___) => Container(
+    return ClipOval(
+      child: CachedNetworkImage(
+        imageUrl: url,
         width: 40, height: 40,
-        decoration: const BoxDecoration(color: EgcColors.primaryBg, shape: BoxShape.circle),
-        child: const Center(child: Text('🏪', style: TextStyle(fontSize: 20)))),
+        fit: BoxFit.contain,
+        errorWidget: (_, __, ___) => Container(
+          width: 40, height: 40,
+          decoration: const BoxDecoration(color: EgcColors.primaryBg, shape: BoxShape.circle),
+          child: const Center(child: Text('🏪', style: TextStyle(fontSize: 20)))),
+      ),
     );
   }
   return Container(
