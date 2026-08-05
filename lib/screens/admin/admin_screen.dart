@@ -271,7 +271,8 @@ class _AdminScreenState extends ConsumerState<AdminScreen> with SingleTickerProv
     builder: (ctx, snap) {
       if (snap.hasError) return _errWidget(snap.error);
       if (!snap.hasData) return _loadingWidget();
-      final docs = snap.data!.docs;
+      final docs = snap.data!.docs
+          .where((d) => (d.data() as Map)['planStatus'] != null).toList();
       if (docs.isEmpty) return _emptyWidget('Aucun client');
       return ListView.separated(
         padding: const EdgeInsets.all(12), itemCount: docs.length,
