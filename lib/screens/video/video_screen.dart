@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:boutikcredit/stubs/youtube_player_android.dart' if (dart.library.html) 'package:boutikcredit/stubs/youtube_player_web.dart';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
@@ -94,12 +93,7 @@ class _VideoScreenState extends ConsumerState<VideoScreen> {
                     ? 'https://img.youtube.com/vi/$youtubeId/hqdefault.jpg'
                     : null;
                 return GestureDetector(
-                  onTap: () async {
-                    final url = youtubeId.isNotEmpty
-                        ? 'https://www.youtube.com/watch?v=$youtubeId'
-                        : mp4Url ?? '';
-                    if (url.isNotEmpty) await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-                  },
+                  onTap: () => _playVideo(v),
                   child: Container(
                     margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                     decoration: BoxDecoration(
@@ -122,7 +116,7 @@ class _VideoScreenState extends ConsumerState<VideoScreen> {
                         )
                       else if (mp4Url != null && mp4Url.isNotEmpty)
                         GestureDetector(
-                          onTap: () async => await launchUrl(Uri.parse(mp4Url), mode: LaunchMode.externalApplication),
+                          onTap: () => _playVideo(v),
                           child: Stack(alignment: Alignment.center, children: [
                             Container(height: 200, color: Colors.black),
                             const Icon(Icons.play_circle_fill, color: Colors.white, size: 64),
@@ -133,20 +127,20 @@ class _VideoScreenState extends ConsumerState<VideoScreen> {
                         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                           Text(v.title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
                           const SizedBox(height: 4),
-                          const Text('Appuyez pour regarder sur YouTube', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                          Text(v.description.isNotEmpty ? v.description : 'Appuyez pour regarder la vidéo', style: const TextStyle(fontSize: 12, color: EgcColors.ink3), maxLines: 2, overflow: TextOverflow.ellipsis),
                           const SizedBox(height: 12),
                           Row(children: [
                             const Icon(Icons.visibility_outlined, size: 16, color: EgcColors.ink3),
                             const SizedBox(width: 4),
-                            Text('\${v.views}', style: const TextStyle(fontSize: 12, color: EgcColors.ink3)),
+                            Text('${v.views}', style: const TextStyle(fontSize: 12, color: EgcColors.ink3)),
                             const SizedBox(width: 16),
                             const Icon(Icons.favorite_border, size: 16, color: EgcColors.ink3),
                             const SizedBox(width: 4),
-                            Text('\${v.likes}', style: const TextStyle(fontSize: 12, color: EgcColors.ink3)),
+                            Text('${v.likes}', style: const TextStyle(fontSize: 12, color: EgcColors.ink3)),
                             const Spacer(),
                             TextButton.icon(
                               icon: const Icon(Icons.comment_outlined, size: 16, color: EgcColors.primary),
-                              label: Text('\${v.comments} commentaires', style: const TextStyle(fontSize: 12, color: EgcColors.primary, fontWeight: FontWeight.w700)),
+                              label: Text('${v.comments} commentaires', style: const TextStyle(fontSize: 12, color: EgcColors.primary, fontWeight: FontWeight.w700)),
                               onPressed: () => _showComments(context, v.id, v.title),
                             ),
                           ]),
