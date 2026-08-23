@@ -102,17 +102,35 @@ class _VideoScreenState extends ConsumerState<VideoScreen> {
                       border: Border.all(color: EgcColors.line, width: 1.5),
                     ),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      if (thumbUrl != null)
-                        ClipRRect(
-                          borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
-                          child: Stack(alignment: Alignment.center, children: [
-                            Image.network(thumbUrl, height: 200, width: double.infinity, fit: BoxFit.cover),
-                            Container(
-                              width: 56, height: 56,
-                              decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(28)),
-                              child: const Icon(Icons.play_arrow, color: Colors.white, size: 36),
+                      if (_activeDocId == v.id) ...[
+                        // Lecteur actif
+                        if (_isMp4 && _chewieController != null)
+                          ClipRRect(
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                            child: SizedBox(height: 220, child: Chewie(controller: _chewieController!)),
+                          )
+                        else if (!_isMp4 && _controller != null)
+                          ClipRRect(
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                            child: SizedBox(
+                              height: 220,
+                              child: YoutubePlayer(controller: _controller!, showVideoProgressIndicator: true),
                             ),
-                          ]),
+                          ),
+                      ] else if (thumbUrl != null)
+                        GestureDetector(
+                          onTap: () => _playVideo(v),
+                          child: ClipRRect(
+                            borderRadius: const BorderRadius.vertical(top: Radius.circular(12)),
+                            child: Stack(alignment: Alignment.center, children: [
+                              Image.network(thumbUrl, height: 200, width: double.infinity, fit: BoxFit.cover),
+                              Container(
+                                width: 56, height: 56,
+                                decoration: BoxDecoration(color: Colors.red, borderRadius: BorderRadius.circular(28)),
+                                child: const Icon(Icons.play_arrow, color: Colors.white, size: 36),
+                              ),
+                            ]),
+                          ),
                         )
                       else if (mp4Url != null && mp4Url.isNotEmpty)
                         GestureDetector(
